@@ -8,4 +8,5 @@ export async function GET(_req, { params }) {
   const salon = await getSalon(slug)
   if (!salon) return NextResponse.json({ error: "not-found" }, { status: 404 })
   return NextResponse.json(salon)
+
 }
