@@ -1,0 +1,55 @@
+name: Build and Deploy
+
+# Use this version in rzv-client and rzv-api repos, at .github/workflows/deploy.yml
+# Only line to change per repo: APP_NAME
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  APP_NAME: rzv-client   # <-- change to rzv-client for that repo
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:latest
+            ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd ~/apps/rezervy
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u wisecodetn --password-stdin
+            docker compose pull ${{ env.APP_NAME }}
+            docker compose up -d ${{ env.APP_NAME }}
+            docker image prune -f
