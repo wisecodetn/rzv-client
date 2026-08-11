@@ -26,7 +26,7 @@ export default async function Home() {
       <JsonLd data={faqLd(FAQS)} />
 
       {/* HERO */}
-      <section style={{ position: "relative", borderBottom: "1px solid var(--line-soft)", overflow: "hidden" }}>
+      <section style={{ position: "relative", borderBottom: "1px solid var(--line-soft)" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(115deg,#241A10,#4A3620 55%,#2A1F12)" }}>
           <Photo label="Ambiance salon de beauté" />
         </div>

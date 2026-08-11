@@ -51,7 +51,7 @@ export function Dashboard() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 14 }}>
         {stats.map((s) => (
-          <Link key={s.l} href={s.href} className="lift" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px 18px", textAlign: "left", display: "block", color: "var(--ink)" }}>
+          <Link key={s.l} href={s.href} className="lift" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "16px 18px", textAlign: "left", display: "block", color: "var(--ink)", minWidth: 0 }}>
             <div style={{ fontSize: 26, fontWeight: 800, color: "var(--ink)" }}>{s.v}</div>
             <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>{s.l}</div>
           </Link>
@@ -130,9 +130,9 @@ export function Rendezvous() {
   return (
     <>
       <H>Mes rendez-vous</H>
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4, minWidth: 0 }}>
         {RDV_UP.map((rv) => (
-          <Card key={rv.ref} style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+          <Card key={rv.ref} style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap", minWidth: 0 }}>
             <div style={{ width: 58, textAlign: "center", background: "var(--bg)", borderRadius: 12, padding: "9px 0", flex: "none" }}>
               <div style={{ fontSize: 10, color: "var(--muted)", fontWeight: 800, textTransform: "uppercase" }}>{rv.mo}</div>
               <div style={{ fontSize: 20, fontWeight: 800 }}>{rv.dd}</div>
@@ -182,19 +182,19 @@ export function Favoris() {
           <Link href="/recherche" className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>Explorer les salons</Link>
         </Card>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 14, minWidth: 0 }}>
           {salons.map((s) => (
-            <div key={s.slug} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", position: "relative" }}>
+            <div key={s.slug} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", position: "relative", minWidth: 0 }}>
               <div style={{ height: 120, position: "relative" }}>
                 <Photo label={`Photo — ${s.name}`} />
                 <button onClick={() => removeFav(s.slug)} aria-label="Retirer des favoris" style={{ position: "absolute", top: 10, right: 10, width: 32, height: 32, borderRadius: "50%", background: "rgba(253,248,239,0.94)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(26,18,8,0.25)" }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--red)" stroke="var(--red)" strokeWidth="1.5"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z" /></svg>
                 </button>
               </div>
-              <div style={{ padding: "12px 14px" }}>
+              <div style={{ padding: "12px 14px", minWidth: 0 }}>
                 <Link href={`/salon/${s.slug}`} style={{ fontWeight: 800, fontSize: 13.5, color: "var(--ink)" }}>{s.name}</Link>
                 <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{s.kind} · {s.city}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 12, fontWeight: 800, color: "var(--gold-dark)" }}>★ {s.rate}</span>
                   <span style={{ fontSize: 11.5, color: "var(--muted)" }}>dès {s.from} TND</span>
                   <span style={{ flex: 1 }} />
@@ -214,19 +214,19 @@ export function Fidelite() {
   return (
     <>
       <H>Abonnements & fidélité</H>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 4 }}>
-        <div style={{ background: "linear-gradient(150deg,#3A2B1A,#6B4E2E)", borderRadius: 18, padding: 22, color: "#F8F0E2" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 4, minWidth: 0 }}>
+        <div style={{ background: "linear-gradient(150deg,#3A2B1A,#6B4E2E)", borderRadius: 18, padding: 22, color: "#F8F0E2", minWidth: 0 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "#D9BE97" }}>Points fidélité</div>
           <div style={{ fontSize: 36, fontWeight: 800, marginTop: 8 }}>340 <span style={{ fontSize: 15, fontWeight: 700, color: "#D9BE97" }}>pts</span></div>
           <div style={{ height: 7, background: "rgba(255,255,255,0.18)", borderRadius: 99, marginTop: 14, overflow: "hidden" }}><div style={{ width: "68%", height: "100%", background: "var(--gold-light)", borderRadius: 99 }} /></div>
           <div style={{ fontSize: 12, color: "#D9BE97", marginTop: 8 }}>Encore 160 pts pour un brushing offert (500 pts)</div>
         </div>
-        <Card style={{ padding: 22 }}>
+        <Card style={{ padding: 22, minWidth: 0 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)" }}>Parrainage</div>
           <div style={{ fontSize: 13, color: "var(--muted-2)", lineHeight: 1.65, marginTop: 8 }}>Offrez <b style={{ color: "var(--ink)" }}>−20%</b> à une amie sur sa première visite — et gagnez <b style={{ color: "var(--ink)" }}>50 pts</b> à chaque venue.</div>
           <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-            <div style={{ flex: 1, background: "var(--bg)", border: "1px dashed rgba(169,124,72,0.5)", borderRadius: 10, padding: "10px 14px", fontWeight: 800, letterSpacing: "0.08em", textAlign: "center" }}>INES25</div>
-            <button className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5 }}>Partager</button>
+            <div style={{ flex: 1, background: "var(--bg)", border: "1px dashed rgba(169,124,72,0.5)", borderRadius: 10, padding: "10px 14px", fontWeight: 800, letterSpacing: "0.08em", textAlign: "center", minWidth: 0 }}>INES25</div>
+            <button className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>Partager</button>
           </div>
           <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 10 }}>3 amies parrainées · 150 pts gagnés</div>
         </Card>

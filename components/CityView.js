@@ -149,7 +149,7 @@ function SalonRow({ s, dist }) {
   )
 }
 
-export default function CityView({ salons, mapSalons, allSalons = [], cat, city, page = 1, totalPages = 1, total = 0, basePath }) {
+export default function CityView({ salons, mapSalons, cat, city, page = 1, totalPages = 1, total = 0, basePath }) {
   const router = useRouter()
   const { categories, cities, allCategories, categoryChildren, categoryParent } = useCatalog()
   const TOP_NAME = Object.fromEntries(categories.map((c) => [c.slug, c.name]))
@@ -217,6 +217,22 @@ export default function CityView({ salons, mapSalons, allSalons = [], cat, city,
   const dateLabel = applied.dispo === "date" && applied.date ? new Date(applied.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : null
   const pillSummary = dateLabel ? `Le ${dateLabel}` : (filtCount > 0 ? `${filtCount} filtre${filtCount > 1 ? "s" : ""}` : "À tout moment")
 
+  // Establishments are searched via a debounced API call, only once the term is
+  // longer than 3 chars — we don't ship the whole salon list to the browser.
+  const [estabResults, setEstabResults] = useState([])
+  useEffect(() => {
+    const term = q.trim()
+    if (!searchOpen || term.length <= 3) { setEstabResults([]); return }
+    let alive = true
+    const t = setTimeout(() => {
+      fetch(`/api/suggest?q=${encodeURIComponent(term)}`)
+        .then((r) => (r.ok ? r.json() : []))
+        .then((list) => { if (alive) setEstabResults(Array.isArray(list) ? list : []) })
+        .catch(() => { if (alive) setEstabResults([]) })
+    }, 220)
+    return () => { alive = false; clearTimeout(t) }
+  }, [q, searchOpen])
+
   const searchResults = useMemo(() => {
     const term = q.trim().toLowerCase()
     if (!term) return { cats: [], subs: [], estabs: [] }
@@ -224,9 +240,9 @@ export default function CityView({ salons, mapSalons, allSalons = [], cat, city,
     return {
       cats: nodes.filter((n) => n.isTop).slice(0, 4),
       subs: nodes.filter((n) => !n.isTop).slice(0, 6),
-      estabs: allSalons.filter((s) => s.name.toLowerCase().includes(term) || (s.city || "").toLowerCase().includes(term) || (s.area || "").toLowerCase().includes(term) || (s.tags || []).some((t) => t.toLowerCase().includes(term))).slice(0, 6),
+      estabs: estabResults,
     }
-  }, [q, allCategories, allSalons])
+  }, [q, allCategories, estabResults])
   const submitSearch = () => {
     const r = searchResults
     if (q.trim()) {

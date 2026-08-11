@@ -62,7 +62,13 @@ export default function Navbar() {
           {user ? (
             <button onClick={() => { setMenu(false); setAcctOpen((u) => !u) }} aria-label="Mon compte" style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gold)", color: "#FDF8EF", border: "none", fontSize: 12.5, fontWeight: 800 }}>{user.initials}</button>
           ) : (
-            <Link href="/connexion" className="btn-gold" style={{ display: "inline-block", background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 999, padding: "9px 18px", fontSize: 12.5, fontWeight: 800 }}>Se connecter</Link>
+            <Link href="/connexion" className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 999, padding: "9px 18px", fontSize: 12.5, fontWeight: 800 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "none" }} className="login-icon-mobile">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              <span className="login-text">Se connecter</span>
+            </Link>
           )}
           {user && acctOpen && (
             <div style={{ position: "absolute", right: 0, top: "calc(100% + 10px)", width: 220, background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 14, boxShadow: "0 16px 40px var(--shadow-strong)", overflow: "hidden", zIndex: 70 }}>

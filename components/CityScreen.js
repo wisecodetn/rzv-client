@@ -8,11 +8,10 @@ import { getCities, categoryParent, querySalons, PRICE_ROWS } from "@/lib/data"
    first page of salons + all matches for the map; CityView takes over
    interactivity (filters via /api/salons, pagination via links or fetch). */
 export default async function CityScreen({ cat, ct, page = 1 }) {
-  const [q, parent, cities, allList] = await Promise.all([
+  const [q, parent, cities] = await Promise.all([
     querySalons({ category: cat.slug, city: ct.slug, page }),
     categoryParent(cat.slug),
     getCities(),
-    querySalons({}), // global list for CityView's establishment autocomplete
   ])
   const priceRows = PRICE_ROWS[cat.top] || []
   const near = cities.filter((c) => c.slug !== ct.slug).slice(0, 5)
@@ -45,7 +44,6 @@ export default async function CityScreen({ cat, ct, page = 1 }) {
         key={`${base}/${q.page}`}
         salons={q.items}
         mapSalons={q.mapItems}
-        allSalons={allList.mapItems}
         cat={cat}
         city={ct}
         page={q.page}

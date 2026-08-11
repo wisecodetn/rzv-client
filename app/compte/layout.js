@@ -28,10 +28,10 @@ export default function CompteLayout({ children }) {
   if (!ready || !user) return null
 
   return (
-    <div style={{ maxWidth: 1040, margin: "0 auto", padding: "34px 24px 60px" }}>
+    <div style={{ maxWidth: 1040, margin: "0 auto", padding: "34px 24px 60px", overflowX: "hidden" }}>
       <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
         <div style={{ width: 54, height: 54, borderRadius: "50%", background: "var(--gold)", color: "#FDF8EF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, flex: "none" }}>{user.initials}</div>
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
           <div className="serif" style={{ fontSize: 23 }}>{user.name}</div>
           <div style={{ fontSize: 12.5, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis" }}>{user.email || user.phone} · cliente depuis janvier 2026</div>
         </div>
@@ -43,7 +43,7 @@ export default function CompteLayout({ children }) {
             {SECTIONS.map((s) => {
               const on = s.href === "/compte" ? pathname === "/compte" : pathname.startsWith(s.href)
               return (
-                <Link key={s.href} href={s.href} className="account-nav-item" style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", borderRadius: 11, fontSize: 13.5, fontWeight: on ? 800 : 600, color: on ? "var(--gold-dark)" : "var(--muted-2)", background: on ? "rgba(169,124,72,0.1)" : "transparent", border: on ? "1px solid rgba(169,124,72,0.3)" : "1px solid transparent", width: "100%" }}>
+                <Link key={s.href} href={s.href} className="account-nav-item" style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", borderRadius: 11, fontSize: 13.5, fontWeight: on ? 800 : 600, color: on ? "var(--gold-dark)" : "var(--muted-2)", background: on ? "rgba(169,124,72,0.1)" : "transparent", border: on ? "1px solid rgba(169,124,72,0.3)" : "1px solid transparent", whiteSpace: "nowrap" }}>
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={ICON[s.icon]} /></svg>{s.l}
                 </Link>
               )
@@ -51,7 +51,7 @@ export default function CompteLayout({ children }) {
           </div>
         </nav>
 
-        <div style={{ minWidth: 0 }}>{children}</div>
+        <div style={{ minWidth: 0, overflowX: "hidden" }}>{children}</div>
       </div>
     </div>
   )
