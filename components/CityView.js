@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Photo from "./Photo"
@@ -106,9 +106,11 @@ function SalonRow({ s, dist }) {
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 9, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12, color: "var(--muted)" }}>dès <span style={{ fontWeight: 800, color: "var(--ink)" }}>{s.from} TND</span></span>
-            <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 9px", background: s.avail ? "rgba(62,142,117,0.12)" : "rgba(201,162,39,0.13)", color: s.avail ? "var(--green)" : "#8A6A17" }}>{s.slotLabel}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 9px", background: s.avail ? "var(--green-soft)" : "rgba(201,162,39,0.13)", color: s.avail ? "var(--green)" : "#8A6A17" }}>{s.slotLabel}</span>
             <span style={{ flex: 1 }} />
-            <Link href={`/salon/${s.slug}/reserver`} style={{ background: "var(--gold)", border: "none", color: "#FDF8EF", borderRadius: 10, padding: "9px 17px", fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }} className="btn-gold">Réserver</Link>
+            {/* Each card links to the same 2 routes several times; only the
+                salon-name link prefetches, so 20 cards don't fire ~100 requests. */}
+            <Link href={`/salon/${s.slug}/reserver`} prefetch={false} style={{ background: "var(--gold)", border: "none", color: "#FDF8EF", borderRadius: 10, padding: "9px 17px", fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }} className="btn-gold">Réserver</Link>
           </div>
         </div>
       </div>
@@ -123,10 +125,10 @@ function SalonRow({ s, dist }) {
               <div style={{ minWidth: 0, flex: 1, fontWeight: 600 }}>{ts.n}</div>
               <div style={{ color: "var(--muted)", fontSize: 11.5, whiteSpace: "nowrap" }}>{ts.d}</div>
               <div style={{ fontWeight: 800, whiteSpace: "nowrap" }}>{ts.p} TND</div>
-              <Link href={`/salon/${s.slug}/reserver`} style={{ fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 700, whiteSpace: "nowrap" }}>Réserver</Link>
+              <Link href={`/salon/${s.slug}/reserver`} prefetch={false} style={{ fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 700, whiteSpace: "nowrap" }}>Réserver</Link>
             </div>
           ))}
-          <Link href={`/salon/${s.slug}`} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>Voir tous les services →</Link>
+          <Link href={`/salon/${s.slug}`} prefetch={false} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>Voir tous les services →</Link>
         </div>
       )}
       {tab === "rev" && (
@@ -142,7 +144,7 @@ function SalonRow({ s, dist }) {
               <div style={{ fontSize: 12, color: "var(--muted-2)", lineHeight: 1.6, marginTop: 3 }}>{tr.txt}</div>
             </div>
           ))}
-          <Link href={`/salon/${s.slug}`} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>Voir les {s.rev} avis →</Link>
+          <Link href={`/salon/${s.slug}`} prefetch={false} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>Voir les {s.rev} avis →</Link>
         </div>
       )}
     </div>
@@ -151,7 +153,7 @@ function SalonRow({ s, dist }) {
 
 export default function CityView({ salons, mapSalons, cat, city, page = 1, totalPages = 1, total = 0, basePath }) {
   const router = useRouter()
-  const { categories, cities, allCategories, categoryChildren, categoryParent } = useCatalog()
+  const { categories, cities, categoryChildren, categoryParent } = useCatalog()
   const TOP_NAME = Object.fromEntries(categories.map((c) => [c.slug, c.name]))
   const children = categoryChildren(cat.slug)
   const parent = categoryParent(cat.slug)
@@ -213,36 +215,52 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
   const applyFilters = () => { setApplied(draft); setFiltOpen(false); setDrawer(null) }
   const openFilters = () => { setDraft(applied) }
 
+  // While the filter drawer (or a mobile sheet) is open: close on Escape and
+  // lock the page scroll — only the drawer's own body scrolls.
+  useEffect(() => {
+    const open = filtOpen || !!drawer
+    if (!open) return
+    const onEsc = (e) => { if (e.key === "Escape") { setFiltOpen(false); setDrawer(null) } }
+    document.addEventListener("keydown", onEsc)
+    const prev = document.documentElement.style.overflow
+    document.documentElement.style.overflow = "hidden"
+    return () => {
+      document.removeEventListener("keydown", onEsc)
+      document.documentElement.style.overflow = prev
+    }
+  }, [filtOpen, drawer])
+
   const cityOpts = cityBrowsing ? cities : cities.filter((c) => c.name.toLowerCase().includes(cityQ.trim().toLowerCase()))
   const dateLabel = applied.dispo === "date" && applied.date ? new Date(applied.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : null
   const pillSummary = dateLabel ? `Le ${dateLabel}` : (filtCount > 0 ? `${filtCount} filtre${filtCount > 1 ? "s" : ""}` : "À tout moment")
 
-  // Establishments are searched via a debounced API call, only once the term is
-  // longer than 3 chars — we don't ship the whole salon list to the browser.
-  const [estabResults, setEstabResults] = useState([])
+  // Typed search hits the backend suggest index (categories / prestations /
+  // établissements, 4/8/5 budget, 17 max). Debounced + per-session query cache;
+  // previous results stay visible while the next response arrives.
+  const SUGGEST_EMPTY = { cats: [], subs: [], estabs: [] }
+  const [searchResults, setSearchResults] = useState(SUGGEST_EMPTY)
+  const suggestCache = useRef(new Map())
   useEffect(() => {
     const term = q.trim()
-    if (!searchOpen || term.length <= 3) { setEstabResults([]); return }
+    if (!searchOpen || !term || term === cat.name) { setSearchResults(SUGGEST_EMPTY); return }
+    const key = term.toLowerCase()
+    const hit = suggestCache.current.get(key)
+    if (hit) { setSearchResults(hit); return }
     let alive = true
     const t = setTimeout(() => {
       fetch(`/api/suggest?q=${encodeURIComponent(term)}`)
-        .then((r) => (r.ok ? r.json() : []))
-        .then((list) => { if (alive) setEstabResults(Array.isArray(list) ? list : []) })
-        .catch(() => { if (alive) setEstabResults([]) })
-    }, 220)
+        .then((r) => (r.ok ? r.json() : SUGGEST_EMPTY))
+        .then((d) => {
+          if (!alive) return
+          const v = { cats: d.cats || [], subs: d.subs || [], estabs: d.estabs || [] }
+          suggestCache.current.set(key, v)
+          if (suggestCache.current.size > 100) suggestCache.current.delete(suggestCache.current.keys().next().value)
+          setSearchResults(v)
+        })
+        .catch(() => {})
+    }, 200)
     return () => { alive = false; clearTimeout(t) }
-  }, [q, searchOpen])
-
-  const searchResults = useMemo(() => {
-    const term = q.trim().toLowerCase()
-    if (!term) return { cats: [], subs: [], estabs: [] }
-    const nodes = allCategories.filter((n) => n.name.toLowerCase().includes(term))
-    return {
-      cats: nodes.filter((n) => n.isTop).slice(0, 4),
-      subs: nodes.filter((n) => !n.isTop).slice(0, 6),
-      estabs: estabResults,
-    }
-  }, [q, allCategories, estabResults])
+  }, [q, searchOpen, cat.name])
   const submitSearch = () => {
     const r = searchResults
     if (q.trim()) {
@@ -302,11 +320,11 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
   const SGroup = ({ children: ch }) => <div style={{ ...secLabel, padding: "11px 14px 3px" }}>{ch}</div>
   const ResultsList = () => {
     const term = q.trim()
+    // On focus, before typing: only the categories (already loaded with the site).
     if (browsing) return (
       <>
         <SGroup>Catégories</SGroup>
         {categories.map((c) => <SRow key={c.slug} t="cat" label={c.name} sub="Catégorie" active={c.slug === cat.slug || c.slug === cat.top} onClick={() => goNode(c.slug)} />)}
-        {children.length > 0 && (<><SGroup>Prestations · {cat.name}</SGroup>{children.map((n) => <SRow key={n.slug} t="sub" label={n.name} sub={cat.name} onClick={() => goNode(n.slug)} />)}</>)}
       </>
     )
     const { cats, subs, estabs } = searchResults
@@ -314,8 +332,8 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
     return (
       <>
         {cats.length > 0 && <><SGroup>Catégories</SGroup>{cats.map((c) => <SRow key={c.slug} t="cat" label={c.name} sub="Catégorie" active={c.slug === cat.slug} onClick={() => goNode(c.slug)} />)}</>}
-        {subs.length > 0 && <><SGroup>Prestations</SGroup>{subs.map((n) => <SRow key={n.slug} t="sub" label={n.name} sub={TOP_NAME[n.top]} active={n.slug === cat.slug} onClick={() => goNode(n.slug)} />)}</>}
-        {estabs.length > 0 && <><SGroup>Établissements</SGroup>{estabs.map((s) => <SRow key={s.slug} t="est" label={s.name} sub={`${s.kind} · ${s.city}`} onClick={() => pickEstab(s.slug)} />)}</>}
+        {subs.length > 0 && <><SGroup>Prestations</SGroup>{subs.map((n) => <SRow key={n.slug} t="sub" label={n.name} sub={n.topName || TOP_NAME[n.top]} active={n.slug === cat.slug} onClick={() => goNode(n.slug)} />)}</>}
+        {estabs.length > 0 && <><SGroup>Établissements</SGroup>{estabs.map((s) => <SRow key={s.slug} t="est" label={s.name} sub={s.sub || "Salon"} onClick={() => pickEstab(s.slug)} />)}</>}
       </>
     )
   }
@@ -339,7 +357,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
             {searchOpen && (
               <>
                 <div onClick={() => { setSearchOpen(false); setQ(cat.name) }} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
-                <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, maxHeight: 400, overflowY: "auto", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "0 18px 44px var(--shadow-strong)", zIndex: 20, paddingBottom: 6 }}>
+                <div className="autocomplete-scroll" style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, maxHeight: 400, overflowY: "auto", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "0 18px 44px var(--shadow-strong)", zIndex: 20, paddingBottom: 6 }}>
                   <ResultsList />
                 </div>
               </>
@@ -355,7 +373,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
             {cityOpen && (
               <>
                 <div onClick={() => { setCityOpen(false); setCityQ(city.name) }} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
-                <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, minWidth: 250, maxHeight: 320, overflowY: "auto", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "0 16px 40px var(--shadow)", zIndex: 20 }}>
+                <div className="autocomplete-scroll" style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, minWidth: 250, maxHeight: 320, overflowY: "auto", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "0 16px 40px var(--shadow)", zIndex: 20 }}>
                   {cityOpts.map((c) => (
                     <div key={c.slug} onClick={() => { setCityOpen(false); setCityQ(""); goCity(c.slug) }} className="row-hover" style={{ padding: "11px 16px", fontSize: 14, cursor: "pointer", display: "flex", gap: 8, alignItems: "baseline", whiteSpace: "nowrap" }}>
                       <span style={{ fontWeight: c.slug === city.slug ? 800 : 500, color: c.slug === city.slug ? "var(--gold-dark)" : "var(--ink)" }}>{c.name}</span>
@@ -381,15 +399,23 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
             </div>
             {filtOpen && (
               <>
-                <div onClick={() => setFiltOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
-                <div style={{ position: "absolute", top: "calc(100% + 10px)", left: 0, width: 340, maxWidth: "82vw", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 14, boxShadow: "0 20px 50px var(--shadow-strong)", zIndex: 30, padding: "16px 18px" }}>
-                  <FilterPanel />
-                  <div style={{ display: "flex", gap: 9, alignItems: "center", borderTop: "1px solid var(--line-soft)", paddingTop: 12 }}>
+                {/* Off-canvas drawer: full viewport height, own scroll area and a
+                    footer always in view — no page scrolling to reach Appliquer. */}
+                <div onClick={() => setFiltOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(26,18,8,0.35)", backdropFilter: "blur(2px)" }} />
+                <aside className="filter-drawer" role="dialog" aria-label="Filtres et tri" style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: 370, maxWidth: "92vw", background: "var(--card)", borderLeft: "1px solid var(--line-2)", boxShadow: "-24px 0 60px var(--shadow-strong)", zIndex: 81, display: "flex", flexDirection: "column" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 18px", borderBottom: "1px solid var(--line-soft)", flex: "none" }}>
+                    <div className="serif" style={{ fontSize: 18, flex: 1 }}>Filtres & tri</div>
+                    <button onClick={() => setFiltOpen(false)} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink)", fontSize: 15, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                  </div>
+                  <div className="autocomplete-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 18px" }}>
+                    <FilterPanel />
+                  </div>
+                  <div style={{ display: "flex", gap: 9, alignItems: "center", borderTop: "1px solid var(--line-soft)", padding: "13px 18px", flex: "none", background: "var(--card)" }}>
                     <div onClick={clearDraft} style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 600, cursor: "pointer" }}>Tout effacer</div>
                     <div style={{ flex: 1 }} />
-                    <button onClick={applyFilters} className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 700, fontSize: 12.5, cursor: "pointer", whiteSpace: "nowrap" }}>Appliquer</button>
+                    <button onClick={applyFilters} className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 10, padding: "11px 22px", fontWeight: 800, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>Appliquer</button>
                   </div>
-                </div>
+                </aside>
               </>
             )}
           </div>
@@ -475,7 +501,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
       {/* ══════════ Mobile drawers ══════════ */}
       {drawer && (
         <div onClick={() => setDrawer(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 90 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "var(--card)", borderRadius: "22px 22px 0 0", zIndex: 95, padding: "10px 20px 26px", maxHeight: "82vh", overflowY: "auto", boxShadow: "0 -16px 50px rgba(0,0,0,0.4)" }}>
+          <div onClick={(e) => e.stopPropagation()} className="autocomplete-scroll" style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "var(--card)", borderRadius: "22px 22px 0 0", zIndex: 95, padding: "10px 20px 26px", maxHeight: "82vh", overflowY: "auto", boxShadow: "0 -16px 50px rgba(0,0,0,0.4)" }}>
             <div style={{ width: 38, height: 4, borderRadius: 99, background: "var(--line-strong)", margin: "8px auto 4px" }} />
 
             {drawer === "search" && (<>

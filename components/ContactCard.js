@@ -7,10 +7,32 @@ const field = {
 }
 
 export default function ContactCard() {
-  const [sent, setSent] = useState(false)
-  const [form, setForm] = useState({ name: "", email: "", msg: "" })
+  const [sent, setSent] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState("")
+  /* `website` is a honeypot: hidden from people, irresistible to bots. */
+  const [form, setForm] = useState({ name: "", email: "", msg: "", website: "" })
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
-  const submit = (e) => { e.preventDefault(); setSent(true) }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    setBusy(true)
+    setErr("")
+    try {
+      const r = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: form.name, email: form.email, message: form.msg, website: form.website }),
+      })
+      const d = await r.json().catch(() => ({}))
+      if (!r.ok) throw new Error(d?.message || "Envoi impossible — réessayez dans un instant.")
+      setSent(d)
+    } catch (e2) {
+      setErr(e2.message)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "22px 22px 24px" }}>
@@ -25,17 +47,40 @@ export default function ContactCard() {
       </div>
 
       {sent ? (
-        <div style={{ marginTop: 18, background: "rgba(62,142,117,0.1)", border: "1px solid rgba(62,142,117,0.35)", borderRadius: 12, padding: "20px 16px", textAlign: "center" }}>
+        <div style={{ marginTop: 18, background: "var(--green-soft)", border: "1px solid var(--green-soft)", borderRadius: 12, padding: "20px 16px", textAlign: "center" }}>
           <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", fontSize: 20, fontWeight: 800 }}>✓</div>
           <div style={{ fontWeight: 800, fontSize: 14, marginTop: 10, color: "var(--green)" }}>Message envoyé !</div>
-          <div style={{ fontSize: 12.5, color: "var(--muted-2)", marginTop: 5, lineHeight: 1.6 }}>Merci{form.name ? ` ${form.name.split(" ")[0]}` : ""}, nous vous recontactons très vite.</div>
+          <div style={{ fontSize: 12.5, color: "var(--muted-2)", marginTop: 5, lineHeight: 1.6 }}>
+            Merci{form.name ? ` ${form.name.split(" ")[0]}` : ""}, nous vous recontactons très vite.
+            {sent?.ref && (
+              <>
+                <br />
+                Votre référence : <b style={{ color: "var(--ink)" }}>{sent.ref}</b>
+              </>
+            )}
+          </div>
         </div>
       ) : (
         <form onSubmit={submit} style={{ marginTop: 16 }}>
           <input required placeholder="Votre nom" value={form.name} onChange={set("name")} style={field} />
           <input required type="email" placeholder="Votre e-mail" value={form.email} onChange={set("email")} style={field} />
-          <textarea required placeholder="Votre message…" value={form.msg} onChange={set("msg")} rows={3} style={{ ...field, resize: "vertical", minHeight: 76, fontFamily: "inherit" }} />
-          <button type="submit" className="btn-gold" style={{ width: "100%", marginTop: 12, border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, fontSize: 13.5, color: "var(--on-gold)" }}>Envoyer le message</button>
+          <textarea required minLength={10} placeholder="Votre message…" value={form.msg} onChange={set("msg")} rows={3} style={{ ...field, resize: "vertical", minHeight: 76, fontFamily: "inherit" }} />
+          <input
+            type="text"
+            name="website"
+            value={form.website}
+            onChange={set("website")}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            style={{ position: "absolute", left: -9999, width: 1, height: 1, opacity: 0 }}
+          />
+          {err && (
+            <div style={{ marginTop: 10, background: "var(--red-soft)", border: "1px solid var(--red-line)", borderRadius: 10, padding: "9px 11px", fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)" }}>
+              {err}
+            </div>
+          )}
+          <button type="submit" disabled={busy} className="btn-gold" style={{ width: "100%", marginTop: 12, border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, fontSize: 13.5, color: "var(--on-gold)", opacity: busy ? 0.6 : 1, cursor: busy ? "default" : "pointer" }}>{busy ? "Envoi…" : "Envoyer le message"}</button>
         </form>
       )}
 

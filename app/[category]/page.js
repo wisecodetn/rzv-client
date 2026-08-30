@@ -1,9 +1,11 @@
 import Link from "next/link"
+import Image from "next/image"
 import { notFound } from "next/navigation"
 import Photo from "@/components/Photo"
 import JsonLd from "@/components/JsonLd"
 import { breadcrumbLd } from "@/lib/jsonld"
 import { getIndexedCategories, getCategory, categoryParent, categoryCities } from "@/lib/data"
+import { mediaPath } from "@/lib/api"
 import { SITE } from "@/lib/site"
 
 export async function generateStaticParams() {
@@ -22,7 +24,9 @@ export async function generateMetadata({ params }) {
     title,
     description,
     alternates: { canonical: `/${cat.slug}` },
-    openGraph: { title: `${title} · ${SITE.name}`, description, url: `${SITE.url}/${cat.slug}` },
+    keywords: [`${cat.lower} Tunisie`, `salon ${cat.lower}`, ...cities.slice(0, 4).map((c) => `${cat.lower} ${c.name}`), "réservation en ligne"],
+    openGraph: { type: "website", locale: SITE.locale, siteName: SITE.name, title: `${title} · ${SITE.name}`, description, url: `${SITE.url}/${cat.slug}` },
+    twitter: { card: "summary_large_image", title: `${title} · ${SITE.name}`, description },
   }
 }
 
@@ -47,7 +51,19 @@ export default async function CategoryPage({ params }) {
             "@type": "CollectionPage",
             name: `${cat.name} en Tunisie`,
             url: `${SITE.url}/${cat.slug}`,
+            description: `${total} salons de ${cat.lower} dans ${cities.length} villes en Tunisie — prix, avis vérifiés et réservation en ligne.`,
             about: { "@type": "Service", name: cat.name },
+            ...(cities.find((c) => c.image) ? { image: cities.find((c) => c.image).image, primaryImageOfPage: { "@type": "ImageObject", contentUrl: cities.find((c) => c.image).image } } : {}),
+            mainEntity: {
+              "@type": "ItemList",
+              numberOfItems: cities.length,
+              itemListElement: cities.map((c, i) => ({
+                "@type": "ListItem",
+                position: i + 1,
+                name: `${cat.name} à ${c.name}`,
+                url: `${SITE.url}/${cat.slug}/${c.slug}`,
+              })),
+            },
           },
         ]}
       />
@@ -67,15 +83,27 @@ export default async function CategoryPage({ params }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16, marginTop: 24 }}>
         {cities.map((c) => (
-          <Link key={c.slug} href={`/${cat.slug}/${c.slug}`} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, overflow: "hidden", display: "block", color: "var(--ink)" }}>
-            <div style={{ height: 130, position: "relative" }}>
-              <Photo label={`${cat.name} à ${c.name}`} />
+          <Link key={c.slug} href={`/${cat.slug}/${c.slug}`} title={`${cat.name} à ${c.name} — ${c.count} salon${c.count > 1 ? "s" : ""}`} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, overflow: "hidden", display: "block", color: "var(--ink)" }}>
+            <div style={{ height: 130, position: "relative", overflow: "hidden" }}>
+              {c.image ? (
+                <Image
+                  src={mediaPath(c.image)}
+                  alt={`${cat.name} à ${c.name}`}
+                  title={`${cat.name} à ${c.name}`}
+                  fill
+                  // Cards are a 240px-min grid; phones show one per row.
+                  sizes="(max-width: 560px) 100vw, 320px"
+                  style={{ objectFit: "cover" }}
+                />
+              ) : (
+                <Photo label={`${cat.name} à ${c.name}`} />
+              )}
               <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56, background: "linear-gradient(transparent,rgba(26,18,8,0.55))", pointerEvents: "none" }} />
               <div className="serif" style={{ position: "absolute", left: 14, bottom: 10, fontSize: 19, color: "#FDF8EF", textShadow: "0 1px 10px rgba(26,18,8,0.6)" }}>{c.name}</div>
             </div>
             <div style={{ padding: "13px 16px", display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700 }}>{c.count} salons de {cat.lower}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 700 }}>{c.count} salon{c.count > 1 ? "s" : ""} de {cat.lower}</div>
                 <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>dès {c.from} TND · note moyenne ★ {c.rate}</div>
               </div>
               <div style={{ color: "var(--gold)", fontWeight: 800 }}>→</div>

@@ -10,6 +10,7 @@ const ICON = {
   rdv: "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
   favoris: "M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z",
   fid: "M12 2l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 20.2 6.8 18.1l1-5.8L3.5 8.2l5.9-.9z",
+  aide: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
 }
 const SECTIONS = [
   { href: "/compte", l: "Tableau de bord", icon: "dash" },
@@ -17,6 +18,7 @@ const SECTIONS = [
   { href: "/compte/rendez-vous", l: "Mes rendez-vous", icon: "rdv" },
   { href: "/compte/favoris", l: "Mes favoris", icon: "favoris" },
   { href: "/compte/abonnements", l: "Abonnements & fidélité", icon: "fid" },
+  { href: "/compte/aide", l: "Aide & support", icon: "aide" },
 ]
 
 export default function CompteLayout({ children }) {

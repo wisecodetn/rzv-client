@@ -1,11 +1,13 @@
 "use client"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useRef, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useCatalog } from "./CatalogProvider"
 
+const EMPTY = { cats: [], subs: [], estabs: [] }
+
 export default function SearchBar() {
   const router = useRouter()
-  const { categories, cities, allCategories } = useCatalog()
+  const { categories, cities } = useCatalog()
 
   const [q, setQ] = useState("")
   const [ville, setVille] = useState("")
@@ -14,33 +16,33 @@ export default function SearchBar() {
   const [selectedCat, setSelectedCat] = useState(null)   // slug chosen from dropdown, if any
   const [selectedCity, setSelectedCity] = useState(null) // slug chosen from dropdown, if any
 
-  // Establishments via a debounced API call (only when the field is open and the
-  // term is >3 chars); categories/prestations are filtered from the loaded catalog.
-  const [estabResults, setEstabResults] = useState([])
+  // Typed search hits the backend suggest index (categories / prestations /
+  // établissements, 4/8/5 budget). Debounced; per-session query cache avoids
+  // refetching keystrokes already answered; stale results stay visible while
+  // the next response arrives (no flicker).
+  const [searchResults, setSearchResults] = useState(EMPTY)
+  const suggestCache = useRef(new Map())
   useEffect(() => {
     const term = q.trim()
-    if (!qOpen || term.length <= 3) { setEstabResults([]); return }
+    if (!qOpen || !term) { setSearchResults(EMPTY); return }
+    const key = term.toLowerCase()
+    const hit = suggestCache.current.get(key)
+    if (hit) { setSearchResults(hit); return }
     let alive = true
     const t = setTimeout(() => {
       fetch(`/api/suggest?q=${encodeURIComponent(term)}`)
-        .then((r) => (r.ok ? r.json() : []))
-        .then((list) => { if (alive) setEstabResults(Array.isArray(list) ? list : []) })
-        .catch(() => { if (alive) setEstabResults([]) })
-    }, 220)
+        .then((r) => (r.ok ? r.json() : EMPTY))
+        .then((d) => {
+          if (!alive) return
+          const v = { cats: d.cats || [], subs: d.subs || [], estabs: d.estabs || [] }
+          suggestCache.current.set(key, v)
+          if (suggestCache.current.size > 100) suggestCache.current.delete(suggestCache.current.keys().next().value)
+          setSearchResults(v)
+        })
+        .catch(() => {})
+    }, 200)
     return () => { alive = false; clearTimeout(t) }
   }, [q, qOpen])
-
-  // ---- results for the "Que cherchez-vous ?" field ----
-  const searchResults = useMemo(() => {
-    const term = q.trim().toLowerCase()
-    if (!term) return { cats: [], subs: [], estabs: [] }
-    const nodes = allCategories.filter((n) => n.name.toLowerCase().includes(term))
-    return {
-      cats: nodes.filter((n) => n.isTop).slice(0, 4),
-      subs: nodes.filter((n) => !n.isTop).slice(0, 6),
-      estabs: estabResults,
-    }
-  }, [q, allCategories, estabResults])
 
   // ---- results for the "Où ?" field ----
   const cityOpts = useMemo(() => {
@@ -135,17 +137,23 @@ export default function SearchBar() {
           />
           {q ? <span onClick={clearQ} style={{ cursor: "pointer", color: "var(--muted)", fontSize: 15, lineHeight: 1 }}>×</span> : null}
         </div>
-        {qOpen && q.trim() && (
+        {qOpen && (
           <>
             <div onClick={() => setQOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
             <div className="autocomplete-scroll" style={dropdown}>
-              {!qHasResults ? (
+              {!q.trim() ? (
+                // On focus, before typing: the categories (already loaded with the site).
+                <>
+                  <div style={secLabel}>Catégories</div>
+                  {categories.map((c) => <Row key={c.slug} t="cat" label={c.name} sub="Catégorie" onClick={() => pickCategory(c)} />)}
+                </>
+              ) : !qHasResults ? (
                 <div style={{ padding: "14px", fontSize: 12.5, color: "var(--muted)" }}>Aucun résultat pour « {q.trim()} ».</div>
               ) : (
                 <>
                   {cats.length > 0 && <><div style={secLabel}>Catégories</div>{cats.map((c) => <Row key={c.slug} t="cat" label={c.name} sub="Catégorie" onClick={() => pickCategory(c)} />)}</>}
-                  {subs.length > 0 && <><div style={secLabel}>Prestations</div>{subs.map((n) => <Row key={n.slug} t="sub" label={n.name} onClick={() => pickCategory(n)} />)}</>}
-                  {estabs.length > 0 && <><div style={secLabel}>Établissements</div>{estabs.map((s) => <Row key={s.slug} t="est" label={s.name} sub={`${s.kind || "Salon"} · ${s.city || ""}`} onClick={() => pickEstab(s.slug)} />)}</>}
+                  {subs.length > 0 && <><div style={secLabel}>Prestations</div>{subs.map((n) => <Row key={n.slug} t="sub" label={n.name} sub={n.topName} onClick={() => pickCategory(n)} />)}</>}
+                  {estabs.length > 0 && <><div style={secLabel}>Établissements</div>{estabs.map((s) => <Row key={s.slug} t="est" label={s.name} sub={s.sub || "Salon"} onClick={() => pickEstab(s.slug)} />)}</>}
                 </>
               )}
             </div>

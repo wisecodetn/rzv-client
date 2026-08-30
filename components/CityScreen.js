@@ -2,6 +2,7 @@ import Link from "next/link"
 import JsonLd from "@/components/JsonLd"
 import CityView from "@/components/CityView"
 import { breadcrumbLd, itemListLd } from "@/lib/jsonld"
+import { SITE } from "@/lib/site"
 import { getCities, categoryParent, querySalons, PRICE_ROWS } from "@/lib/data"
 
 /* Server-rendered listing (used for both page 1 and /page-N). Provides the
@@ -27,6 +28,15 @@ export default async function CityScreen({ cat, ct, page = 1 }) {
             { name: cat.name, url: `/${cat.slug}` },
             { name: ct.name, url: base },
           ]),
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            name: `${cat.name} à ${ct.name}`,
+            url: `${SITE.url}${base}`,
+            description: `${q.total} salon${q.total > 1 ? "s" : ""} de ${cat.lower} à ${ct.name} — prix, avis vérifiés et réservation en ligne.`,
+            about: { "@type": "Service", name: cat.name, areaServed: { "@type": "City", name: ct.name } },
+            ...(ct.image ? { image: ct.image, primaryImageOfPage: { "@type": "ImageObject", contentUrl: ct.image } } : {}),
+          },
           q.items.length ? itemListLd(q.items) : null,
         ]}
       />

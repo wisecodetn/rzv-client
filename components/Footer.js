@@ -13,8 +13,12 @@ const Col = ({ title, children }) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>{children}</div>
   </div>
 )
+const textOf = (ch) => (Array.isArray(ch) ? ch.map(textOf).join("") : typeof ch === "string" || typeof ch === "number" ? String(ch) : "")
+/* prefetch={false}: the footer sits on every page and its ~25 links would each
+   be fully prefetched on scroll — ~100 RSC requests per page load for pages
+   visitors rarely open. Navigation still works, it just fetches on click. */
 const F = ({ href, children }) => (
-  <Link href={href} className="link-soft" style={{ fontSize: 13, color: "var(--muted)" }}>{children}</Link>
+  <Link href={href} prefetch={false} title={textOf(children).trim() || "Rezervy"} className="link-soft" style={{ fontSize: 13, color: "var(--muted)" }}>{children}</Link>
 )
 
 export default async function Footer() {
@@ -41,11 +45,12 @@ export default async function Footer() {
             {categories.map((c) => <F key={c.slug} href={`/${c.slug}`}>{c.name}</F>)}
           </Col>
           <Col title="Villes populaires">
-            {footCities.map((c) => <F key={c.slug} href={`/recherche?city=${c.slug}`}>Salons à {c.name}</F>)}
+            {footCities.map((c) => <F key={c.slug} href={`/recherche/${c.slug}`}>Salons à {c.name}</F>)}
           </Col>
           <Col title="Rezervy">
             <F href="/devenir-partenaire">Devenir partenaire</F>
             <F href="/qui-sommes-nous">Qui sommes-nous</F>
+            <F href="/blog">Blog</F>
             <F href="/carte-cadeau">Carte cadeau</F>
             <F href="/parrainage">Parrainage</F>
             <F href="/contact">Nous contacter</F>

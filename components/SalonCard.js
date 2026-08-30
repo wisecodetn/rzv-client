@@ -9,6 +9,7 @@ export default function SalonCard({ salon }) {
     <FavButton slug={salon.slug} variant="icon" size={36} />
     <Link
       href={`/salon/${salon.slug}`}
+      title={`${salon.name} — ${salon.kind}, ${salon.city}`}
       className="card-hover"
       style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, overflow: "hidden", display: "block", color: "var(--ink)" }}
     >

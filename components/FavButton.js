@@ -28,7 +28,7 @@ export default function FavButton({ slug, variant = "icon", size = 40 }) {
 
   if (variant === "button") {
     return (
-      <button onClick={handle} aria-pressed={on} className="lift" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: on ? "rgba(192,91,91,0.1)" : "var(--card)", border: `1px solid ${on ? "rgba(192,91,91,0.45)" : "var(--line-2)"}`, color: on ? "var(--red)" : "var(--ink)", borderRadius: 12, padding: "13px 20px", fontWeight: 800, fontSize: 14, cursor: "pointer", whiteSpace: "nowrap", flex: "none" }}>
+      <button onClick={handle} aria-pressed={on} className="lift" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: on ? "var(--red-soft)" : "var(--card)", border: `1px solid ${on ? "var(--red-soft)" : "var(--line-2)"}`, color: on ? "var(--red)" : "var(--ink)", borderRadius: 12, padding: "13px 20px", fontWeight: 800, fontSize: 14, cursor: "pointer", whiteSpace: "nowrap", flex: "none" }}>
         <Heart filled={on} />{on ? "Dans vos favoris" : "Ajouter aux favoris"}
       </button>
     )

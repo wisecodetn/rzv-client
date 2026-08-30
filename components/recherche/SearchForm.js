@@ -32,6 +32,11 @@ export default function SearchForm({ initial }) {
 
   const submit = (e) => {
     e.preventDefault()
+    // City-only search → the clean, indexable path /recherche/<ville>.
+    if (city && !q.trim() && !category && !Number(rate) && !dispo && sort === "note") {
+      router.push(`/recherche/${city}`)
+      return
+    }
     const p = new URLSearchParams()
     if (q.trim()) p.set("q", q.trim())
     if (city) p.set("city", city)
@@ -69,7 +74,9 @@ export default function SearchForm({ initial }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12, marginTop: 14 }}>
-        <label style={{ position: "relative" }}><span style={lab}>Ville</span>
+        {/* div, not <label>: a label re-focuses its input on any inner click, which
+            would reopen the dropdown right after the overlay/an option closes it */}
+        <div style={{ position: "relative" }}><span style={lab}>Ville</span>
           <div style={{ position: "relative" }}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}><path d="M12 21s-7-6.4-7-11a7 7 0 1 1 14 0c0 4.6-7 11-7 11z" /><circle cx="12" cy="10" r="2.4" /></svg>
             <input value={cityQ} onChange={(e) => { setCityQ(e.target.value); setCityOpen(true); if (!e.target.value.trim()) setCity("") }} onFocus={(e) => { setCityOpen(true); e.target.select() }} placeholder="Toutes les villes" style={{ ...sel, width: "100%", cursor: "text", paddingLeft: 32 }} />
@@ -89,7 +96,7 @@ export default function SearchForm({ initial }) {
               </div>
             </>
           )}
-        </label>
+        </div>
         <label><span style={lab}>Catégorie</span>
           <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ ...sel, width: "100%" }}>
             <option value="">Toutes les catégories</option>

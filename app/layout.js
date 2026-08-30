@@ -1,4 +1,5 @@
 import "./globals.css"
+import Script from "next/script"
 import { Marcellus, Manrope } from "next/font/google"
 import { SITE } from "@/lib/site"
 import Navbar from "@/components/Navbar"
@@ -7,6 +8,7 @@ import JsonLd from "@/components/JsonLd"
 import { AuthProvider } from "@/components/AuthProvider"
 import { FavoritesProvider } from "@/components/FavoritesProvider"
 import { CatalogProvider } from "@/components/CatalogProvider"
+import A11ySweeper from "@/components/A11ySweeper"
 import { getCatalog } from "@/lib/data"
 import { organizationLd, websiteLd } from "@/lib/jsonld"
 
@@ -52,8 +54,12 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="fr" data-theme="light" suppressHydrationWarning className={`${serif.variable} ${sans.variable}`}>
       <body>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* Applies the stored theme before hydration so there's no flash of the
+            wrong palette. A raw <script> isn't executed on client navigation —
+            next/script + beforeInteractive is the supported way to inline it. */}
+        <Script id="rzv-theme" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <JsonLd data={[organizationLd(), websiteLd()]} />
+        <A11ySweeper />
         <CatalogProvider value={catalogValue}>
           <AuthProvider>
             <FavoritesProvider>

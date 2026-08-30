@@ -1,5 +1,6 @@
 import { SITE } from "@/lib/site"
 import { getIndexedCategories, getCities, querySalons, salonSlugs } from "@/lib/data"
+import { getPosts } from "@/lib/blog"
 
 export default async function sitemap() {
   const now = new Date()
@@ -25,6 +26,22 @@ export default async function sitemap() {
 
   for (const slug of slugs) {
     entries.push({ url: url(`/salon/${slug}`), lastModified: now, changeFrequency: "weekly", priority: 0.9 })
+  }
+
+  entries.push({ url: url("/blog"), lastModified: now, changeFrequency: "weekly", priority: 0.6 })
+  for (const p of await getPosts()) {
+    entries.push({ url: url(`/blog/${p.slug}`), lastModified: new Date(p.date), changeFrequency: "monthly", priority: 0.5 })
+  }
+
+  // City search pages (/recherche/<ville>) for cities that have salons.
+  const cityCount = {}
+  for (const s of all.mapItems) if (s.citySlug) cityCount[s.citySlug] = (cityCount[s.citySlug] || 0) + 1
+  for (const [slug, count] of Object.entries(cityCount)) {
+    entries.push({ url: url(`/recherche/${slug}`), lastModified: now, changeFrequency: "weekly", priority: 0.7 })
+    const totalPages = Math.max(1, Math.ceil(count / all.pageSize))
+    for (let p = 2; p <= totalPages; p++) {
+      entries.push({ url: url(`/recherche/${slug}/page-${p}`), lastModified: now, changeFrequency: "weekly", priority: 0.5 })
+    }
   }
 
   return entries

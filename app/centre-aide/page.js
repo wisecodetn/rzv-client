@@ -1,7 +1,7 @@
 import Link from "next/link"
 import PageShell from "@/components/PageShell"
 import FaqAccordion from "@/components/FaqAccordion"
-import { FAQS } from "@/lib/data"
+import { getSiteContent } from "@/lib/site-content"
 
 export const metadata = {
   title: "Centre d'aide",
@@ -16,7 +16,8 @@ const TOPICS = [
   { t: "Fidélité & abonnements", d: "Points, parrainage et forfaits.", icon: "M12 2l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 20.2 6.8 18.1l1-5.8L3.5 8.2l5.9-.9z" },
 ]
 
-export default function CentreAide() {
+export default async function CentreAide() {
+  const { faqs: FAQS } = await getSiteContent()
   return (
     <PageShell
       title="Centre d'aide"

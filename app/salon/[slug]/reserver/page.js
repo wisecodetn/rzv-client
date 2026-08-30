@@ -17,10 +17,20 @@ export default async function ReserverPage({ params, searchParams }) {
   const sp = (await searchParams) || {}
   const s = await getSalon(slug)
   if (!s) notFound()
-  const svc = sp.svc != null ? Number(sp.svc) : null
+  // The salon page links `?svc=<service id>`. This used to read it as a
+  // Number — an index into the flattened service list — so a real id parsed to
+  // NaN and nothing was ever preselected.
+  const svc = sp.svc != null ? String(sp.svc) : null
   return (
-    <div style={{ maxWidth: 760, margin: "0 auto", padding: "36px 24px 60px" }}>
-      <BookingFlow salon={s} preselect={Number.isFinite(svc) ? svc : null} />
+    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 24px 60px" }}>
+      <BookingFlow
+        salon={s}
+        preselect={svc || null}
+        confirmOnArrival={sp.confirm === "1" || sp.paycancel === "1"}
+        paidSessionId={sp.paid === "1" && sp.session_id ? String(sp.session_id) : null}
+        cancelSessionId={sp.paycancel === "1" && sp.session_id ? String(sp.session_id) : null}
+        reschedId={sp.resched ? String(sp.resched) : null}
+      />
     </div>
   )
 }

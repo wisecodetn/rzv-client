@@ -19,7 +19,9 @@ export async function generateMetadata({ params }) {
     title,
     description,
     alternates: { canonical: `/${cat.slug}/${ct.slug}` },
-    openGraph: { title: `${title} · ${SITE.name}`, description, url: `${SITE.url}/${cat.slug}/${ct.slug}` },
+    keywords: [`${cat.lower} ${ct.name}`, `salon ${cat.lower} ${ct.name}`, `réserver ${cat.lower} ${ct.name}`, "réservation en ligne"],
+    openGraph: { type: "website", locale: SITE.locale, siteName: SITE.name, title: `${title} · ${SITE.name}`, description, url: `${SITE.url}/${cat.slug}/${ct.slug}` },
+    twitter: { card: "summary_large_image", title: `${title} · ${SITE.name}`, description },
   }
 }
 

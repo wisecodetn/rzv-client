@@ -17,11 +17,24 @@ export default function RegisterForm() {
   const [err, setErr] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const run = async (fn) => { setErr(""); setLoading(true); try { await fn(); router.push("/compte") } catch (e) { setErr(e.message); setLoading(false) } }
-  const submit = (e) => {
+  // `next` survives the whole signup chain (register → e-mail verification) so a
+  // flow like a pending booking isn't lost. Read via location to avoid Suspense.
+  const nextParam = () => {
+    try { return new URLSearchParams(window.location.search).get("next") || "/compte" } catch { return "/compte" }
+  }
+  const run = async (fn) => { setErr(""); setLoading(true); try { await fn(); router.push(nextParam()) } catch (e) { setErr(e.message); setLoading(false) } }
+  const submit = async (e) => {
     e.preventDefault()
     if (!accept) { setErr("Veuillez accepter les conditions d'utilisation."); return }
-    run(() => register({ name, email, phone, password: pw }))
+    setErr(""); setLoading(true)
+    try {
+      // Account is created unverified — confirm the emailed code to activate it.
+      const r = await register({ name, email, phone, password: pw })
+      router.push(`/verifier-email?email=${encodeURIComponent(r?.email || email.trim().toLowerCase())}&next=${encodeURIComponent(nextParam())}`)
+    } catch (ex) {
+      setErr(ex.message)
+      setLoading(false)
+    }
   }
   if (redirecting) return null
 

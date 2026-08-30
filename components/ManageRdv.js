@@ -26,7 +26,7 @@ export default function ManageRdv({ code = "RZV-4821" }) {
           <>
             <div style={{ display: "flex", gap: 9, marginTop: 16, flexWrap: "wrap" }}>
               <button onClick={() => { setState("res"); setPick(null) }} className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 11, padding: "11px 18px", fontWeight: 800, fontSize: 12.5, flex: "none" }}>Reprogrammer</button>
-              <button onClick={() => setState("cancelled")} style={{ background: "transparent", border: "1px solid rgba(192,91,91,0.5)", color: "var(--red)", borderRadius: 11, padding: "11px 18px", fontWeight: 700, fontSize: 12.5, flex: "none" }}>Annuler le rendez-vous</button>
+              <button onClick={() => setState("cancelled")} style={{ background: "transparent", border: "1px solid var(--red-soft)", color: "var(--red)", borderRadius: 11, padding: "11px 18px", fontWeight: 700, fontSize: 12.5, flex: "none" }}>Annuler le rendez-vous</button>
             </div>
             <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 12 }}>Annulation gratuite jusqu'à 24h avant — au-delà, l'acompte est conservé par le salon.</div>
           </>
@@ -52,10 +52,10 @@ export default function ManageRdv({ code = "RZV-4821" }) {
       )}
 
       {state === "done" && (
-        <div style={{ background: "rgba(62,142,117,0.08)", border: "1px solid rgba(62,142,117,0.3)", borderRadius: 14, padding: "14px 18px", marginTop: 14, fontSize: 13, color: "var(--green)", fontWeight: 700 }}>✓ Rendez-vous reprogrammé — confirmation SMS envoyée.</div>
+        <div style={{ background: "var(--green-soft)", border: "1px solid var(--green-soft)", borderRadius: 14, padding: "14px 18px", marginTop: 14, fontSize: 13, color: "var(--green)", fontWeight: 700 }}>✓ Rendez-vous reprogrammé — confirmation SMS envoyée.</div>
       )}
       {state === "cancelled" && (
-        <div style={{ background: "rgba(192,91,91,0.07)", border: "1px solid rgba(192,91,91,0.3)", borderRadius: 14, padding: "14px 18px", marginTop: 14, fontSize: 13, color: "var(--red)", fontWeight: 700 }}>Rendez-vous annulé. Votre acompte de 18 TND sera remboursé sous 3 jours ouvrés.</div>
+        <div style={{ background: "rgba(192,91,91,0.07)", border: "1px solid var(--red-soft)", borderRadius: 14, padding: "14px 18px", marginTop: 14, fontSize: 13, color: "var(--red)", fontWeight: 700 }}>Rendez-vous annulé. Votre acompte de 18 TND sera remboursé sous 3 jours ouvrés.</div>
       )}
     </div>
   )

@@ -6,7 +6,10 @@ import FaqAccordion from "@/components/FaqAccordion"
 import ContactCard from "@/components/ContactCard"
 import JsonLd from "@/components/JsonLd"
 import { faqLd } from "@/lib/jsonld"
-import { getFeaturedSalons, getCategories, getCities, HOW_STEPS, POP_SVCS, TESTIMONIALS, FAQS, STATS } from "@/lib/data"
+import { getFeaturedSalons, getCategories, getCatalog, categoryCities, HOW_STEPS, TESTIMONIALS } from "@/lib/data"
+import { getSiteContent } from "@/lib/site-content"
+import { getPosts, catLabel, formatDate } from "@/lib/blog"
+import PostCover from "@/components/blog/PostCover"
 
 export const metadata = {
   alternates: { canonical: "/" },
@@ -20,7 +23,18 @@ const H2 = ({ children, sub }) => (
 )
 
 export default async function Home() {
-  const [nearby, categories, cities] = await Promise.all([getFeaturedSalons(4), getCategories(), getCities()])
+  const [nearby, categories, catalog] = await Promise.all([getFeaturedSalons(4), getCategories(), getCatalog()])
+  const topCats = categories.slice(0, 4)
+  // Cities that actually have a salon offering each category (max 10 each).
+  const catCities = await Promise.all(topCats.map((c) => categoryCities(c.slug)))
+  const latestPosts = (await getPosts()).slice(0, 3)
+  const { hero, stats: STATS, faqs: FAQS } = await getSiteContent()
+  // Popular prestations: real sub-categories (2 per top category), each routable
+  // at /<slug> like any category.
+  const popular = categories
+    .flatMap((c) => (catalog.nodeBySlug[c.slug]?.childrenSlugs || []).slice(0, 2).map((s) => catalog.nodeBySlug[s]))
+    .filter(Boolean)
+    .slice(0, 8)
   return (
     <>
       <JsonLd data={faqLd(FAQS)} />
@@ -33,13 +47,13 @@ export default async function Home() {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(100deg,rgba(26,18,8,0.92) 0%,rgba(26,18,8,0.72) 46%,rgba(26,18,8,0.28) 78%,rgba(26,18,8,0.08) 100%)", pointerEvents: "none" }} />
         <div className="wrap" style={{ position: "relative", padding: "76px 24px 64px", pointerEvents: "none" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(253,248,239,0.14)", backdropFilter: "blur(6px)", border: "1px solid rgba(253,248,239,0.25)", borderRadius: 999, padding: "6px 14px", fontSize: 11.5, fontWeight: 700, color: "#F0E4CE", letterSpacing: "0.04em" }}>
-            ★ 4,8 / 5 · 65 000 rendez-vous chaque mois
+            {hero.badge}
           </div>
           <h1 className="serif" style={{ fontSize: 46, lineHeight: 1.12, maxWidth: 580, color: "#FDF8EF", marginTop: 16, marginBottom: 0, textShadow: "0 2px 24px rgba(26,18,8,0.4)", fontWeight: 400 }}>
-            Réservez votre moment beauté, partout en Tunisie
+            {hero.title}
           </h1>
           <p style={{ color: "rgba(253,248,239,0.9)", fontSize: 15, marginTop: 12, maxWidth: 460, lineHeight: 1.6, textShadow: "0 1px 12px rgba(26,18,8,0.55)" }}>
-            Coiffure, barbier, onglerie, spa — réservation en ligne 24h/24, confirmation par SMS.
+            {hero.subtitle}
           </p>
           <SearchBar />
           <div style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap", pointerEvents: "auto" }}>
@@ -89,17 +103,17 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SERVICES POPULAIRES */}
+      {/* PRESTATIONS POPULAIRES */}
       <section className="wrap" style={{ padding: "44px 24px 8px" }}>
-        <H2 sub="prix moyens constatés en Tunisie">Services populaires</H2>
+        <H2 sub="réservez directement la prestation qu'il vous faut">Prestations populaires</H2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 12, marginTop: 16 }}>
-          {POP_SVCS.map((p) => (
-            <Link key={p.n} href={`/${p.cat}`} className="lift" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "15px 17px", display: "flex", alignItems: "center", gap: 12, color: "var(--ink)" }}>
+          {popular.map((s) => (
+            <Link key={s.slug} href={`/${s.slug}`} className="lift" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "15px 17px", display: "flex", alignItems: "center", gap: 12, color: "var(--ink)" }}>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontWeight: 800, fontSize: 13.5 }}>{p.n}</div>
-                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{p.c}</div>
+                <div style={{ fontWeight: 800, fontSize: 13.5 }}>{s.name}</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{catalog.nodeBySlug[s.top]?.name}</div>
               </div>
-              <div style={{ fontSize: 12, color: "var(--muted)", whiteSpace: "nowrap" }}>dès <span style={{ fontWeight: 800, color: "var(--ink)" }}>{p.p} TND</span></div>
+              <div style={{ color: "var(--gold)", fontWeight: 800 }}>→</div>
             </Link>
           ))}
         </div>
@@ -109,21 +123,25 @@ export default async function Home() {
       <section className="wrap" style={{ padding: "40px 24px 8px" }}>
         <H2 sub="coiffure, barbier, onglerie & spa partout en Tunisie">Rezervy dans votre ville</H2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: "24px 20px", marginTop: 18 }}>
-          {categories.slice(0, 4).map((cat) => (
-            <div key={cat.slug}>
-              <Link href={`/${cat.slug}`} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 14, color: "var(--ink)" }}>
-                <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(169,124,72,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{cat.name[0]}</span>
-                {cat.name}
-              </Link>
-              <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 11 }}>
-                {cities.map((c) => (
-                  <Link key={c.slug} href={`/${cat.slug}/${c.slug}`} className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", padding: "3px 0" }}>
-                    {cat.name} à {c.name}
-                  </Link>
-                ))}
+          {topCats.map((cat, i) => {
+            const cityList = catCities[i].slice(0, 10)
+            if (!cityList.length) return null
+            return (
+              <div key={cat.slug}>
+                <Link href={`/${cat.slug}`} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 14, color: "var(--ink)" }}>
+                  <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(169,124,72,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{cat.name[0]}</span>
+                  {cat.name}
+                </Link>
+                <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 11 }}>
+                  {cityList.map((c) => (
+                    <Link key={c.slug} href={`/${cat.slug}/${c.slug}`} className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", padding: "3px 0" }}>
+                      {cat.name} à {c.name}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
@@ -140,6 +158,29 @@ export default async function Home() {
                 <div><div style={{ fontWeight: 800, fontSize: 12.5 }}>{t.n}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>{t.city}</div></div>
               </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      {/* DERNIERS ARTICLES */}
+      <section className="wrap" style={{ padding: "40px 24px 8px" }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+          <div className="serif" style={{ fontSize: 22 }}>Nos derniers articles</div>
+          <div style={{ fontSize: 12.5, color: "var(--muted)" }}>conseils beauté & bien-être</div>
+          <div style={{ flex: 1 }} />
+          <Link href="/blog" className="link-soft" style={{ fontSize: 13, fontWeight: 700, color: "var(--gold-dark)" }}>Voir tout le blog →</Link>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 18, marginTop: 16 }}>
+          {latestPosts.map((p) => (
+            <Link key={p.slug} href={`/blog/${p.slug}`} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", display: "block", color: "var(--ink)" }}>
+              <div style={{ height: 150, position: "relative" }}><PostCover post={p} sizes="(max-width: 780px) 100vw, 300px" /></div>
+              <div style={{ padding: "14px 16px" }}>
+                <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--gold-dark)", textTransform: "uppercase", letterSpacing: "0.03em" }}>{catLabel(p)}</span>
+                <div className="serif" style={{ fontSize: 16.5, marginTop: 7, lineHeight: 1.3 }}>{p.title}</div>
+                <p style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 7 }}>{p.excerpt}</p>
+                <div style={{ fontSize: 11.5, color: "var(--faint)", marginTop: 10 }}>{formatDate(p.date)} · {p.readMins} min</div>
+              </div>
+            </Link>
           ))}
         </div>
       </section>

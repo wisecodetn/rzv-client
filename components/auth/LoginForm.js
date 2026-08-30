@@ -16,7 +16,14 @@ export default function LoginForm() {
   const [err, setErr] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const run = async (fn) => { setErr(""); setLoading(true); try { await fn(); router.push(next) } catch (e) { setErr(e.message); setLoading(false) } }
+  const run = async (fn) => {
+    setErr(""); setLoading(true)
+    try { await fn(); router.push(next) } catch (e) {
+      // Correct credentials, e-mail not yet confirmed → the API re-sent a code.
+      if (e.code === "auth/unverified") { router.push(`/verifier-email?email=${encodeURIComponent(email.trim().toLowerCase())}&next=${encodeURIComponent(next)}`); return }
+      setErr(e.message); setLoading(false)
+    }
+  }
   const submit = (e) => { e.preventDefault(); run(() => login({ email, password: pw })) }
   if (redirecting) return null
 
@@ -24,7 +31,7 @@ export default function LoginForm() {
     <AuthLayout
       title="Bon retour"
       subtitle="Connectez-vous pour gérer vos rendez-vous et votre fidélité."
-      footer={<>Pas encore de compte ? <Link href="/inscription" style={linkStyle}>Créer un compte</Link></>}
+      footer={<>Pas encore de compte ? <Link href={next !== "/compte" ? `/inscription?next=${encodeURIComponent(next)}` : "/inscription"} style={linkStyle}>Créer un compte</Link></>}
     >
       <GoogleButton onClick={() => run(googleAuth)} loading={loading} />
       <Divider>ou</Divider>

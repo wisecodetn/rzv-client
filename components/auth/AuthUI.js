@@ -31,21 +31,42 @@ export function AuthLayout({ title, subtitle, children, footer }) {
   )
 }
 
+/* Alerts — soft tinted card, icon in a filled chip, neutral text (color lives
+   on the chip only), gentle slide-in. */
+const alertBox = (tint, line) => ({
+  display: "flex", gap: 11, alignItems: "flex-start",
+  background: tint, border: `1px solid ${line}`, borderRadius: 14, padding: "12px 13px",
+  fontSize: 12.5, lineHeight: 1.55, color: "var(--muted-2)", fontWeight: 600,
+  marginBottom: 14,
+})
+/* The chip carries the colour; the text stays neutral so a long message never
+   turns into a wall of green. A hairline gives the card an edge against the
+   white panel it sits on — a tint alone was washing out. */
+const alertChip = (bg) => ({
+  width: 26, height: 26, borderRadius: 8, background: bg, color: "var(--card)",
+  display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none",
+  marginTop: 1,
+})
+
 export function ErrorMsg({ children }) {
   if (!children) return null
   return (
-    <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "rgba(192,91,91,0.1)", border: "1px solid rgba(192,91,91,0.35)", borderRadius: 12, padding: "10px 12px", fontSize: 12.5, color: "var(--red)", fontWeight: 600, marginBottom: 14 }}>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flex: "none", marginTop: 1 }}><circle cx="12" cy="12" r="10" /><path d="M12 8v5 M12 16h.01" /></svg>
-      <span>{children}</span>
+    <div className="auth-alert" role="alert" style={alertBox("var(--red-soft)", "var(--red-line)")}>
+      <span style={alertChip("var(--red)")}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M12 7v6 M12 16.8h.01" /></svg>
+      </span>
+      <span style={{ minWidth: 0 }}>{children}</span>
     </div>
   )
 }
 
 export function SuccessMsg({ children }) {
   return (
-    <div style={{ display: "flex", gap: 8, alignItems: "flex-start", background: "rgba(62,142,117,0.1)", border: "1px solid rgba(62,142,117,0.35)", borderRadius: 12, padding: "12px 13px", fontSize: 12.5, color: "var(--green)", fontWeight: 600 }}>
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none", marginTop: 1 }}><path d="M20 6 9 17l-5-5" /></svg>
-      <span>{children}</span>
+    <div className="auth-alert" role="status" style={alertBox("var(--green-soft)", "var(--green-line)")}>
+      <span style={alertChip("var(--green)")}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+      </span>
+      <span style={{ minWidth: 0 }}>{children}</span>
     </div>
   )
 }

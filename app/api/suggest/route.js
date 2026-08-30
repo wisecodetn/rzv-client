@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server"
-import { suggestSalons } from "@/lib/data"
+import { suggestSearch } from "@/lib/data"
 
-/** BFF: establishment autocomplete suggestions (same-origin, no CORS). Returns a
- *  small light list only for queries >3 chars; categories are filtered client-side. */
+/** BFF: search autocomplete (same-origin, no CORS). Proxies the API's indexed
+ *  suggest — categories / sub-categories / establishments, 4/8/5 budget (17 max).
+ *  s-maxage lets a CDN/proxy absorb repeated keystrokes across users. */
 export async function GET(request) {
   const q = request.nextUrl.searchParams.get("q") || ""
-  return NextResponse.json(await suggestSalons(q))
+  const data = await suggestSearch(q)
+  return NextResponse.json(data, {
+    headers: { "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=300" },
+  })
 }
