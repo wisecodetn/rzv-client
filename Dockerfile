@@ -11,6 +11,17 @@ RUN corepack enable && \
 
 FROM node:20-alpine AS builder
 WORKDIR /app
+# NEXT_PUBLIC_* are inlined into the browser bundle at BUILD time. Setting them
+# in the server's .env changes nothing — without them the Google button is
+# hidden and any browser-side API call falls back to localhost.
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_MEDIA_URL
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL     NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL     NEXT_PUBLIC_MEDIA_URL=$NEXT_PUBLIC_MEDIA_URL     NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+# Server-side fetches during the build (generateStaticParams, sitemap) need this.
+ARG API_URL
+ENV API_URL=$API_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN corepack enable && \

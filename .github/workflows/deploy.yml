@@ -35,6 +35,12 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:latest
             ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=https://rzv-api.wisecode.tn
+            NEXT_PUBLIC_SITE_URL=https://rzv.wisecode.tn
+            NEXT_PUBLIC_MEDIA_URL=https://rzv-api.wisecode.tn
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=233914225183-46adol2bpqjqcq84af1h9qr8vjpa39r5.apps.googleusercontent.com
+            API_URL=https://rzv-api.wisecode.tn
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
