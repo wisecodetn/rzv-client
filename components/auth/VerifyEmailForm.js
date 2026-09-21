@@ -41,8 +41,11 @@ export default function VerifyEmailForm() {
     if (!/^\d{6}$/.test(code.trim())) { setErr("Entrez le code à 6 chiffres reçu par e-mail."); return }
     setLoading(true)
     try {
-      await verifyEmail({ email: em, code: code.trim() })
-      router.push(sp.get("next") || "/compte")
+      const u = await verifyEmail({ email: em, code: code.trim() })
+      const dest = sp.get("next") || "/compte"
+      // Registration now always collects a number, but an account created
+      // before that rule can still be verifying today.
+      router.push(u?.needsPhone ? `/telephone?next=${encodeURIComponent(dest)}` : dest)
     } catch (ex) {
       setErr(ex.message || "Code invalide ou expiré.")
     } finally {

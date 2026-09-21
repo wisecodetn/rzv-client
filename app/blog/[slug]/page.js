@@ -23,7 +23,7 @@ export async function generateMetadata({ params }) {
   }
 }
 
-const chip = { fontSize: 11, fontWeight: 800, color: "var(--gold-dark)", background: "rgba(169,124,72,0.12)", borderRadius: 999, padding: "4px 10px", letterSpacing: "0.03em", textTransform: "uppercase" }
+const chip = { fontSize: 11, fontWeight: 800, color: "var(--gold-dark)", background: "rgba(124,77,255,0.12)", borderRadius: 999, padding: "4px 10px", letterSpacing: "0.03em", textTransform: "uppercase" }
 
 export default async function BlogPost({ params }) {
   const { slug } = await params
@@ -93,10 +93,10 @@ export default async function BlogPost({ params }) {
       />
 
       {/* Book CTA */}
-      <div style={{ background: "linear-gradient(140deg,#3A2B1A,#6B4E2E)", borderRadius: 18, padding: "24px 26px", marginTop: 32, display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+      <div style={{ background: "linear-gradient(140deg,#5E35B1,#7C4DFF)", borderRadius: 18, padding: "24px 26px", marginTop: 32, display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
         <div style={{ minWidth: 220, flex: 1 }}>
-          <div className="serif" style={{ fontSize: 20, color: "#F8F0E2" }}>Envie de passer à l'action ?</div>
-          <div style={{ fontSize: 13, color: "#D9BE97", marginTop: 6 }}>Réservez un salon de {catLabel(p).toLowerCase()} près de chez vous, en ligne et en 30 secondes.</div>
+          <div className="serif" style={{ fontSize: 20, color: "#FFFFFF" }}>Envie de passer à l'action ?</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", marginTop: 6 }}>Réservez un salon de {catLabel(p).toLowerCase()} près de chez vous, en ligne et en 30 secondes.</div>
         </div>
         <Link href={catHref(p)} className="btn-gold" style={{ background: "var(--gold-light)", color: "#2A1A08", borderRadius: 12, padding: "13px 22px", fontWeight: 800, fontSize: 13.5, whiteSpace: "nowrap" }}>Voir les salons</Link>
       </div>

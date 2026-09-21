@@ -11,7 +11,7 @@ export const metadata = {
   openGraph: { title: `Le blog beauté · ${SITE.name}`, description: "Conseils coiffure, barbier, onglerie et spa en Tunisie.", url: `${SITE.url}/blog` },
 }
 
-const chip = { fontSize: 11, fontWeight: 800, color: "var(--gold-dark)", background: "rgba(169,124,72,0.12)", borderRadius: 999, padding: "4px 10px", letterSpacing: "0.03em", textTransform: "uppercase" }
+const chip = { fontSize: 11, fontWeight: 800, color: "var(--gold-dark)", background: "rgba(124,77,255,0.12)", borderRadius: 999, padding: "4px 10px", letterSpacing: "0.03em", textTransform: "uppercase" }
 
 export default async function BlogPage() {
   const posts = await getPosts()

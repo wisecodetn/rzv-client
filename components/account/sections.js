@@ -10,7 +10,7 @@ const H = ({ children }) => <div className="serif" style={{ fontSize: 21, margin
 
 /* ── Booking display helpers ─────────────────────────────────────── */
 const STATUS = {
-  pending: { l: "En attente", c: "var(--amber)", bg: "rgba(201,162,39,0.13)" },
+  pending: { l: "En attente", c: "var(--gold-dark)", bg: "rgba(124,77,255,0.13)" },
   confirmed: { l: "Confirmé", c: "var(--green)", bg: "var(--green-soft)" },
   completed: { l: "Terminé", c: "var(--muted)", bg: "rgba(42,36,28,0.08)" },
   cancelled: { l: "Annulé", c: "var(--red)", bg: "var(--red-soft)" },
@@ -25,8 +25,8 @@ const durLabel = (min) => (min >= 60 ? `${Math.floor(min / 60)}h${min % 60 ? Str
 
 /** Payment recap line — mirrors the /rdv detail view ("acompte payé : …"). */
 const payInfo = (b) => {
-  if (b.payment === "deposit") return { c: "var(--green)", t: `✓ Acompte payé par carte : ${b.depositTnd} TND — solde de ${b.amountTnd - b.depositTnd} TND à régler au salon` }
-  if (b.payment === "paid") return { c: "var(--green)", t: `✓ Payé en ligne : ${b.amountTnd} TND` }
+  if (b.payment === "deposit") return { c: "var(--gold-dark)", t: `✓ Acompte payé par carte : ${b.depositTnd} TND — solde de ${b.amountTnd - b.depositTnd} TND à régler au salon` }
+  if (b.payment === "paid") return { c: "var(--gold-dark)", t: `✓ Payé en ligne : ${b.amountTnd} TND` }
   if (b.payment === "refund") return { c: "var(--muted)", t: `Acompte de ${b.depositTnd} TND — remboursement sous 3 jours ouvrés` }
   return { c: "var(--muted)", t: `Paiement sur place — total de ${b.amountTnd} TND` }
 }
@@ -53,7 +53,7 @@ const Empty = ({ title, sub, cta, href }) => (
   <Card style={{ textAlign: "center", padding: "40px 20px" }}>
     <div style={{ fontWeight: 800, color: "var(--muted)" }}>{title}</div>
     {sub && <div style={{ fontSize: 12.5, color: "var(--faint)", marginTop: 6 }}>{sub}</div>}
-    {cta && <Link href={href} className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>{cta}</Link>}
+    {cta && <Link href={href} className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>{cta}</Link>}
   </Card>
 )
 
@@ -76,25 +76,25 @@ export function Dashboard() {
       <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>Voici un aperçu de votre compte Rezervy.</div>
 
       {next ? (
-        <div style={{ background: "linear-gradient(135deg,#3A2B1A,#6B4E2E)", borderRadius: 18, padding: 20, color: "#F8F0E2", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "linear-gradient(135deg,#5E35B1,#7C4DFF)", borderRadius: 18, padding: 20, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ width: 58, textAlign: "center", background: "rgba(255,255,255,0.12)", borderRadius: 12, padding: "9px 0", flex: "none" }}>
-            <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "#D9BE97" }}>{dMo(next.startAt)}</div>
+            <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "rgba(255,255,255,0.9)" }}>{dMo(next.startAt)}</div>
             <div style={{ fontSize: 21, fontWeight: 800 }}>{dDd(next.startAt)}</div>
           </div>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#D9BE97" }}>Prochain rendez-vous</div>
+            <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(255,255,255,0.9)" }}>Prochain rendez-vous</div>
             <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{next.service}</div>
-            <div style={{ fontSize: 12.5, color: "#E7D9C2", marginTop: 2 }}>{dTime(next.startAt)} · {next.salon?.name}{next.salon?.city ? `, ${next.salon.city}` : ""}</div>
+            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>{dTime(next.startAt)} · {next.salon?.name}{next.salon?.city ? `, ${next.salon.city}` : ""}</div>
           </div>
-          <Link href="/compte/rendez-vous" style={{ background: "var(--gold-light)", color: "#2A1A08", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Gérer</Link>
+          <Link href="/compte/rendez-vous" style={{ background: "#FFFFFF", color: "#7C4DFF", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Gérer</Link>
         </div>
       ) : (
-        <div style={{ background: "linear-gradient(135deg,#3A2B1A,#6B4E2E)", borderRadius: 18, padding: 22, color: "#F8F0E2", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "linear-gradient(135deg,#5E35B1,#7C4DFF)", borderRadius: 18, padding: 22, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15 }}>Aucun rendez-vous à venir</div>
-            <div style={{ fontSize: 12.5, color: "#D9BE97", marginTop: 4 }}>Trouvez votre salon et réservez en 30 secondes.</div>
+            <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.9)", marginTop: 4 }}>Trouvez votre salon et réservez en 30 secondes.</div>
           </div>
-          <Link href="/recherche" style={{ background: "var(--gold-light)", color: "#2A1A08", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Réserver</Link>
+          <Link href="/recherche" style={{ background: "#FFFFFF", color: "#7C4DFF", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Réserver</Link>
         </div>
       )}
 
@@ -108,8 +108,8 @@ export function Dashboard() {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
-        <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Réserver un nouveau rendez-vous</Link>
-        <Link href="/compte/favoris" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Voir mes favoris</Link>
+        <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "#FFFFFF", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Réserver un nouveau rendez-vous</Link>
+        <Link href="/compte/favoris" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Voir mes favoris</Link>
       </div>
     </>
   )
@@ -149,7 +149,7 @@ export function Profil() {
           </div>
           <label style={{ display: "block", marginTop: 14 }}><span style={label}>E-mail</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inp} /></label>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
-            <button type="submit" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 11, padding: "11px 22px", fontWeight: 800, fontSize: 13 }}>Enregistrer</button>
+            <button type="submit" className="btn-gold" style={{ background: "var(--gold)", color: "#FFFFFF", border: "none", borderRadius: 11, padding: "11px 22px", fontWeight: 800, fontSize: 13 }}>Enregistrer</button>
             {saved && <span style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 700 }}>✓ Profil mis à jour</span>}
           </div>
         </form>
@@ -174,7 +174,7 @@ export function Profil() {
             <div style={{ fontWeight: 800, fontSize: 14 }}>Sécurité</div>
             <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>Modifiez votre mot de passe pour sécuriser votre compte.</div>
           </div>
-          <Link href="/reinitialiser-mot-de-passe" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>Changer le mot de passe</Link>
+          <Link href="/reinitialiser-mot-de-passe" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>Changer le mot de passe</Link>
         </div>
       </Card>
     </>
@@ -245,11 +245,11 @@ export function Rendezvous() {
                       {b.salon.phone}
                     </a>
                   )}
-                  <Link href={`/salon/${b.salon?.slug}`} title={b.salon?.name || "Rezervy"} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", border: "1px solid rgba(169,124,72,0.45)", borderRadius: 10, padding: "8px 13px" }}>Voir le salon</Link>
+                  <Link href={`/salon/${b.salon?.slug}`} title={b.salon?.name || "Rezervy"} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", border: "1px solid rgba(124,77,255,0.45)", borderRadius: 10, padding: "8px 13px" }}>Voir le salon</Link>
                   <span style={{ flex: 1 }} />
                   <span style={{ fontSize: 11, color: "var(--faint)" }}>Annulation gratuite jusqu'à 24h avant</span>
                   {b.canCancel && (
-                    <Link href={`/salon/${b.salon?.slug}/reserver?resched=${b.id}`} title="Reprogrammer ce rendez-vous" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", borderRadius: 10, padding: "8px 14px", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap", flex: "none" }}>
+                    <Link href={`/salon/${b.salon?.slug}/reserver?resched=${b.id}`} title="Reprogrammer ce rendez-vous" className="btn-gold" style={{ background: "var(--gold)", color: "#FFFFFF", borderRadius: 10, padding: "8px 14px", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap", flex: "none" }}>
                       Reprogrammer
                     </Link>
                   )}
@@ -371,7 +371,7 @@ function ReviewModal({ booking, onClose, onDone }) {
   }
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(26,18,8,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 90 }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 90 }}>
       <div onClick={(e) => e.stopPropagation()} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, width: "100%", maxWidth: 460, padding: 22, maxHeight: "90vh", overflow: "auto" }}>
         <div style={{ fontWeight: 800, fontSize: 16 }}>
           {prev ? "Modifier votre avis sur" : "Votre avis sur"} {booking.salon?.name}
@@ -408,7 +408,7 @@ function ReviewModal({ booking, onClose, onDone }) {
           <button onClick={onClose} disabled={busy} style={{ background: "none", border: "1px solid var(--line-strong)", borderRadius: 10, padding: "10px 16px", fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)", cursor: "pointer" }}>
             Annuler
           </button>
-          <button onClick={submit} disabled={!complete || busy} style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 12.5, fontWeight: 800, cursor: complete && !busy ? "pointer" : "default", opacity: complete && !busy ? 1 : 0.55 }}>
+          <button onClick={submit} disabled={!complete || busy} style={{ background: "var(--gold)", color: "#FFFFFF", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 12.5, fontWeight: 800, cursor: complete && !busy ? "pointer" : "default", opacity: complete && !busy ? 1 : 0.55 }}>
             {busy ? "Envoi…" : prev ? "Mettre à jour mon avis" : "Publier mon avis"}
           </button>
         </div>
@@ -434,7 +434,7 @@ export function Favoris() {
             <div key={s.slug} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", position: "relative", minWidth: 0 }}>
               <div style={{ height: 120, position: "relative" }}>
                 <Photo label={`Photo — ${s.name}`} />
-                <button onClick={() => removeFav(s.slug)} aria-label="Retirer des favoris" style={{ position: "absolute", top: 10, right: 10, width: 32, height: 32, borderRadius: "50%", background: "rgba(253,248,239,0.94)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(26,18,8,0.25)" }}>
+                <button onClick={() => removeFav(s.slug)} aria-label="Retirer des favoris" style={{ position: "absolute", top: 10, right: 10, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.94)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--red)" stroke="var(--red)" strokeWidth="1.5"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z" /></svg>
                 </button>
               </div>
@@ -445,7 +445,7 @@ export function Favoris() {
                   {s.rate && <span style={{ fontSize: 12, fontWeight: 800, color: "var(--gold-dark)" }}>★ {s.rate}</span>}
                   {s.from != null && <span style={{ fontSize: 11.5, color: "var(--muted)" }}>dès {s.from} TND</span>}
                   <span style={{ flex: 1 }} />
-                  <Link href={`/salon/${s.slug}/reserver`} style={{ background: "var(--gold)", color: "#FDF8EF", borderRadius: 9, padding: "7px 13px", fontWeight: 800, fontSize: 11.5, whiteSpace: "nowrap" }} className="btn-gold">Réserver</Link>
+                  <Link href={`/salon/${s.slug}/reserver`} style={{ background: "var(--gold)", color: "#FFFFFF", borderRadius: 9, padding: "7px 13px", fontWeight: 800, fontSize: 11.5, whiteSpace: "nowrap" }} className="btn-gold">Réserver</Link>
                 </div>
               </div>
             </div>
@@ -469,24 +469,24 @@ export function Fidelite() {
     <>
       <H>Abonnements & fidélité</H>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 4, minWidth: 0 }}>
-        <div style={{ background: "linear-gradient(150deg,#3A2B1A,#6B4E2E)", borderRadius: 18, padding: 22, color: "#F8F0E2", minWidth: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "#D9BE97" }}>Points fidélité</div>
-          <div style={{ fontSize: 36, fontWeight: 800, marginTop: 8 }}>{points} <span style={{ fontSize: 15, fontWeight: 700, color: "#D9BE97" }}>pts</span></div>
-          <div style={{ height: 7, background: "rgba(255,255,255,0.18)", borderRadius: 99, marginTop: 14, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: "var(--gold-light)", borderRadius: 99 }} /></div>
-          <div style={{ fontSize: 12, color: "#D9BE97", marginTop: 8 }}>
+        <div style={{ background: "linear-gradient(150deg,#5E35B1,#7C4DFF)", borderRadius: 18, padding: 22, color: "#FFFFFF", minWidth: 0 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.9)" }}>Points fidélité</div>
+          <div style={{ fontSize: 36, fontWeight: 800, marginTop: 8 }}>{points} <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>pts</span></div>
+          <div style={{ height: 7, background: "rgba(255,255,255,0.18)", borderRadius: 99, marginTop: 14, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: "#FFFFFF", borderRadius: 99 }} /></div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", marginTop: 8 }}>
             {points >= rewardAt ? "Récompense débloquée — parlez-en à votre salon !" : `Encore ${rewardAt - points} pts pour une récompense (${rewardAt} pts)`}
           </div>
-          <div style={{ fontSize: 11.5, color: "rgba(233,217,194,0.75)", marginTop: 10 }}>1 point par TND dépensé, crédité après chaque visite honorée · {visits} visite{visits > 1 ? "s" : ""}</div>
+          <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.75)", marginTop: 10 }}>1 point par TND dépensé, crédité après chaque visite honorée · {visits} visite{visits > 1 ? "s" : ""}</div>
         </div>
         <Card style={{ padding: 22, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)" }}>Parrainage</div>
-            <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "2px 9px", background: "rgba(169,124,72,0.12)", color: "var(--gold-dark)" }}>Bientôt disponible</span>
+            <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "2px 9px", background: "rgba(124,77,255,0.12)", color: "var(--gold-dark)" }}>Bientôt disponible</span>
           </div>
           <div style={{ fontSize: 13, color: "var(--muted-2)", lineHeight: 1.65, marginTop: 8 }}>
             Offrez <b style={{ color: "var(--ink)" }}>−20%</b> à une amie sur sa première visite — et gagnez <b style={{ color: "var(--ink)" }}>50 pts</b> à chaque venue. Le programme arrive très bientôt.
           </div>
-          <Link href="/parrainage" className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>En savoir plus</Link>
+          <Link href="/parrainage" className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>En savoir plus</Link>
         </Card>
       </div>
 

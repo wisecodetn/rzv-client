@@ -1,6 +1,6 @@
 import "./globals.css"
 import Script from "next/script"
-import { Marcellus, Manrope } from "next/font/google"
+import { Barlow } from "next/font/google"
 import { SITE } from "@/lib/site"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
@@ -14,8 +14,8 @@ import { organizationLd, websiteLd } from "@/lib/jsonld"
 
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){}})()`
 
-const serif = Marcellus({ weight: "400", subsets: ["latin"], variable: "--font-serif", display: "swap" })
-const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" })
+const serif = Barlow({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-serif", display: "swap" })
+const sans = Barlow({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-sans", display: "swap" })
 
 export const metadata = {
   metadataBase: new URL(SITE.url),
@@ -43,8 +43,8 @@ export const metadata = {
 
 export const viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F6F1E7" },
-    { media: "(prefers-color-scheme: dark)", color: "#14100A" },
+    { media: "(prefers-color-scheme: light)", color: "#7C4DFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#121212" },
   ],
 }
 

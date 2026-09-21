@@ -22,14 +22,14 @@ export default function NotFound() {
 
       <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24, flexWrap: "wrap" }}>
         <Link href="/" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14 }}>Retour à l'accueil</Link>
-        <Link href="/recherche" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14 }}>Explorer les salons</Link>
+        <Link href="/recherche" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14 }}>Explorer les salons</Link>
       </div>
 
       <div style={{ fontSize: 11, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 44, marginBottom: 14 }}>Pages utiles</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 12, textAlign: "left" }}>
         {SUGGESTIONS.map((s) => (
           <Link key={s.href} href={s.href} className="card-hover" style={{ display: "flex", alignItems: "center", gap: 12, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", color: "var(--ink)" }}>
-            <span style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(169,124,72,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
+            <span style={{ width: 38, height: 38, borderRadius: 11, background: "rgba(124,77,255,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={s.icon} /></svg>
             </span>
             <span style={{ minWidth: 0 }}>

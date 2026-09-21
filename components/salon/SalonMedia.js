@@ -1,22 +1,19 @@
 import Image from "next/image"
-import Photo from "@/components/Photo"
 
 /**
  * The salon's photos, edge to edge.
  *
  * A cover is optional: when the salon has one it leads, otherwise the gallery
  * carries the block on its own and the identity is held by the logo in the
- * header. With no photos at all the placeholder keeps the layout intact.
+ * header.
+ *
+ * With no photos at all the block is omitted entirely. A 300px placeholder
+ * announced an absence at the top of the page — better to show a shorter,
+ * honest page than a large empty frame.
  */
 export default function SalonMedia({ name, cover, gallery = [] }) {
   const shots = [cover, ...gallery].filter(Boolean)
-  if (!shots.length) {
-    return (
-      <div style={{ height: 300, borderRadius: 18, overflow: "hidden" }}>
-        <Photo label={`${name} — photo`} />
-      </div>
-    )
-  }
+  if (!shots.length) return null
 
   const [lead, ...rest] = shots
   const side = rest.slice(0, 4)

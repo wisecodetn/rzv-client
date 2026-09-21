@@ -18,7 +18,12 @@ export default function LoginForm() {
 
   const run = async (fn) => {
     setErr(""); setLoading(true)
-    try { await fn(); router.push(next) } catch (e) {
+    try {
+      const u = await fn()
+      // Accounts created before the phone was required — and every Google
+      // sign-in — are asked for it here rather than left unreachable.
+      router.push(u?.needsPhone ? `/telephone?next=${encodeURIComponent(next)}` : next)
+    } catch (e) {
       // Correct credentials, e-mail not yet confirmed → the API re-sent a code.
       if (e.code === "auth/unverified") { router.push(`/verifier-email?email=${encodeURIComponent(email.trim().toLowerCase())}&next=${encodeURIComponent(next)}`); return }
       setErr(e.message); setLoading(false)

@@ -42,6 +42,8 @@ export default async function SalonPage({ params }) {
   const packages = s.packages ?? []
   const reviews = s.reviews ?? []
   const gallery = s.gallery ?? []
+  /** "Sousse Jaouhara, Sousse" — omitting whichever part the salon left blank. */
+  const where = [s.address, s.city].filter(Boolean).join(", ")
 
   return (
     <>
@@ -78,36 +80,28 @@ export default async function SalonPage({ params }) {
             marginTop: 18,
           }}
         >
-          {s.logo ? (
+          {/* Only a real logo earns a place; an initials tile fills the gap
+              without telling the visitor anything. */}
+          {s.logo && (
             <div style={{ position: "relative", width: 72, height: 72, borderRadius: 20, overflow: "hidden", flex: "none", background: "var(--line-2)" }}>
               <Image src={s.logo} alt={`${s.name} — logo`} fill sizes="72px" style={{ objectFit: "cover" }} />
-            </div>
-          ) : (
-            <div
-              className="serif"
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: 20,
-                background: "linear-gradient(135deg,#D4A874,var(--gold))",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 32,
-                color: "#2A1A08",
-                flex: "none",
-              }}
-            >
-              {s.ini}
             </div>
           )}
 
           <div style={{ minWidth: 0, flex: 1 }}>
             <h1 className="serif" style={{ fontSize: 26, margin: 0, fontWeight: 400 }}>{s.name}</h1>
-            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "var(--muted)", marginTop: 5 }}>
-              <span>{s.address}, {s.city}</span>
-              <span style={{ color: "var(--green)", fontWeight: 700 }}>Réservation en ligne 24h/24</span>
-            </div>
+            {/* Address and phone, each only when the salon has given it — a
+                slogan here told the visitor nothing they could act on. */}
+            {(where || s.phone) && (
+              <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "var(--muted)", marginTop: 5 }}>
+                {where && <span>{where}</span>}
+                {s.phone && (
+                  <a href={`tel:${s.phone.replace(/\s/g, "")}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>
+                    {s.phone}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           <div style={{ display: "flex", gap: 10, flex: "none", flexWrap: "wrap", alignItems: "center" }}>
@@ -131,8 +125,8 @@ export default async function SalonPage({ params }) {
                 <div
                   key={pk.id}
                   style={{
-                    background: pk.featured ? "linear-gradient(160deg,rgba(169,124,72,0.13),var(--card) 60%)" : "var(--card)",
-                    border: `1px solid ${pk.featured ? "rgba(169,124,72,0.5)" : "var(--line)"}`,
+                    background: pk.featured ? "linear-gradient(160deg,rgba(124,77,255,0.13),var(--card) 60%)" : "var(--card)",
+                    border: `1px solid ${pk.featured ? "rgba(124,77,255,0.5)" : "var(--line)"}`,
                     borderRadius: 16,
                     padding: 18,
                     display: "flex",
@@ -159,7 +153,7 @@ export default async function SalonPage({ params }) {
                   <Link
                     href={`/salon/${s.slug}/reserver?pack=${pk.id}`}
                     className="btn-outline"
-                    style={{ border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5, textAlign: "center" }}
+                    style={{ border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5, textAlign: "center" }}
                   >
                     Réserver ce forfait
                   </Link>
@@ -226,7 +220,7 @@ export default async function SalonPage({ params }) {
                 {s.email && (
                   <a
                     href={`mailto:${s.email}`}
-                    style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
                   >
                     <span aria-hidden="true">✉</span>
                     <span>Envoyer un e-mail</span>

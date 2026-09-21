@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Photo from "./Photo"
@@ -86,9 +86,14 @@ function Pagination({ pageNow, pagesTotal, apiMode, basePath, onPage }) {
 }
 
 /* One salon result card — responsive (photo stacks on top on phones) */
-function SalonRow({ s, dist }) {
+function SalonRow({ s, dist, catSlugs }) {
   const [tab, setTab] = useState(null)
-  const top = s.serviceGroups.flatMap((g) => g.rows).slice(0, 3)
+  const all = s.serviceGroups.flatMap((g) => g.rows)
+  // Show what the visitor came for: on /coiffure-femme the card lists the
+  // salon's coiffure-femme prestations, not simply its first three. Salons
+  // whose services carry no category still show something rather than nothing.
+  const matching = catSlugs ? all.filter((r) => r.cat && catSlugs.has(r.cat)) : []
+  const top = (matching.length ? matching : all).slice(0, 3)
   return (
     <div className="lift" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 14 }}>
       <div className="salon-top">
@@ -106,7 +111,8 @@ function SalonRow({ s, dist }) {
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 9, flexWrap: "wrap" }}>
             <span style={{ fontSize: 12, color: "var(--muted)" }}>dès <span style={{ fontWeight: 800, color: "var(--ink)" }}>{s.from} TND</span></span>
-            <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 9px", background: s.avail ? "var(--green-soft)" : "rgba(201,162,39,0.13)", color: s.avail ? "var(--green)" : "#8A6A17" }}>{s.slotLabel}</span>
+            {/* Green only when the doors are actually open now. */}
+            <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 9px", background: s.open ? "var(--green-soft)" : "rgba(201,162,39,0.13)", color: s.open ? "var(--green)" : "#8A6A17" }}>{s.slotLabel}</span>
             <span style={{ flex: 1 }} />
             {/* Each card links to the same 2 routes several times; only the
                 salon-name link prefetches, so 20 cards don't fire ~100 requests. */}
@@ -125,7 +131,7 @@ function SalonRow({ s, dist }) {
               <div style={{ minWidth: 0, flex: 1, fontWeight: 600 }}>{ts.n}</div>
               <div style={{ color: "var(--muted)", fontSize: 11.5, whiteSpace: "nowrap" }}>{ts.d}</div>
               <div style={{ fontWeight: 800, whiteSpace: "nowrap" }}>{ts.p} TND</div>
-              <Link href={`/salon/${s.slug}/reserver`} prefetch={false} style={{ fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 700, whiteSpace: "nowrap" }}>Réserver</Link>
+              <Link href={`/salon/${s.slug}/reserver?svc=${encodeURIComponent(ts.id)}`} prefetch={false} style={{ fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 700, whiteSpace: "nowrap" }}>Réserver</Link>
             </div>
           ))}
           <Link href={`/salon/${s.slug}`} prefetch={false} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>Voir tous les services →</Link>
@@ -159,6 +165,19 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
   const parent = categoryParent(cat.slug)
   const badgeNodes = children.length ? children : (parent ? categoryChildren(parent.slug) : [])
   const badgeOwner = children.length ? cat : (parent || cat)
+  /** The browsed category and everything under it — what its prestations are. */
+  const catSlugs = useMemo(() => {
+    const out = new Set([cat.slug])
+    const walk = (slug) => {
+      for (const c of categoryChildren(slug)) {
+        if (out.has(c.slug)) continue
+        out.add(c.slug)
+        walk(c.slug)
+      }
+    }
+    walk(cat.slug)
+    return out
+  }, [cat.slug, categoryChildren])
 
   const [q, setQ] = useState(cat.name)
   const [cityQ, setCityQ] = useState(city.name)
@@ -473,7 +492,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
             ) : (
               <>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16, opacity: loading ? 0.55 : 1, transition: "opacity .15s" }}>
-                  {results.map((s, i) => <SalonRow key={s.slug} s={s} dist={DISTS[i % 5]} />)}
+                  {results.map((s, i) => <SalonRow key={s.slug} s={s} dist={DISTS[i % 5]} catSlugs={catSlugs} />)}
                 </div>
                 <Pagination pageNow={pageNow} pagesTotal={pagesTotal} apiMode={apiMode} basePath={basePath} onPage={goToPage} />
               </>

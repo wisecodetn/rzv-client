@@ -14,7 +14,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
+  font-family: var(--font-sans), Barlow, sans-serif;
   background-color: var(--background);
 }
 
@@ -41,7 +41,7 @@
 .intro h1 {
   max-width: 320px;
   font-size: 40px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 48px;
   letter-spacing: -2.4px;
   text-wrap: balance;
@@ -118,6 +118,7 @@ a.secondary {
 
   .intro h1 {
     font-size: 32px;
+    font-weight: 700;
     line-height: 40px;
     letter-spacing: -1.92px;
   }

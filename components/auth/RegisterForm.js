@@ -22,7 +22,16 @@ export default function RegisterForm() {
   const nextParam = () => {
     try { return new URLSearchParams(window.location.search).get("next") || "/compte" } catch { return "/compte" }
   }
-  const run = async (fn) => { setErr(""); setLoading(true); try { await fn(); router.push(nextParam()) } catch (e) { setErr(e.message); setLoading(false) } }
+  // A Google account arrives with no phone; the salon cannot work without one,
+  // so the flow goes through /telephone before anything else.
+  const run = async (fn) => {
+    setErr(""); setLoading(true)
+    try {
+      const u = await fn()
+      const dest = nextParam()
+      router.push(u?.needsPhone ? `/telephone?next=${encodeURIComponent(dest)}` : dest)
+    } catch (e) { setErr(e.message); setLoading(false) }
+  }
   const submit = async (e) => {
     e.preventDefault()
     if (!accept) { setErr("Veuillez accepter les conditions d'utilisation."); return }
@@ -50,7 +59,12 @@ export default function RegisterForm() {
         <ErrorMsg>{err}</ErrorMsg>
         <Field label="Nom complet" value={name} onChange={setName} placeholder="Ines Bouazizi" autoComplete="name" required />
         <Field label="E-mail" type="email" value={email} onChange={setEmail} placeholder="vous@exemple.tn" autoComplete="email" required />
-        <Field label="Téléphone (optionnel)" type="tel" value={phone} onChange={setPhone} placeholder="+216 52 118 400" autoComplete="tel" />
+        {/* Required: it is how the salon reaches you about your appointment,
+            and the key of your client record across salons. */}
+        <Field label="Téléphone" type="tel" value={phone} onChange={setPhone} placeholder="+216 52 118 400" autoComplete="tel" required />
+        <div style={{ fontSize: 11.5, color: "var(--faint)", marginTop: -10, marginBottom: 12 }}>
+          Le salon en a besoin pour vous joindre en cas d’imprévu.
+        </div>
         <PasswordField label="Mot de passe" value={pw} onChange={setPw} placeholder="Au moins 6 caractères" autoComplete="new-password" required />
         <label style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 12.5, color: "var(--muted-2)", lineHeight: 1.5, margin: "2px 0 16px", cursor: "pointer" }}>
           <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} style={{ marginTop: 2, accentColor: "var(--gold)", width: 16, height: 16, flex: "none" }} />

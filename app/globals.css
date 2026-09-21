@@ -8,14 +8,14 @@
   --muted: #8a8072;
   --muted-2: #5a5244;
   --faint: #b0a794;
-  --gold: #a97c48;
-  --gold-dark: #8a6234;
-  --gold-light: #e2bb88;
-  --on-gold: #fdf8ef;
+  --gold: #7C4DFF;
+  --gold-dark: #5E35B1;
+  --gold-light: #B388FF;
+  --on-gold: #FFFFFF;
   --green: #557a4e;
   --green-soft: rgba(85, 122, 78, 0.11);
   --green-line: rgba(85, 122, 78, 0.26);
-  --amber: #c9a227;
+  --amber: #9C27B0;
   --red: #c05b5b;
   --red-soft: rgba(192, 91, 91, 0.10);
   --red-line: rgba(192, 91, 91, 0.24);
@@ -33,22 +33,22 @@
 }
 
 :root[data-theme="dark"] {
-  --bg: #14100a;
-  --inset: #1c150d;
-  --card: #211a11;
-  --surface-2: #2b2317;
-  --ink: #f2eadc;
-  --muted: #a99c87;
-  --muted-2: #c8bca7;
-  --faint: #776d5a;
-  --gold: #c2925a;
-  --gold-dark: #d6a866;
-  --gold-light: #e2bb88;
-  --on-gold: #1a1206;
+  --bg: #121212;
+  --inset: #1a1a1a;
+  --card: #1e1e1e;
+  --surface-2: #252525;
+  --ink: #f5f5f5;
+  --muted: #b0b0b0;
+  --muted-2: #c0c0c0;
+  --faint: #808080;
+  --gold: #9575CD;
+  --gold-dark: #B388FF;
+  --gold-light: #7C4DFF;
+  --on-gold: #FFFFFF;
   --green: #93b97c;
   --green-soft: rgba(147, 185, 124, 0.13);
   --green-line: rgba(147, 185, 124, 0.28);
-  --amber: #d8b552;
+  --amber: #AB47BC;
   --red: #d97d7d;
   --red-soft: rgba(217, 125, 125, 0.12);
   --red-line: rgba(217, 125, 125, 0.26);
@@ -56,13 +56,13 @@
   --line: rgba(255, 255, 255, 0.09);
   --line-2: rgba(255, 255, 255, 0.13);
   --line-strong: rgba(255, 255, 255, 0.16);
-  --header-bg: rgba(20, 15, 9, 0.88);
-  --footer-bg: #100c07;
-  --shadow: rgba(0, 0, 0, 0.5);
-  --shadow-strong: rgba(0, 0, 0, 0.6);
-  --hero-a: #17120b;
-  --hero-b: #2c2015;
-  --hero-c: #120d07;
+  --header-bg: rgba(18, 18, 18, 0.88);
+  --footer-bg: #121212;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --shadow-strong: rgba(0, 0, 0, 0.5);
+  --hero-a: #1a1a1a;
+  --hero-b: #252525;
+  --hero-c: #121212;
 }
 
 * {
@@ -89,14 +89,14 @@ body {
   flex-direction: column;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans), Barlow, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .serif {
-  font-family: var(--font-serif), Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif), Barlow, sans-serif;
 }
 
 a {
@@ -110,7 +110,7 @@ a:hover {
 input,
 button,
 select {
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-sans), Barlow, sans-serif;
   color: var(--ink);
 }
 input::placeholder {
@@ -195,14 +195,13 @@ button {
   height: 100%;
   overflow: hidden;
   border-radius: inherit;
-  background: linear-gradient(135deg, #6b4e2e, #3a2b1a);
+  background: linear-gradient(135deg, #5E35B1, #4527A0);
 }
 .photo::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(120% 120% at 18% 8%, rgba(226, 187, 136, 0.3), transparent 58%),
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.045) 0 16px, transparent 16px 32px);
+  background: radial-gradient(120% 120% at 18% 8%, rgba(179, 136, 255, 0.3), transparent 58%);
 }
 
 /* Account — sidebar on desktop, horizontal tabs on mobile */
@@ -429,10 +428,10 @@ html {
 }
 
 .leaflet-container {
-  font-family: var(--font-sans), sans-serif;
+  font-family: var(--font-sans), Barlow, sans-serif;
 }
 .map-pin {
-  background: #a97c48;
+  background: #7C4DFF;
   color: #fdf8ef;
   font-weight: 800;
   font-size: 11px;
@@ -484,12 +483,12 @@ html {
 .post-body > p:first-of-type { font-size: 18px; line-height: 1.75; color: var(--ink); }
 
 .post-body h2 {
-  font-family: var(--font-serif), Georgia, serif;
-  font-size: 27px; font-weight: 400; line-height: 1.25;
+  font-family: var(--font-serif), Barlow, sans-serif;
+  font-size: 27px; font-weight: 700; line-height: 1.25;
   margin: 46px 0 14px; color: var(--ink);
 }
 .post-body h3 {
-  font-size: 18px; font-weight: 800; line-height: 1.35;
+  font-size: 18px; font-weight: 600; line-height: 1.35;
   margin: 32px 0 10px; color: var(--ink);
 }
 .post-body p { margin: 0 0 18px; color: var(--muted-2); }

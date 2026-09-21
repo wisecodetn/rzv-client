@@ -15,7 +15,7 @@ const CATEGORIES = [
 ]
 
 const STATUS = {
-  open: { l: "En attente de réponse", c: "var(--gold-dark)", bg: "rgba(169,124,72,0.11)" },
+  open: { l: "En attente de réponse", c: "var(--gold-dark)", bg: "rgba(124,77,255,0.11)" },
   pending: { l: "En attente de vous", c: "var(--green)", bg: "var(--green-soft)" },
   resolved: { l: "Résolu", c: "var(--green)", bg: "var(--green-soft)" },
   closed: { l: "Clos", c: "var(--muted)", bg: "var(--surface-2)" },

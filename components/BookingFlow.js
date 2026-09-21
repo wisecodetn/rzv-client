@@ -372,7 +372,10 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           services: [svc.n],
           staffName: staffId === "any" ? "any" : staff.find((p) => p.id === staffId)?.n.split(" ")[0],
           startAt: startAt.toISOString(),
-          payment: payI === PAY_ONSITE ? "onsite" : "stripe",
+          // Online payment is not offered yet, so the booking is always
+          // settled at the salon. The API still supports Stripe; nothing in
+          // the UI can reach it.
+          payment: "onsite",
           promoCode: promo?.code || undefined,
         }),
       })
@@ -487,7 +490,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
 
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "22px 24px", marginTop: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 14, borderBottom: "1px solid var(--line-soft)" }}>
-            <span style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#d4a874,#a97c48)", color: "#FDF8EF", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, flex: "none" }}>{salon.ini}</span>
+            <span style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#B388FF,#7C4DFF)", color: "#FFFFFF", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, flex: "none" }}>{salon.ini}</span>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: 15 }}>{salon.name}</div>
               <div style={{ fontSize: 12, color: "var(--muted)" }}>{salon.address}, {salon.city}</div>
@@ -540,29 +543,13 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           )}
           {promoErr && <div style={{ fontSize: 12, color: "var(--red)", fontWeight: 600, marginTop: 6 }}>{promoErr}</div>}
 
-          <div style={{ ...lbl, marginTop: 6 }}>Acompte de {DEPOSIT_PCT}%{deposit > 0 ? ` — ${deposit} TND` : ""}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 6, marginTop: 8 }}>
-            {PAY.map(([l, sub], i) => {
-              const on = payI === i
-              const [bd, bg] = sel(on)
-              return (
-                <button key={l} onClick={() => setPayI(i)} style={{ border: `1px solid ${bd}`, background: bg, borderRadius: 10, padding: "9px 10px", textAlign: "left", cursor: "pointer" }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: on ? "var(--gold-dark)" : "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l}</div>
-                  <div style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 2 }}>{sub}</div>
-                </button>
-              )
-            })}
-          </div>
-
           <button onClick={createBooking} disabled={submitting} className="btn-gold" style={{ width: "100%", marginTop: 16, background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 12, padding: "14px 16px", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: submitting ? 0.7 : 1 }}>
-            {submitting ? "Redirection…" : payI === PAY_ONSITE ? "Confirmer la réservation" : deposit > 0 ? `Payer ${deposit} TND par carte` : "Confirmer"}
+            {submitting ? "Envoi…" : "Confirmer la réservation"}
           </button>
           {submitErr && <div style={{ fontSize: 12.5, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 10 }}>{submitErr}</div>}
 
           <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 12, borderTop: "1px solid var(--line-soft)", paddingTop: 10 }}>
-            {payI === PAY_ONSITE
-              ? `Aucun paiement en ligne — total de ${total} TND à régler sur place.`
-              : `Paiement sécurisé par Stripe. Solde de ${Math.max(0, total - deposit)} TND à régler au salon. Acompte remboursé si annulation à plus de 24h.`}
+            {`Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
             <br />✓ Confirmation & rappel par SMS{user ? <> · connecté·e en tant que <b style={{ color: "var(--ink)" }}>{user.email}</b></> : null}
           </div>
         </div>
@@ -770,23 +757,6 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
               </span>
             </div>
 
-            {!reschedId && (
-              <>
-                <div style={{ ...lbl, marginTop: 14 }}>Acompte de {DEPOSIT_PCT}%{deposit > 0 ? ` — ${deposit} TND` : ""}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginTop: 8 }}>
-                  {PAY.map(([l, sub], i) => {
-                    const on = payI === i
-                    const [bd, bg] = sel(on)
-                    return (
-                      <button key={l} onClick={() => setPayI(i)} style={{ border: `1px solid ${bd}`, background: bg, borderRadius: 10, padding: "9px 10px", textAlign: "left", cursor: "pointer" }}>
-                        <div style={{ fontSize: 12, fontWeight: 800, color: on ? "var(--gold-dark)" : "var(--ink)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l}</div>
-                        <div style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 2 }}>{sub}</div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </>
-            )}
 
             <button onClick={goConfirm} disabled={!ready} className={ready ? "btn-gold" : undefined} style={{ width: "100%", marginTop: 14, background: ready ? "var(--gold)" : "#E2D9C6", color: ready ? "#FDF8EF" : "var(--faint)", border: "none", borderRadius: 12, padding: "13px 16px", fontWeight: 800, fontSize: 13.5, cursor: ready ? "pointer" : "default" }}>
               {reschedId
@@ -801,9 +771,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                 ? resched?.payment === "deposit"
                   ? "Le paiement ne change pas — votre acompte payé reste valable pour le nouveau créneau."
                   : "Le paiement ne change pas — réglez sur place comme prévu."
-                : payI === PAY_ONSITE
-                  ? `Aucun paiement en ligne — total de ${total} TND à régler sur place.`
-                  : `Paiement sécurisé par Stripe. Solde de ${Math.max(0, total - deposit)} TND à régler au salon. Acompte remboursé si annulation à plus de 24h.`}
+                : `Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
               <br />✓ Confirmation & rappel par SMS
             </div>
           </div>
