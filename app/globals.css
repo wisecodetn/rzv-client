@@ -8,14 +8,14 @@
   --muted: #8a8072;
   --muted-2: #5a5244;
   --faint: #b0a794;
-  --gold: #7C4DFF;
-  --gold-dark: #5E35B1;
-  --gold-light: #B388FF;
+  --gold: #000000;
+  --gold-dark: #1a1a1a;
+  --gold-light: #333333;
   --on-gold: #FFFFFF;
   --green: #557a4e;
   --green-soft: rgba(85, 122, 78, 0.11);
   --green-line: rgba(85, 122, 78, 0.26);
-  --amber: #9C27B0;
+  --amber: #4a4a4a;
   --red: #c05b5b;
   --red-soft: rgba(192, 91, 91, 0.10);
   --red-line: rgba(192, 91, 91, 0.24);
@@ -41,14 +41,14 @@
   --muted: #b0b0b0;
   --muted-2: #c0c0c0;
   --faint: #808080;
-  --gold: #9575CD;
-  --gold-dark: #B388FF;
-  --gold-light: #7C4DFF;
-  --on-gold: #FFFFFF;
+  --gold: #FFFFFF;
+  --gold-dark: #e0e0e0;
+  --gold-light: #f5f5f5;
+  --on-gold: #000000;
   --green: #93b97c;
   --green-soft: rgba(147, 185, 124, 0.13);
   --green-line: rgba(147, 185, 124, 0.28);
-  --amber: #AB47BC;
+  --amber: #a0a0a0;
   --red: #d97d7d;
   --red-soft: rgba(217, 125, 125, 0.12);
   --red-line: rgba(217, 125, 125, 0.26);
@@ -195,13 +195,13 @@ button {
   height: 100%;
   overflow: hidden;
   border-radius: inherit;
-  background: linear-gradient(135deg, #5E35B1, #4527A0);
+  background: linear-gradient(135deg, #333333, #1a1a1a);
 }
 .photo::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(120% 120% at 18% 8%, rgba(179, 136, 255, 0.3), transparent 58%);
+  background: radial-gradient(120% 120% at 18% 8%, rgba(100, 100, 100, 0.3), transparent 58%);
 }
 
 /* Account — sidebar on desktop, horizontal tabs on mobile */
@@ -431,15 +431,15 @@ html {
   font-family: var(--font-sans), Barlow, sans-serif;
 }
 .map-pin {
-  background: #7C4DFF;
-  color: #fdf8ef;
+  background: #000000;
+  color: #ffffff;
   font-weight: 800;
   font-size: 11px;
   border-radius: 999px;
   padding: 4px 10px;
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(26, 18, 8, 0.35);
-  border: 2px solid #fdf8ef;
+  border: 2px solid #ffffff;
 }
 .autocomplete-scroll {
   scrollbar-width: thin;                              /* Firefox */

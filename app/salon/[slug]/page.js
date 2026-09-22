@@ -125,8 +125,8 @@ export default async function SalonPage({ params }) {
                 <div
                   key={pk.id}
                   style={{
-                    background: pk.featured ? "linear-gradient(160deg,rgba(124,77,255,0.13),var(--card) 60%)" : "var(--card)",
-                    border: `1px solid ${pk.featured ? "rgba(124,77,255,0.5)" : "var(--line)"}`,
+                    background: pk.featured ? "linear-gradient(160deg,rgba(0,0,0,0.13),var(--card) 60%)" : "var(--card)",
+                    border: `1px solid ${pk.featured ? "rgba(0,0,0,0.5)" : "var(--line)"}`,
                     borderRadius: 16,
                     padding: 18,
                     display: "flex",
@@ -153,7 +153,7 @@ export default async function SalonPage({ params }) {
                   <Link
                     href={`/salon/${s.slug}/reserver?pack=${pk.id}`}
                     className="btn-outline"
-                    style={{ border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5, textAlign: "center" }}
+                    style={{ border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5, textAlign: "center" }}
                   >
                     Réserver ce forfait
                   </Link>
@@ -220,7 +220,7 @@ export default async function SalonPage({ params }) {
                 {s.email && (
                   <a
                     href={`mailto:${s.email}`}
-                    style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
                   >
                     <span aria-hidden="true">✉</span>
                     <span>Envoyer un e-mail</span>

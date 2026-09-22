@@ -56,7 +56,7 @@ export default function Navbar() {
     <header ref={ref} style={{ background: "var(--header-bg)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", borderBottom: "1px solid var(--line)", position: "sticky", top: 0, zIndex: 60 }}>
       <div className="wrap" style={{ padding: "13px 24px", display: "flex", alignItems: "center", gap: 18 }}>
         {/* Mobile menu — icon only, to the left of the logo */}
-        <button className="nav-menu-btn" onClick={() => { setAcctOpen(false); setMenu((m) => !m) }} aria-label="Catégories" style={{ alignItems: "center", justifyContent: "center", background: menu ? "rgba(169,124,72,0.1)" : "transparent", border: "1px solid var(--line-2)", borderRadius: 10, width: 38, height: 38, color: menu ? "var(--gold-dark)" : "var(--ink)", flex: "none", padding: 0 }}>
+        <button className="nav-menu-btn" onClick={() => { setAcctOpen(false); setMenu((m) => !m) }} aria-label="Catégories" style={{ alignItems: "center", justifyContent: "center", background: menu ? "rgba(0,0,0,0.1)" : "transparent", border: "1px solid var(--line-2)", borderRadius: 10, width: 38, height: 38, color: menu ? "var(--gold-dark)" : "var(--ink)", flex: "none", padding: 0 }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16 M4 12h16 M4 18h16" /></svg>
         </button>
 
@@ -85,9 +85,9 @@ export default function Navbar() {
         {/* User / login */}
         <div style={{ position: "relative", flex: "none" }}>
           {user ? (
-            <button onClick={() => { setMenu(false); setAcctOpen((u) => !u) }} aria-label="Mon compte" style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gold)", color: "#FDF8EF", border: "none", fontSize: 12.5, fontWeight: 800 }}>{user.initials}</button>
+            <button onClick={() => { setMenu(false); setAcctOpen((u) => !u) }} aria-label="Mon compte" style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gold)", color: "var(--on-gold)", border: "none", fontSize: 12.5, fontWeight: 800 }}>{user.initials}</button>
           ) : (
-            <Link href="/connexion" className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 999, padding: "9px 18px", fontSize: 12.5, fontWeight: 800 }}>
+            <Link href="/connexion" className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 999, padding: "9px 18px", fontSize: 12.5, fontWeight: 800 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "none" }} className="login-icon-mobile">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                 <circle cx="12" cy="7" r="4" />
@@ -104,7 +104,7 @@ export default function Navbar() {
               {ACCT_SECTIONS.map((s) => {
                 const on = s.href === "/compte" ? path === "/compte" : path.startsWith(s.href)
                 return (
-                  <Link key={s.href} href={s.href} title={s.l} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", fontSize: 13, color: on ? "var(--gold-dark)" : "var(--ink)", fontWeight: on ? 800 : 600, background: on ? "rgba(169,124,72,0.08)" : "transparent" }}>
+                  <Link key={s.href} href={s.href} title={s.l} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", fontSize: 13, color: on ? "var(--gold-dark)" : "var(--ink)", fontWeight: on ? 800 : 600, background: on ? "rgba(0,0,0,0.08)" : "transparent" }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none", opacity: on ? 1 : 0.65 }}><path d={ACCT_ICON[s.icon]} /></svg>
                     {s.l}
                   </Link>
@@ -128,7 +128,7 @@ export default function Navbar() {
                 {categories.map((c) => (
                   <div key={c.slug}>
                     <Link href={`/${c.slug}`} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 13.5, color: "var(--ink)" }}>
-                      <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(169,124,72,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{c.name[0]}</span>
+                      <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{c.name[0]}</span>
                       {c.name}
                     </Link>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 9 }}>

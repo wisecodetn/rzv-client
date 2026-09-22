@@ -1,4 +1,6 @@
 import { SITE } from "@/lib/site"
+import Image from "next/image"
+import Photo from "@/components/Photo"
 
 const PRO_URL = "https://pro.rezervy.tn"
 
@@ -37,27 +39,33 @@ export default function PartnerPage() {
   return (
     <>
       {/* Hero */}
-      <section style={{ background: "linear-gradient(120deg,#4527A0,#5E35B1 58%,#7C4DFF)", color: "#FFFFFF" }}>
-        <div className="wrap" style={{ padding: "72px 24px 66px" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(253,248,239,0.14)", border: "1px solid rgba(253,248,239,0.25)", borderRadius: 999, padding: "6px 14px", fontSize: 11.5, fontWeight: 700, color: "#F0E4CE", letterSpacing: "0.04em" }}>
+      <section style={{ position: "relative", background: "linear-gradient(120deg,#1a1a1a,#000000 58%,#333333)", color: "#FFFFFF" }}>
+        <div style={{ position: "absolute", inset: 0 }}>
+          <Photo label="Gérante devant son salon">
+            <Image src="/main/pro-manage.webp" alt="Gérante devant son salon" fill style={{ objectFit: "cover" }} />
+          </Photo>
+        </div>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(100deg,rgba(0,0,0,0.85) 0%,rgba(0,0,0,0.65) 46%,rgba(0,0,0,0.3) 78%,rgba(0,0,0,0.15) 100%)", pointerEvents: "none" }} />
+        <div className="wrap" style={{ position: "relative", padding: "72px 24px 66px" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.14)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "6px 14px", fontSize: 11.5, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.04em" }}>
             Rezervy Pro · pour les salons, barbershops & spas
           </div>
           <h1 className="serif" style={{ fontSize: 44, lineHeight: 1.1, maxWidth: 640, marginTop: 16, marginBottom: 0, fontWeight: 400 }}>
             Développez votre salon avec Rezervy Pro
           </h1>
-          <p style={{ color: "rgba(253,248,239,0.9)", fontSize: 15.5, marginTop: 14, maxWidth: 560, lineHeight: 1.65 }}>
+          <p style={{ color: "rgba(255,255,255,0.9)", fontSize: 15.5, marginTop: 14, maxWidth: 560, lineHeight: 1.65 }}>
             Rejoignez 480+ établissements en Tunisie. Un agenda qui se remplit tout seul, des rappels SMS qui suppriment
             les no-show, et l'encaissement Flouci & e-Dinar — le tout dès 49 TND/mois.
           </p>
           <div style={{ display: "flex", gap: 10, marginTop: 26, flexWrap: "wrap" }}>
-            <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#7C4DFF", border: "none", borderRadius: 12, padding: "14px 26px", fontWeight: 800, fontSize: 14 }}>Devenir partenaire</a>
+            <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#000000", border: "none", borderRadius: 12, padding: "14px 26px", fontWeight: 800, fontSize: 14 }}>Devenir partenaire</a>
             <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "rgba(255,255,255,0.1)", color: "#FFFFFF", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 12, padding: "14px 24px", fontWeight: 700, fontSize: 14 }}>Voir une démo</a>
           </div>
           <div style={{ display: "flex", gap: 34, marginTop: 40, flexWrap: "wrap" }}>
             {STATS.map((s) => (
               <div key={s.l}>
-                <div className="serif" style={{ fontSize: 30, color: "#B388FF" }}>{s.v}</div>
-                <div style={{ fontSize: 12.5, color: "rgba(253,248,239,0.75)", marginTop: 2 }}>{s.l}</div>
+                <div className="serif" style={{ fontSize: 30, color: "#e0e0e0" }}>{s.v}</div>
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.75)", marginTop: 2 }}>{s.l}</div>
               </div>
             ))}
           </div>
@@ -73,7 +81,7 @@ export default function PartnerPage() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 16, marginTop: 30 }}>
           {BENEFITS.map((b) => (
             <div key={b.t} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "22px 22px 24px" }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(124,77,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon d={b.d2} /></div>
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(0,0,0,0.12)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon d={b.d2} /></div>
               <div style={{ fontWeight: 800, fontSize: 15, marginTop: 14 }}>{b.t}</div>
               <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.65, marginTop: 6 }}>{b.d}</div>
             </div>
@@ -88,7 +96,7 @@ export default function PartnerPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 18, marginTop: 26 }}>
             {[["1", "Créez votre demande", "Renseignez votre établissement et vos documents — validation sous 48h."], ["2", "Configurez votre salon", "Prestations, équipe, horaires et moyens de paiement en quelques minutes."], ["3", "Recevez vos réservations", "Votre page publique est en ligne : les clientes réservent, vous êtes notifié·e."]].map(([i, t, d]) => (
               <div key={i} style={{ textAlign: "center", padding: "0 12px" }}>
-                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(124,77,255,0.12)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto" }}>{i}</div>
+                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto" }}>{i}</div>
                 <div style={{ fontWeight: 800, fontSize: 14.5, marginTop: 12 }}>{t}</div>
                 <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65, marginTop: 6 }}>{d}</div>
               </div>
@@ -99,14 +107,14 @@ export default function PartnerPage() {
 
       {/* Pricing / final CTA */}
       <section className="wrap" style={{ padding: "48px 24px 64px" }}>
-        <div style={{ background: "linear-gradient(140deg,#5E35B1,#7C4DFF)", borderRadius: 22, padding: "40px 34px", textAlign: "center", color: "#FFFFFF" }}>
+        <div style={{ background: "linear-gradient(140deg,#1a1a1a,#000000)", borderRadius: 22, padding: "40px 34px", textAlign: "center", color: "#FFFFFF" }}>
           <div style={{ fontSize: 12.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.9)" }}>Sans engagement</div>
           <div className="serif" style={{ fontSize: 34, marginTop: 10 }}>Dès 49 TND / mois</div>
           <div style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", marginTop: 8, maxWidth: 520, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
             Essai gratuit 14 jours. Pas de commission sur vos rendez-vous, pas de frais cachés — vous gardez 100% de vos revenus.
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24, flexWrap: "wrap" }}>
-            <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#7C4DFF", border: "none", borderRadius: 12, padding: "14px 28px", fontWeight: 800, fontSize: 14 }}>Commencer gratuitement</a>
+            <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#000000", border: "none", borderRadius: 12, padding: "14px 28px", fontWeight: 800, fontSize: 14 }}>Commencer gratuitement</a>
           </div>
         </div>
       </section>

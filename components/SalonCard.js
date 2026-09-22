@@ -17,7 +17,7 @@ export default function SalonCard({ salon }) {
         <Photo label={`Photo — ${salon.name}`} />
         <div
           style={{
-            position: "absolute", right: 12, bottom: -14, width: 44, height: 44, borderRadius: 13, background: "#FDF8EF",
+            position: "absolute", right: 12, bottom: -14, width: 44, height: 44, borderRadius: 13, background: "var(--card)",
             display: "flex", alignItems: "center", justifyContent: "center", color: "var(--gold-dark)", boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
           }}
           className="serif"

@@ -25,7 +25,7 @@ export default function ContactPage() {
           {CHANNELS.map((c) => {
             const inner = (
               <>
-                <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(124,77,255,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
+                <span style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(0,0,0,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
                   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={c.icon} /></svg>
                 </span>
                 <span style={{ minWidth: 0 }}>

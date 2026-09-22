@@ -490,7 +490,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
 
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "22px 24px", marginTop: 16 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingBottom: 14, borderBottom: "1px solid var(--line-soft)" }}>
-            <span style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#B388FF,#7C4DFF)", color: "#FFFFFF", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, flex: "none" }}>{salon.ini}</span>
+            <span style={{ width: 44, height: 44, borderRadius: 12, background: "linear-gradient(135deg,#333333,#000000)", color: "#FFFFFF", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 17, flex: "none" }}>{salon.ini}</span>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: 15 }}>{salon.name}</div>
               <div style={{ fontSize: 12, color: "var(--muted)" }}>{salon.address}, {salon.city}</div>

@@ -10,7 +10,7 @@ const H = ({ children }) => <div className="serif" style={{ fontSize: 21, margin
 
 /* ── Booking display helpers ─────────────────────────────────────── */
 const STATUS = {
-  pending: { l: "En attente", c: "var(--gold-dark)", bg: "rgba(124,77,255,0.13)" },
+  pending: { l: "En attente", c: "var(--gold-dark)", bg: "rgba(0,0,0,0.13)" },
   confirmed: { l: "Confirmé", c: "var(--green)", bg: "var(--green-soft)" },
   completed: { l: "Terminé", c: "var(--muted)", bg: "rgba(42,36,28,0.08)" },
   cancelled: { l: "Annulé", c: "var(--red)", bg: "var(--red-soft)" },
@@ -53,7 +53,7 @@ const Empty = ({ title, sub, cta, href }) => (
   <Card style={{ textAlign: "center", padding: "40px 20px" }}>
     <div style={{ fontWeight: 800, color: "var(--muted)" }}>{title}</div>
     {sub && <div style={{ fontSize: 12.5, color: "var(--faint)", marginTop: 6 }}>{sub}</div>}
-    {cta && <Link href={href} className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>{cta}</Link>}
+    {cta && <Link href={href} className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>{cta}</Link>}
   </Card>
 )
 
@@ -76,7 +76,7 @@ export function Dashboard() {
       <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>Voici un aperçu de votre compte Rezervy.</div>
 
       {next ? (
-        <div style={{ background: "linear-gradient(135deg,#5E35B1,#7C4DFF)", borderRadius: 18, padding: 20, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "linear-gradient(135deg,#1a1a1a,#000000)", borderRadius: 18, padding: 20, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ width: 58, textAlign: "center", background: "rgba(255,255,255,0.12)", borderRadius: 12, padding: "9px 0", flex: "none" }}>
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "rgba(255,255,255,0.9)" }}>{dMo(next.startAt)}</div>
             <div style={{ fontSize: 21, fontWeight: 800 }}>{dDd(next.startAt)}</div>
@@ -86,15 +86,15 @@ export function Dashboard() {
             <div style={{ fontWeight: 800, fontSize: 15, marginTop: 3 }}>{next.service}</div>
             <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.8)", marginTop: 2 }}>{dTime(next.startAt)} · {next.salon?.name}{next.salon?.city ? `, ${next.salon.city}` : ""}</div>
           </div>
-          <Link href="/compte/rendez-vous" style={{ background: "#FFFFFF", color: "#7C4DFF", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Gérer</Link>
+          <Link href="/compte/rendez-vous" style={{ background: "#FFFFFF", color: "#000000", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Gérer</Link>
         </div>
       ) : (
-        <div style={{ background: "linear-gradient(135deg,#5E35B1,#7C4DFF)", borderRadius: 18, padding: 22, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "linear-gradient(135deg,#1a1a1a,#000000)", borderRadius: 18, padding: 22, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15 }}>Aucun rendez-vous à venir</div>
             <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.9)", marginTop: 4 }}>Trouvez votre salon et réservez en 30 secondes.</div>
           </div>
-          <Link href="/recherche" style={{ background: "#FFFFFF", color: "#7C4DFF", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Réserver</Link>
+          <Link href="/recherche" style={{ background: "#FFFFFF", color: "#000000", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Réserver</Link>
         </div>
       )}
 
@@ -109,7 +109,7 @@ export function Dashboard() {
 
       <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
         <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "#FFFFFF", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Réserver un nouveau rendez-vous</Link>
-        <Link href="/compte/favoris" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Voir mes favoris</Link>
+        <Link href="/compte/favoris" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Voir mes favoris</Link>
       </div>
     </>
   )
@@ -174,7 +174,7 @@ export function Profil() {
             <div style={{ fontWeight: 800, fontSize: 14 }}>Sécurité</div>
             <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>Modifiez votre mot de passe pour sécuriser votre compte.</div>
           </div>
-          <Link href="/reinitialiser-mot-de-passe" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>Changer le mot de passe</Link>
+          <Link href="/reinitialiser-mot-de-passe" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>Changer le mot de passe</Link>
         </div>
       </Card>
     </>
@@ -245,7 +245,7 @@ export function Rendezvous() {
                       {b.salon.phone}
                     </a>
                   )}
-                  <Link href={`/salon/${b.salon?.slug}`} title={b.salon?.name || "Rezervy"} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", border: "1px solid rgba(124,77,255,0.45)", borderRadius: 10, padding: "8px 13px" }}>Voir le salon</Link>
+                  <Link href={`/salon/${b.salon?.slug}`} title={b.salon?.name || "Rezervy"} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", border: "1px solid rgba(0,0,0,0.45)", borderRadius: 10, padding: "8px 13px" }}>Voir le salon</Link>
                   <span style={{ flex: 1 }} />
                   <span style={{ fontSize: 11, color: "var(--faint)" }}>Annulation gratuite jusqu'à 24h avant</span>
                   {b.canCancel && (
@@ -469,7 +469,7 @@ export function Fidelite() {
     <>
       <H>Abonnements & fidélité</H>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 4, minWidth: 0 }}>
-        <div style={{ background: "linear-gradient(150deg,#5E35B1,#7C4DFF)", borderRadius: 18, padding: 22, color: "#FFFFFF", minWidth: 0 }}>
+        <div style={{ background: "linear-gradient(150deg,#1a1a1a,#000000)", borderRadius: 18, padding: 22, color: "#FFFFFF", minWidth: 0 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.9)" }}>Points fidélité</div>
           <div style={{ fontSize: 36, fontWeight: 800, marginTop: 8 }}>{points} <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>pts</span></div>
           <div style={{ height: 7, background: "rgba(255,255,255,0.18)", borderRadius: 99, marginTop: 14, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: "#FFFFFF", borderRadius: 99 }} /></div>
@@ -481,12 +481,12 @@ export function Fidelite() {
         <Card style={{ padding: 22, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)" }}>Parrainage</div>
-            <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "2px 9px", background: "rgba(124,77,255,0.12)", color: "var(--gold-dark)" }}>Bientôt disponible</span>
+            <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "2px 9px", background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)" }}>Bientôt disponible</span>
           </div>
           <div style={{ fontSize: 13, color: "var(--muted-2)", lineHeight: 1.65, marginTop: 8 }}>
             Offrez <b style={{ color: "var(--ink)" }}>−20%</b> à une amie sur sa première visite — et gagnez <b style={{ color: "var(--ink)" }}>50 pts</b> à chaque venue. Le programme arrive très bientôt.
           </div>
-          <Link href="/parrainage" className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(124,77,255,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>En savoir plus</Link>
+          <Link href="/parrainage" className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>En savoir plus</Link>
         </Card>
       </div>
 

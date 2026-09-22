@@ -45,7 +45,7 @@ export default function CompteLayout({ children }) {
             {SECTIONS.map((s) => {
               const on = s.href === "/compte" ? pathname === "/compte" : pathname.startsWith(s.href)
               return (
-                <Link key={s.href} href={s.href} className="account-nav-item" style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", borderRadius: 11, fontSize: 13.5, fontWeight: on ? 800 : 600, color: on ? "var(--gold-dark)" : "var(--muted-2)", background: on ? "rgba(124,77,255,0.1)" : "transparent", border: on ? "1px solid rgba(124,77,255,0.3)" : "1px solid transparent", whiteSpace: "nowrap" }}>
+                <Link key={s.href} href={s.href} className="account-nav-item" style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 13px", borderRadius: 11, fontSize: 13.5, fontWeight: on ? 800 : 600, color: on ? "var(--gold-dark)" : "var(--muted-2)", background: on ? "rgba(0,0,0,0.1)" : "transparent", border: on ? "1px solid rgba(0,0,0,0.3)" : "1px solid transparent", whiteSpace: "nowrap" }}>
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={ICON[s.icon]} /></svg>{s.l}
                 </Link>
               )

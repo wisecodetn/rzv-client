@@ -26,7 +26,7 @@ export default async function CentreAide() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
         {TOPICS.map((t) => (
           <div key={t.t} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 18 }}>
-            <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(124,77,255,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>
             </span>
             <div style={{ fontWeight: 800, fontSize: 14, marginTop: 12 }}>{t.t}</div>

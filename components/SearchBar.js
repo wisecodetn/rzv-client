@@ -107,7 +107,7 @@ export default function SearchBar() {
   )
   const Row = ({ t, label: l, sub, onClick }) => (
     <div onClick={onClick} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", cursor: "pointer" }}>
-      <span style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(169,124,72,0.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}><Ico t={t} /></span>
+      <span style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}><Ico t={t} /></span>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l}</div>
         {sub && <div style={{ fontSize: 11, color: "var(--muted)" }}>{sub}</div>}
@@ -195,7 +195,7 @@ export default function SearchBar() {
       <button
         onClick={go}
         className="btn-gold"
-        style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 10, padding: "0 22px", display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", flex: "none" }}
+        style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 10, padding: "0 22px", display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", flex: "none" }}
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round">
           <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" />

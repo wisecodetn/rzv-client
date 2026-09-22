@@ -42,12 +42,12 @@ export default async function Home() {
 
       {/* HERO */}
       <section style={{ position: "relative", borderBottom: "1px solid var(--line-soft)" }}>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(115deg,#5E35B1 100%,#4527A0)" }}>
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(115deg,#1a1a1a 100%,#000000)" }}>
           <Photo label="Ambiance salon de beauté" >
-            <Image src="/main/hero.jpeg" alt="Ambiance salon de beauté" fill style={{ objectFit: "cover" }} />
+            <Image src="/main/hero.webp" alt="Ambiance salon de beauté" fill style={{ objectFit: "cover" }} />
           </Photo>
         </div>
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(100deg,rgba(10, 0, 22, 1) 0%,rgba(16, 1, 36, 0.85) 46%,rgba(74,20,140,0.28) 78%,rgba(74,20,140,0.08) 100%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(100deg,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.72) 46%,rgba(0,0,0,0.28) 78%,rgba(0,0,0,0.08) 100%)", pointerEvents: "none" }} />
         <div className="wrap" style={{ position: "relative", padding: "76px 24px 64px", pointerEvents: "none" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.14)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 999, padding: "6px 14px", fontSize: 11.5, fontWeight: 700, color: "#FFFFFF", letterSpacing: "0.04em" }}>
             {hero.badge}
@@ -85,9 +85,17 @@ export default async function Home() {
             {HOW_STEPS.map((s, i) => (
               <div key={s.i} style={{ textAlign: "center", padding: "0 12px" }}>
                 <div style={{ height: 170, borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
-                  <Photo label={["Cliente qui choisit son salon", "Coiffeuse au travail", "Cliente détendue au spa"][i]} />
+                  <Photo label={["Trouvez votre salon", "Réservez en 30 secondes", "Profitez, on s'occupe du reste"][i]}>
+                    <Image 
+                      src={`/main/step${i + 1}.webp`}
+                      alt={["Trouvez votre salon", "Réservez en 30 secondes", "Profitez, on s'occupe du reste"][i]}
+                      title={["Trouvez votre salon", "Réservez en 30 secondes", "Profitez, on s'occupe du reste"][i]}
+                      fill
+                      style={{ objectFit: "cover" }}
+                    />
+                  </Photo>
                 </div>
-                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(124,77,255,0.12)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto" }}>{s.i}</div>
+                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto" }}>{s.i}</div>
                 <div style={{ fontWeight: 800, fontSize: 14.5, marginTop: 12 }}>{s.t}</div>
                 <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65, marginTop: 6 }}>{s.d}</div>
               </div>
@@ -130,7 +138,7 @@ export default async function Home() {
             return (
               <div key={cat.slug}>
                 <Link href={`/${cat.slug}`} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 14, color: "var(--ink)" }}>
-                  <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(124,77,255,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{cat.name[0]}</span>
+                  <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{cat.name[0]}</span>
                   {cat.name}
                 </Link>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 11 }}>
@@ -196,8 +204,8 @@ export default async function Home() {
 
       {/* PRO CTA */}
       <section className="wrap" style={{ padding: "0 24px 56px" }}>
-        <div style={{ background: "linear-gradient(140deg,#5E35B1,#7C4DFF)", borderRadius: 22, padding: "36px 32px", display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ width: 220, height: 150, flex: "none", borderRadius: 16, overflow: "hidden" }}><Photo label="Gérante devant son salon" /></div>
+        <div style={{ background: "linear-gradient(140deg,#1a1a1a,#000000)", borderRadius: 22, padding: "36px 32px", display: "flex", gap: 28, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ width: 220, height: 150, flex: "none", borderRadius: 16, overflow: "hidden" }}><Photo label="Gérante devant son salon" ><Image src="/main/pro-manage.webp" alt="Gérante devant son salon" width={220} height={150} /></Photo></div>
           <div style={{ minWidth: 260, flex: 1 }}>
             <h2 className="serif" style={{ fontSize: 24, color: "#FFFFFF" }}>Vous gérez un salon, un barbershop ou un spa ?</h2>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", lineHeight: 1.7, marginTop: 8, maxWidth: 520 }}>

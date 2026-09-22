@@ -18,13 +18,13 @@ export default async function OpengraphImage({ params }) {
       <div
         style={{
           width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center",
-          padding: "84px", background: "linear-gradient(135deg,#5E35B1,#7C4DFF 55%,#4527A0)", color: "#FFFFFF",
+          padding: "84px", background: "linear-gradient(135deg,#1a1a1a,#000000 55%,#333333)", color: "#FFFFFF",
         }}
       >
-        <div style={{ fontSize: 26, color: "#B388FF", letterSpacing: 6, fontWeight: 700 }}>REZERVY</div>
+        <div style={{ fontSize: 26, color: "#e0e0e0", letterSpacing: 6, fontWeight: 700 }}>REZERVY</div>
         <div style={{ fontSize: 62, fontWeight: 700, marginTop: 24, maxWidth: 960, lineHeight: 1.08 }}>{name}</div>
         {s && (
-          <div style={{ display: "flex", marginTop: 26, fontSize: 30, color: "#B388FF" }}>
+          <div style={{ display: "flex", marginTop: 26, fontSize: 30, color: "#e0e0e0" }}>
             Note {s.rate}/5 · {s.rev} avis · {s.city} · dès {s.from} TND
           </div>
         )}

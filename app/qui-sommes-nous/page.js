@@ -55,10 +55,10 @@ export default function QuiSommesNous() {
         ))}
       </div>
 
-      <div style={{ background: "linear-gradient(140deg,#5E35B1,#7C4DFF)", borderRadius: 20, padding: "30px 28px", marginTop: 34, textAlign: "center", color: "#FFFFFF" }}>
+      <div style={{ background: "linear-gradient(140deg,#1a1a1a,#000000)", borderRadius: 20, padding: "30px 28px", marginTop: 34, textAlign: "center", color: "#FFFFFF" }}>
         <div className="serif" style={{ fontSize: 22 }}>Vous gérez un salon ?</div>
         <div style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", marginTop: 8, maxWidth: 460, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>Rejoignez Rezervy Pro et développez votre activité — dès 49 TND/mois.</div>
-        <Link href="/devenir-partenaire" className="btn-gold" style={{ display: "inline-block", background: "var(--gold-light)", color: "#2A1A08", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 13.5, marginTop: 18 }}>Devenir partenaire</Link>
+        <Link href="/devenir-partenaire" className="btn-gold" style={{ display: "inline-block", background: "#FFFFFF", color: "#000000", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 13.5, marginTop: 18 }}>Devenir partenaire</Link>
       </div>
     </PageShell>
   )
