@@ -26,7 +26,7 @@ export default async function CentreAide() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
         {TOPICS.map((t) => (
           <div key={t.t} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 18 }}>
-            <span style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(0,0,0,0.12)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ width: 40, height: 40, borderRadius: 11, background: "var(--accent-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={t.icon} /></svg>
             </span>
             <div style={{ fontWeight: 800, fontSize: 14, marginTop: 12 }}>{t.t}</div>
@@ -43,7 +43,7 @@ export default async function CentreAide() {
           <div style={{ fontWeight: 800, fontSize: 14 }}>Vous n'avez pas trouvé votre réponse ?</div>
           <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>Notre équipe vous répond sous 24h.</div>
         </div>
-        <Link href="/contact" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", borderRadius: 11, padding: "11px 20px", fontWeight: 800, fontSize: 13, whiteSpace: "nowrap" }}>Nous contacter</Link>
+        <Link href="/contact" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 11, padding: "11px 20px", fontWeight: 800, fontSize: 13, whiteSpace: "nowrap" }}>Nous contacter</Link>
       </div>
     </PageShell>
   )

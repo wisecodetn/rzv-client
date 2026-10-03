@@ -15,7 +15,7 @@ export async function GET(request, { params }) {
   const { slug } = await params
   const sp = request.nextUrl.searchParams
   const qs = new URLSearchParams()
-  for (const k of ["items", "date", "days"]) {
+  for (const k of ["items", "pack", "date", "days"]) {
     const v = sp.get(k)
     if (v) qs.set(k, v)
   }

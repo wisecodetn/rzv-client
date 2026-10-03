@@ -12,7 +12,7 @@ const STEPS = [
 export default function ParrainagePanel() {
   const { user } = useAuth()
   const code = user ? (user.name.split(" ")[0].toUpperCase().replace(/[^A-Z]/g, "").slice(0, 6) || "AMI") + "25" : "REZERVY25"
-  const link = `https://rezervy.tn/?ref=${code}`
+  const link = `https://rezervy.io/?ref=${code}`
   const [copied, setCopied] = useState(false)
   const copy = async () => {
     try { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch {}
@@ -22,12 +22,12 @@ export default function ParrainagePanel() {
   return (
     <>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14 }}>
-        <div style={{ background: "linear-gradient(150deg,#3A2B1A,#6B4E2E)", borderRadius: 18, padding: 24, color: "#F8F0E2" }}>
-          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "#D9BE97" }}>Votre code</div>
+        <div style={{ background: "linear-gradient(150deg,#2B2B2B,#4A4A4A)", borderRadius: 18, padding: 24, color: "#FAFAFA" }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "#CFCFCF" }}>Votre code</div>
           <div className="serif" style={{ fontSize: 34, marginTop: 8, letterSpacing: "0.04em" }}>{code}</div>
           <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
-            <button onClick={copy} style={{ background: "var(--gold-light)", color: "#2A1A08", border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>{copied ? "✓ Copié" : "Copier le code"}</button>
-            <a href={wa} target="_blank" rel="noopener noreferrer" style={{ background: "rgba(253,248,239,0.14)", color: "#FDF8EF", border: "1px solid rgba(253,248,239,0.3)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5 }}>Partager sur WhatsApp</a>
+            <button onClick={copy} className="btn-on-dark" style={{ border: "none", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>{copied ? "✓ Copié" : "Copier le code"}</button>
+            <a href={wa} target="_blank" rel="noopener noreferrer" style={{ background: "rgba(255,255,255,0.14)", color: "#FFFFFF", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5 }}>Partager sur WhatsApp</a>
           </div>
         </div>
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: 22 }}>
@@ -47,7 +47,7 @@ export default function ParrainagePanel() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 14 }}>
         {STEPS.map(([n, t, d]) => (
           <div key={n} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 20 }}>
-            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "rgba(169,124,72,0.12)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15 }}>{n}</div>
+            <div style={{ width: 40, height: 40, borderRadius: "50%", background: "var(--accent-soft)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 15 }}>{n}</div>
             <div style={{ fontWeight: 800, fontSize: 14, marginTop: 12 }}>{t}</div>
             <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 5 }}>{d}</div>
           </div>

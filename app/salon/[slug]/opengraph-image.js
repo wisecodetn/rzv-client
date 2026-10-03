@@ -28,7 +28,7 @@ export default async function OpengraphImage({ params }) {
             Note {s.rate}/5 · {s.rev} avis · {s.city} · dès {s.from} TND
           </div>
         )}
-        <div style={{ display: "flex", marginTop: 40, fontSize: 24, color: "#F0E4CE" }}>Réservez en ligne — confirmation par SMS</div>
+        <div style={{ display: "flex", marginTop: 40, fontSize: 24, color: "#E5E5E5" }}>Réservez en ligne — confirmation par SMS</div>
       </div>
     ),
     { ...size },

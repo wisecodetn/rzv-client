@@ -1,4 +1,8 @@
+"use client"
+
+import { useState } from "react"
 import Image from "next/image"
+import MediaLightbox from "./MediaLightbox"
 
 /**
  * The salon's photos, edge to edge.
@@ -10,8 +14,12 @@ import Image from "next/image"
  * With no photos at all the block is omitted entirely. A 300px placeholder
  * announced an absence at the top of the page — better to show a shorter,
  * honest page than a large empty frame.
+ *
+ * Every shot opens the full-size viewer: the grid crops, and the "+N" badge
+ * means several photos have no tile of their own at all.
  */
 export default function SalonMedia({ name, cover, gallery = [] }) {
+  const [openAt, setOpenAt] = useState(null)
   const shots = [cover, ...gallery].filter(Boolean)
   if (!shots.length) return null
 
@@ -29,7 +37,7 @@ export default function SalonMedia({ name, cover, gallery = [] }) {
       }}
       className="salon-media"
     >
-      <Shot src={lead} alt={`${name} — photo principale`} eager radius={18} sizes="(max-width: 780px) 100vw, 60vw" />
+      <Shot src={lead} alt={`${name} — photo principale`} eager radius={18} sizes="(max-width: 780px) 100vw, 60vw" onOpen={() => setOpenAt(0)} />
       {side.length > 0 && (
         <div
           style={{
@@ -42,7 +50,7 @@ export default function SalonMedia({ name, cover, gallery = [] }) {
         >
           {side.map((src, i) => (
             <div key={src} style={{ position: "relative", minWidth: 0, height: "100%" }}>
-              <Shot src={src} alt={`${name} — photo ${i + 2}`} radius={14} sizes="(max-width: 780px) 50vw, 20vw" />
+              <Shot src={src} alt={`${name} — photo ${i + 2}`} radius={14} sizes="(max-width: 780px) 50vw, 20vw" onOpen={() => setOpenAt(i + 1)} />
               {i === side.length - 1 && shots.length > 5 && (
                 <span
                   style={{
@@ -50,12 +58,18 @@ export default function SalonMedia({ name, cover, gallery = [] }) {
                     bottom: 8,
                     right: 8,
                     background: "rgba(0,0,0,0.5)",
-                    color: "#FDF8EF",
+                    color: "#FFFFFF",
                     fontSize: 11,
                     fontWeight: 800,
                     borderRadius: 999,
                     padding: "4px 10px",
+                    cursor: "pointer",
                   }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Voir les ${shots.length} photos`}
+                  onClick={(e) => { e.stopPropagation(); setOpenAt(5) }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); setOpenAt(5) } }}
                 >
                   +{shots.length - 5}
                 </span>
@@ -64,13 +78,22 @@ export default function SalonMedia({ name, cover, gallery = [] }) {
           ))}
         </div>
       )}
+
+      <MediaLightbox shots={shots} name={name} openAt={openAt} onClose={() => setOpenAt(null)} />
     </div>
   )
 }
 
-function Shot({ src, alt, radius, eager, sizes }) {
+function Shot({ src, alt, radius, eager, sizes, onOpen }) {
   return (
-    <div style={{ position: "relative", height: "100%", borderRadius: radius, overflow: "hidden", background: "var(--line-2)", minWidth: 0 }}>
+    <div
+      onClick={onOpen}
+      role={onOpen ? "button" : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      onKeyDown={onOpen ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen() } } : undefined}
+      aria-label={onOpen ? `${alt} — agrandir` : undefined}
+      style={{ position: "relative", height: "100%", borderRadius: radius, overflow: "hidden", background: "var(--line-2)", minWidth: 0, cursor: onOpen ? "zoom-in" : undefined }}
+    >
       <Image
         src={src}
         alt={alt}

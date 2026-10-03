@@ -6,11 +6,12 @@ import FaqAccordion from "@/components/FaqAccordion"
 import ContactCard from "@/components/ContactCard"
 import JsonLd from "@/components/JsonLd"
 import { faqLd } from "@/lib/jsonld"
-import { getFeaturedSalons, getCategories, getCatalog, categoryCities, HOW_STEPS, TESTIMONIALS } from "@/lib/data"
+import { getFeaturedSalons, getCategories, getCatalog, categoryCities, getPlatformReviews, HOW_STEPS } from "@/lib/data"
 import { getSiteContent } from "@/lib/site-content"
 import { getPosts, catLabel, formatDate } from "@/lib/blog"
 import PostCover from "@/components/blog/PostCover"
 import Image from "next/image"
+import NewsletterModal from "@/components/newsletter/NewsletterModal"
 
 export const metadata = {
   alternates: { canonical: "/" },
@@ -30,6 +31,9 @@ export default async function Home() {
   const catCities = await Promise.all(topCats.map((c) => categoryCities(c.slug)))
   const latestPosts = (await getPosts()).slice(0, 3)
   const { hero, stats: STATS, faqs: FAQS } = await getSiteContent()
+  // Salons' testimonials about Rezervy, published by our team — the section
+  // disappears when there are none.
+  const reviews = await getPlatformReviews(3)
   // Popular prestations: real sub-categories (2 per top category), each routable
   // at /<slug> like any category.
   const popular = categories
@@ -44,7 +48,7 @@ export default async function Home() {
       <section style={{ position: "relative", borderBottom: "1px solid var(--line-soft)" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(115deg,#1a1a1a 100%,#000000)" }}>
           <Photo label="Ambiance salon de beauté" >
-            <Image src="/main/hero.webp" alt="Ambiance salon de beauté" fill style={{ objectFit: "cover" }} />
+            <Image src="/main/hero.webp" alt="Ambiance salon de beauté" fill sizes="100vw" loading="eager" fetchPriority="high" style={{ objectFit: "cover" }} />
           </Photo>
         </div>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(100deg,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.72) 46%,rgba(0,0,0,0.28) 78%,rgba(0,0,0,0.08) 100%)", pointerEvents: "none" }} />
@@ -61,7 +65,7 @@ export default async function Home() {
           <SearchBar />
           <div style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap", pointerEvents: "auto" }}>
             {categories.map((c) => (
-              <Link key={c.slug} href={`/${c.slug}`} className="pill" style={{ fontSize: 12.5, fontWeight: 700, background: "rgba(255,253,248,0.96)", border: "1px solid rgba(42,36,28,0.1)", borderRadius: 999, padding: "7px 15px", whiteSpace: "nowrap", color: "#2A241C" }}>
+              <Link key={c.slug} href={`/${c.slug}`} className="pill" style={{ fontSize: 12.5, fontWeight: 700, background: "rgba(255,255,255,0.96)", border: "1px solid var(--accent-soft)", borderRadius: 999, padding: "7px 15px", whiteSpace: "nowrap", color: "#111111" }}>
                 {c.name}
               </Link>
             ))}
@@ -95,7 +99,7 @@ export default async function Home() {
                     />
                   </Photo>
                 </div>
-                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto" }}>{s.i}</div>
+                <div style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--accent-soft)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto" }}>{s.i}</div>
                 <div style={{ fontWeight: 800, fontSize: 14.5, marginTop: 12 }}>{s.t}</div>
                 <div style={{ fontSize: 12.5, color: "var(--muted)", lineHeight: 1.65, marginTop: 6 }}>{s.d}</div>
               </div>
@@ -138,7 +142,7 @@ export default async function Home() {
             return (
               <div key={cat.slug}>
                 <Link href={`/${cat.slug}`} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 14, color: "var(--ink)" }}>
-                  <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{cat.name[0]}</span>
+                  <span style={{ width: 26, height: 26, borderRadius: 8, background: "var(--accent-soft)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{cat.name[0]}</span>
                   {cat.name}
                 </Link>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 11 }}>
@@ -154,22 +158,38 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section className="wrap" style={{ padding: "40px 24px 8px" }}>
-        <H2 className="serif" style={{ fontSize: 22 }}>Elles nous font confiance</H2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 16 }}>
-          {TESTIMONIALS.map((t) => (
-            <div key={t.n} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 20 }}>
-              <div style={{ fontSize: 13, color: "var(--amber)", letterSpacing: 2 }}>★★★★★</div>
-              <div style={{ fontSize: 13, color: "var(--muted-2)", lineHeight: 1.7, marginTop: 10 }}>« {t.txt} »</div>
-              <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 14 }}>
-                <div style={{ width: 32, height: 32, borderRadius: "50%", background: t.c, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, color: "#2A1A08" }}>{t.ini}</div>
-                <div><div style={{ fontWeight: 800, fontSize: 12.5 }}>{t.n}</div><div style={{ fontSize: 11, color: "var(--muted)" }}>{t.city}</div></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* TESTIMONIALS — salon owners on Rezervy, reviewed before publication (never invented) */}
+      {reviews.length > 0 && (
+        <section className="wrap" style={{ padding: "40px 24px 8px" }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+            <H2 className="serif" sub="l’avis des salons partenaires" style={{ fontSize: 22 }}>Les salons parlent de Rezervy</H2>
+            <div style={{ flex: 1 }} />
+            <Link href="/devenir-partenaire" className="link-soft" style={{ fontSize: 13, fontWeight: 700, color: "var(--gold-dark)" }}>Rejoindre Rezervy Pro →</Link>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 14, marginTop: 16 }}>
+            {reviews.map((t) => (
+              <figure key={t.id} style={{ margin: 0, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 20, display: "flex", flexDirection: "column" }}>
+                <div style={{ fontSize: 13, color: "var(--ink)", letterSpacing: 2 }} role="img" aria-label={`${t.stars} sur 5`}>
+                  {"★".repeat(t.stars)}<span style={{ color: "var(--faint)" }}>{"★".repeat(5 - t.stars)}</span>
+                </div>
+                <blockquote style={{ margin: "10px 0 0", fontSize: 13, color: "var(--muted-2)", lineHeight: 1.7, flex: 1 }}>« {t.text} »</blockquote>
+                <figcaption style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 14 }}>
+                  <div aria-hidden="true" style={{ width: 32, height: 32, flex: "none", borderRadius: "50%", background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 11, color: "var(--ink)" }}>
+                    {String(t.author || "?").split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase()}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 12.5 }}>{t.author}{t.role ? <span style={{ fontWeight: 600, color: "var(--muted)" }}> · {t.role}</span> : null}</div>
+                    <div style={{ fontSize: 11, color: "var(--muted)" }}>
+                      {t.slug ? <Link href={`/salon/${t.slug}`} style={{ color: "var(--muted-2)", fontWeight: 700 }}>{t.salon}</Link> : <span style={{ color: "var(--muted-2)", fontWeight: 700 }}>{t.salon}</span>}
+                      {t.city ? `, ${t.city}` : ""}
+                    </div>
+                  </div>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* DERNIERS ARTICLES */}
       <section className="wrap" style={{ padding: "40px 24px 8px" }}>
@@ -209,14 +229,16 @@ export default async function Home() {
           <div style={{ minWidth: 260, flex: 1 }}>
             <h2 className="serif" style={{ fontSize: 24, color: "#FFFFFF" }}>Vous gérez un salon, un barbershop ou un spa ?</h2>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", lineHeight: 1.7, marginTop: 8, maxWidth: 520 }}>
-              Rejoignez Rezervy Pro : agenda intelligent, rappels SMS anti no-show, encaissement Flouci &amp; e-Dinar, fiches clients et statistiques — dès 49 TND/mois.
+              Rejoignez Rezervy Pro : votre salon visible sur Rezervy, réservation en ligne 24h/24, agenda et fiches clients — offres dès 39 TND/mois.
             </div>
           </div>
-          <Link href="/devenir-partenaire" style={{ background: "#FFFFFF", color: "#2A241C", border: "none", borderRadius: 12, padding: "14px 26px", fontWeight: 800, fontSize: 13.5, whiteSpace: "nowrap", flex: "none" }}>
+          <Link href="/devenir-partenaire" style={{ background: "#FFFFFF", color: "#111111", border: "none", borderRadius: 12, padding: "14px 26px", fontWeight: 800, fontSize: 13.5, whiteSpace: "nowrap", flex: "none" }}>
             Découvrir Rezervy Pro
           </Link>
         </div>
       </section>
+      {/* Browser-only invitation, shown after engagement: never in the server HTML. */}
+      <NewsletterModal />
     </>
   )
 }

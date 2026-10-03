@@ -64,7 +64,7 @@ export default async function CityScreen({ cat, ct, page = 1 }) {
 
       {/* Prix moyens + À savoir */}
       <div style={{ padding: "26px clamp(16px,2.5vw,40px) 60px", maxWidth: 1180, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 18, alignItems: "start" }}>
-        <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: 22 }}>
+        {/* <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: 22 }}>
           <div className="serif" style={{ fontSize: 18 }}>Prix moyens — {cat.lower} à {ct.name}</div>
           <div style={{ marginTop: 12 }}>
             {priceRows.map((pr) => (
@@ -76,9 +76,9 @@ export default async function CityScreen({ cat, ct, page = 1 }) {
             ))}
           </div>
           <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10 }}>Prix constatés sur les réservations Rezervy des 3 derniers mois.</div>
-        </div>
+        </div> */}
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: 22 }}>
-          <div className="serif" style={{ fontSize: 18 }}>{cat.name} à {ct.name} : ce qu'il faut savoir</div>
+          <h2 className="serif" style={{ fontSize: 18 }}>{cat.name} à {ct.name} : ce qu'il faut savoir</h2>
           <div style={{ fontSize: 13, color: "var(--muted-2)", lineHeight: 1.75, marginTop: 10 }}>
             {ct.name} concentre l'une des meilleures offres de {cat.lower} de la région. Les créneaux du samedi partent vite :
             réservez 3 à 4 jours à l'avance, ou activez la liste d'attente. La plupart des salons acceptent l'acompte Flouci

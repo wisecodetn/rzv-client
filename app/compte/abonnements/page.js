@@ -1,7 +1,7 @@
 import { Fidelite } from "@/components/account/sections"
 
 export const metadata = {
-  title: "Abonnements & fidélité",
+  title: "Carnets & fidélité",
   robots: { index: false, follow: false },
 }
 

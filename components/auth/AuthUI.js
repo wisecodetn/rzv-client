@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../AuthProvider"
+import Logo from "../brand/Logo"
 
 export const linkStyle = { color: "var(--gold-dark)", fontWeight: 700 }
 
@@ -18,7 +19,9 @@ export function AuthLayout({ title, subtitle, children, footer }) {
     <div style={{ minHeight: "calc(100vh - 210px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "44px 20px" }}>
       <div style={{ width: "100%", maxWidth: 432 }}>
         <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <div className="serif" style={{ fontSize: 22, color: "var(--gold-dark)" }}>Rezervy</div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Logo size={40} wordmark={false} animate />
+          </div>
           <div className="serif" style={{ fontSize: 27, marginTop: 12 }}>{title}</div>
           {subtitle && <div style={{ fontSize: 13.5, color: "var(--muted)", marginTop: 7, lineHeight: 1.5 }}>{subtitle}</div>}
         </div>
@@ -109,8 +112,8 @@ export function PasswordField({ label, rightLabel, value, onChange, ...rest }) {
 
 export function SubmitBtn({ loading, children }) {
   return (
-    <button type="submit" disabled={loading} className="btn-gold" style={{ width: "100%", background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 12, padding: "13px", fontWeight: 800, fontSize: 14, cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
-      {loading && <span className="auth-spin" style={{ width: 15, height: 15, borderRadius: "50%", border: "2px solid rgba(253,248,239,0.4)", borderTopColor: "#FDF8EF" }} />}
+    <button type="submit" disabled={loading} className="btn-gold" style={{ width: "100%", background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "13px", fontWeight: 800, fontSize: 14, cursor: loading ? "default" : "pointer", opacity: loading ? 0.75 : 1, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 9 }}>
+      {loading && <span className="auth-spin" style={{ width: 15, height: 15, borderRadius: "50%", border: "2px solid transparent", borderTopColor: "currentColor", borderRightColor: "currentColor" }} />}
       {children}
     </button>
   )

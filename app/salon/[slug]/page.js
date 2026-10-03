@@ -6,6 +6,8 @@ import JsonLd from "@/components/JsonLd"
 import SalonMedia from "@/components/salon/SalonMedia"
 import ServiceGroups from "@/components/salon/ServiceGroups"
 import SalonMap from "@/components/salon/SalonMap"
+import { socialLinks, socialHandle } from "@/lib/social"
+import SalonContent from "@/components/salon/SalonContent"
 import SalonReviews from "@/components/salon/SalonReviews"
 import { salonLd, breadcrumbLd } from "@/lib/jsonld"
 import { salonSlugs, getSalon, getCategory } from "@/lib/data"
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }) {
   const s = await getSalon(slug)
   if (!s) return {}
   const title = `${s.name} à ${s.city} — réserver en ligne`
-  const description = `${s.desc} ★ ${s.rate} (${s.rev} avis). Réservez ${s.kind.toLowerCase()} en ligne, dès ${s.from} TND. ${s.address}, ${s.city}.`
+  const description = `${s.name} ★ ${s.rate} (${s.rev} avis). Réservez ${s.kind.toLowerCase()} en ligne, dès ${s.from} TND. ${s.city}.`
   return {
     title,
     description,
@@ -33,17 +35,45 @@ const SideCard = ({ children }) => (
   <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 18 }}>{children}</div>
 )
 
+/** Three glyphs, inline — a brand icon pack for this is not worth a dependency. */
+function SocialIcon({ name }) {
+  const common = { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.9, strokeLinecap: "round", strokeLinejoin: "round", style: { flex: "none", color: "var(--gold-dark)" } }
+  if (name === "instagram") {
+    return (
+      <svg {...common} aria-hidden="true">
+        <rect x="2" y="2" width="20" height="20" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" />
+      </svg>
+    )
+  }
+  if (name === "facebook") {
+    return (
+      <svg {...common} aria-hidden="true">
+        <path d="M15 3h-2.5A4.5 4.5 0 0 0 8 7.5V10H5.5v4H8v7h4v-7h3l.5-4H12V7.5A.5.5 0 0 1 12.5 7H15z" />
+      </svg>
+    )
+  }
+  return (
+    <svg {...common} aria-hidden="true">
+      <circle cx="12" cy="12" r="9.5" />
+      <path d="M2.8 9h18.4 M2.8 15h18.4 M12 2.6c2.4 2.6 3.6 5.8 3.6 9.4S14.4 18.8 12 21.4c-2.4-2.6-3.6-5.8-3.6-9.4S9.6 5.2 12 2.6z" />
+    </svg>
+  )
+}
+
 export default async function SalonPage({ params }) {
   const { slug } = await params
   const s = await getSalon(slug)
   if (!s) notFound()
   const cat = await getCategory(s.primary)
-
+  console.log(s)
   const packages = s.packages ?? []
   const reviews = s.reviews ?? []
   const gallery = s.gallery ?? []
   /** "Sousse Jaouhara, Sousse" — omitting whichever part the salon left blank. */
   const where = [s.address, s.city].filter(Boolean).join(", ")
+  const social = socialLinks(s)
 
   return (
     <>
@@ -109,56 +139,41 @@ export default async function SalonPage({ params }) {
             <Link
               href={`/salon/${s.slug}/reserver`}
               className="btn-gold"
-              style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", flex: "none" }}
+              style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", flex: "none" }}
             >
               Réserver
             </Link>
           </div>
         </div>
 
-        {/* Forfaits — what the salon wants to push, so they lead. */}
-        {packages.length > 0 && (
-          <div style={{ marginTop: 22 }}>
-            <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Forfaits</div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 12 }}>
-              {packages.map((pk) => (
-                <div
-                  key={pk.id}
-                  style={{
-                    background: pk.featured ? "linear-gradient(160deg,rgba(0,0,0,0.13),var(--card) 60%)" : "var(--card)",
-                    border: `1px solid ${pk.featured ? "rgba(0,0,0,0.5)" : "var(--line)"}`,
-                    borderRadius: 16,
-                    padding: 18,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <div style={{ fontWeight: 800, fontSize: 14 }}>{pk.n}</div>
-                    {pk.featured && (
-                      <span style={{ background: "var(--gold)", color: "#FDF8EF", fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "3px 9px", letterSpacing: "0.04em" }}>
-                        RECOMMANDÉ
+        {s.desc && (
+          <div
+            style={{
+              marginTop: 18,
+              background: "var(--card)",
+              border: "1px solid var(--line)",
+              borderRadius: 16,
+              padding: "20px 22px",
+            }}
+          >
+            <div className="serif" style={{ fontSize: 18, marginBottom: 10 }}>
+              À propos
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {s.desc
+                .split(/\n\s*\n/) // split on blank lines → paragraphs
+                .map((p) => p.trim())
+                .filter(Boolean)
+                .map((para, i) => (
+                  <p key={i} style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: "var(--muted-2)" }}>
+                    {para.split("\n").map((line, j, arr) => (
+                      <span key={j}>
+                        {line}
+                        {j < arr.length - 1 && <br />}
                       </span>
-                    )}
-                  </div>
-                  {pk.desc && <div style={{ fontSize: 12.5, color: "var(--muted-2)", lineHeight: 1.6 }}>{pk.desc}</div>}
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginTop: "auto", paddingTop: 6 }}>
-                    <span style={{ fontWeight: 800, fontSize: 20 }}>{pk.p}</span>
-                    <span style={{ fontSize: 11, color: "var(--gold)" }}>TND</span>
-                    {pk.was != null && pk.was > pk.p && (
-                      <span style={{ fontSize: 12.5, color: "var(--faint)", textDecoration: "line-through" }}>{pk.was} TND</span>
-                    )}
-                  </div>
-                  <Link
-                    href={`/salon/${s.slug}/reserver?pack=${pk.id}`}
-                    className="btn-outline"
-                    style={{ border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5, textAlign: "center" }}
-                  >
-                    Réserver ce forfait
-                  </Link>
-                </div>
-              ))}
+                    ))}
+                  </p>
+                ))}
             </div>
           </div>
         )}
@@ -167,9 +182,37 @@ export default async function SalonPage({ params }) {
           {/* Left */}
           <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 22 }}>
             <div>
-              <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Services</div>
+              <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Choix de prestations</div>
               <ServiceGroups slug={s.slug} groups={s.serviceGroups} />
             </div>
+
+            {/* The salon's packages, presented exactly like its services and
+                straight after them — a package is just another prestation. */}
+            {packages.length > 0 && (
+              <div>
+                <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Prestations personnalisées</div>
+                <ServiceGroups
+                  slug={s.slug}
+                  groups={[
+                    {
+                      cat: null,
+                      rows: packages.map((pk) => ({
+                        id: pk.id,
+                        n: pk.n,
+                        // Same subline as a service — its duration — plus what it
+                        // actually contains, which is the point of a forfait.
+                        d: [pk.d, (pk.services ?? []).map((x) => x.n).join(" + ")].filter(Boolean).join(" · "),
+                        desc: pk.desc,
+                        p: pk.p,
+                        was: pk.was,
+                        featured: pk.featured,
+                        href: `/salon/${s.slug}/reserver?pack=${encodeURIComponent(pk.id)}`,
+                      })),
+                    },
+                  ]}
+                />
+              </div>
+            )}
 
             {s.team?.length > 0 && (
               <div>
@@ -177,7 +220,7 @@ export default async function SalonPage({ params }) {
                 <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   {s.team.map((tm) => (
                     <div key={tm.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", gap: 11 }}>
-                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: tm.c, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#2A1A08" }}>{tm.ini}</div>
+                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: tm.c, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#111111" }}>{tm.ini}</div>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 13 }}>{tm.n}</div>
                         <div style={{ fontSize: 11.5, color: "var(--muted)" }}>{tm.r}</div>
@@ -209,7 +252,7 @@ export default async function SalonPage({ params }) {
                 {s.phone && (
                   <a
                     href={`tel:${s.phone.replace(/\s/g, "")}`}
-                    style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--gold)", color: "#FDF8EF", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
                   >
                     <span aria-hidden="true">✆</span>
                     <span>Appeler</span>
@@ -220,7 +263,7 @@ export default async function SalonPage({ params }) {
                 {s.email && (
                   <a
                     href={`mailto:${s.email}`}
-                    style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
                   >
                     <span aria-hidden="true">✉</span>
                     <span>Envoyer un e-mail</span>
@@ -228,25 +271,30 @@ export default async function SalonPage({ params }) {
                     <span style={{ fontWeight: 600, fontSize: 12, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130 }}>{s.email}</span>
                   </a>
                 )}
-                {s.instagram && (
-                  <a
-                    href={`https://instagram.com/${s.instagram.replace("@", "")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 12.5, color: "var(--gold-dark)", fontWeight: 700, padding: "2px 2px 0" }}
-                  >
-                    {s.instagram}
-                  </a>
-                )}
-                {s.website && (
-                  <a
-                    href={s.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ fontSize: 12.5, color: "var(--gold-dark)", fontWeight: 700, padding: "0 2px" }}
-                  >
-                    Site web
-                  </a>
+                {/* Instagram, Facebook and the website — each a real external
+                    link, labelled, with the handle shown so it is obvious where
+                    it goes. Facebook used not to be rendered at all. */}
+                {social.length > 0 && (
+                  <div style={{ display: "grid", gap: 7, marginTop: 2 }}>
+                    {social.map((link) => (
+                      <a
+                        key={link.key}
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`${link.label} — ouvre un nouvel onglet`}
+                        style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid var(--line-2)", borderRadius: 12, padding: "10px 14px", color: "var(--ink)", fontWeight: 700, fontSize: 12.5 }}
+                      >
+                        <SocialIcon name={link.key} />
+                        <span>{link.label}</span>
+                        <span style={{ flex: 1 }} />
+                        <span style={{ fontWeight: 600, fontSize: 12, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140 }}>
+                          {socialHandle(link)}
+                        </span>
+                        <span aria-hidden="true" style={{ color: "var(--muted)", fontSize: 12 }}>↗</span>
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
             </SideCard>
@@ -259,6 +307,10 @@ export default async function SalonPage({ params }) {
             )}
           </div>
         </div>
+
+        {/* Long-form copy, last: it serves search more than the visitor, so it
+            sits below everything that leads to a booking. */}
+        <SalonContent html={s.content} name={s.name} />
       </div>
     </>
   )

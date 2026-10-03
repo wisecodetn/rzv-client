@@ -107,7 +107,7 @@ export default function SearchBar() {
   )
   const Row = ({ t, label: l, sub, onClick }) => (
     <div onClick={onClick} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", cursor: "pointer" }}>
-      <span style={{ width: 26, height: 26, borderRadius: 7, background: "rgba(0,0,0,0.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}><Ico t={t} /></span>
+      <span style={{ width: 26, height: 26, borderRadius: 7, background: "var(--accent-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}><Ico t={t} /></span>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l}</div>
         {sub && <div style={{ fontSize: 11, color: "var(--muted)" }}>{sub}</div>}

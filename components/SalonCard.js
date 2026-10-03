@@ -1,9 +1,11 @@
 import Link from "next/link"
 import Photo from "./Photo"
 import FavButton from "./FavButton"
+import Image from "next/image"
 
 /** Marketplace salon card (home + search). */
 export default function SalonCard({ salon }) {
+  console.log(salon)
   return (
     <div style={{ position: "relative" }}>
     <FavButton slug={salon.slug} variant="icon" size={36} />
@@ -14,7 +16,7 @@ export default function SalonCard({ salon }) {
       style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, overflow: "hidden", display: "block", color: "var(--ink)" }}
     >
       <div style={{ height: 140, position: "relative" }}>
-        <Photo label={`Photo — ${salon.name}`} />
+        <Photo label={`Photo — ${salon.name}`}>{salon.cover && <Image src={salon.cover} alt={`${salon.name} — photo du salon`} fill style={{ objectFit: "cover" }} sizes="500px"/>}</Photo>
         <div
           style={{
             position: "absolute", right: 12, bottom: -14, width: 44, height: 44, borderRadius: 13, background: "var(--card)",
@@ -22,7 +24,7 @@ export default function SalonCard({ salon }) {
           }}
           className="serif"
         >
-          <span style={{ fontSize: 20 }}>{salon.ini}</span>
+          <span style={{ fontSize: 20 }}>{salon.logo ? (<Image src={salon.logo} alt={`${salon.name} — logo`} fill sizes="300px" style={{ borderRadius: 12}}/>) : salon.ini}</span>
         </div>
       </div>
       <div style={{ padding: "14px 16px 16px" }}>

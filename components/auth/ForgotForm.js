@@ -44,7 +44,7 @@ export default function ForgotForm() {
           <button
             onClick={() => router.push(`/reinitialiser-mot-de-passe?email=${encodeURIComponent(email.trim().toLowerCase())}`)}
             className="btn-gold"
-            style={{ width: "100%", marginTop: 14, background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 12, padding: "13px 16px", fontWeight: 800, fontSize: 13.5, cursor: "pointer" }}
+            style={{ width: "100%", marginTop: 14, background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "13px 16px", fontWeight: 800, fontSize: 13.5, cursor: "pointer" }}
           >
             Saisir le code
           </button>

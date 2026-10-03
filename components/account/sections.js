@@ -12,7 +12,7 @@ const H = ({ children }) => <div className="serif" style={{ fontSize: 21, margin
 const STATUS = {
   pending: { l: "En attente", c: "var(--gold-dark)", bg: "rgba(0,0,0,0.13)" },
   confirmed: { l: "Confirmé", c: "var(--green)", bg: "var(--green-soft)" },
-  completed: { l: "Terminé", c: "var(--muted)", bg: "rgba(42,36,28,0.08)" },
+  completed: { l: "Terminé", c: "var(--muted)", bg: "var(--accent-soft)" },
   cancelled: { l: "Annulé", c: "var(--red)", bg: "var(--red-soft)" },
   noshow: { l: "Non honoré", c: "var(--red)", bg: "var(--red-soft)" },
 }
@@ -25,9 +25,11 @@ const durLabel = (min) => (min >= 60 ? `${Math.floor(min / 60)}h${min % 60 ? Str
 
 /** Payment recap line — mirrors the /rdv detail view ("acompte payé : …"). */
 const payInfo = (b) => {
-  if (b.payment === "deposit") return { c: "var(--gold-dark)", t: `✓ Acompte payé par carte : ${b.depositTnd} TND — solde de ${b.amountTnd - b.depositTnd} TND à régler au salon` }
-  if (b.payment === "paid") return { c: "var(--gold-dark)", t: `✓ Payé en ligne : ${b.amountTnd} TND` }
-  if (b.payment === "refund") return { c: "var(--muted)", t: `Acompte de ${b.depositTnd} TND — remboursement sous 3 jours ouvrés` }
+  // No online payment: every amount here was handed over at the salon.
+  if (b.coveredBy) return { c: "var(--gold-dark)", t: `✓ Séance de votre carnet « ${b.coveredBy} » — rien à régler` }
+  if (b.payment === "deposit") return { c: "var(--gold-dark)", t: `✓ Avance réglée : ${b.depositTnd} TND — reste ${b.amountTnd - b.depositTnd} TND à régler au salon` }
+  if (b.payment === "paid") return { c: "var(--gold-dark)", t: `✓ Réglé : ${b.amountTnd} TND` }
+  if (b.payment === "refund") return { c: "var(--muted)", t: `Avance de ${b.depositTnd} TND — à voir avec le salon` }
   return { c: "var(--muted)", t: `Paiement sur place — total de ${b.amountTnd} TND` }
 }
 
@@ -53,7 +55,7 @@ const Empty = ({ title, sub, cta, href }) => (
   <Card style={{ textAlign: "center", padding: "40px 20px" }}>
     <div style={{ fontWeight: 800, color: "var(--muted)" }}>{title}</div>
     {sub && <div style={{ fontSize: 12.5, color: "var(--faint)", marginTop: 6 }}>{sub}</div>}
-    {cta && <Link href={href} className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>{cta}</Link>}
+    {cta && <Link href={href} className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>{cta}</Link>}
   </Card>
 )
 
@@ -76,7 +78,7 @@ export function Dashboard() {
       <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 16 }}>Voici un aperçu de votre compte Rezervy.</div>
 
       {next ? (
-        <div style={{ background: "linear-gradient(135deg,#1a1a1a,#000000)", borderRadius: 18, padding: 20, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "var(--inverse-bg)", border: "1px solid var(--inverse-line)", borderRadius: 18, padding: 20, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ width: 58, textAlign: "center", background: "rgba(255,255,255,0.12)", borderRadius: 12, padding: "9px 0", flex: "none" }}>
             <div style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", color: "rgba(255,255,255,0.9)" }}>{dMo(next.startAt)}</div>
             <div style={{ fontSize: 21, fontWeight: 800 }}>{dDd(next.startAt)}</div>
@@ -89,7 +91,7 @@ export function Dashboard() {
           <Link href="/compte/rendez-vous" style={{ background: "#FFFFFF", color: "#000000", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Gérer</Link>
         </div>
       ) : (
-        <div style={{ background: "linear-gradient(135deg,#1a1a1a,#000000)", borderRadius: 18, padding: 22, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "var(--inverse-bg)", border: "1px solid var(--inverse-line)", borderRadius: 18, padding: 22, color: "#FFFFFF", display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 15 }}>Aucun rendez-vous à venir</div>
             <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.9)", marginTop: 4 }}>Trouvez votre salon et réservez en 30 secondes.</div>
@@ -108,8 +110,8 @@ export function Dashboard() {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
-        <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "#FFFFFF", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Réserver un nouveau rendez-vous</Link>
-        <Link href="/compte/favoris" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Voir mes favoris</Link>
+        <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Réserver un nouveau rendez-vous</Link>
+        <Link href="/compte/favoris" className="btn-outline" style={{ background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Voir mes favoris</Link>
       </div>
     </>
   )
@@ -149,7 +151,7 @@ export function Profil() {
           </div>
           <label style={{ display: "block", marginTop: 14 }}><span style={label}>E-mail</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inp} /></label>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
-            <button type="submit" className="btn-gold" style={{ background: "var(--gold)", color: "#FFFFFF", border: "none", borderRadius: 11, padding: "11px 22px", fontWeight: 800, fontSize: 13 }}>Enregistrer</button>
+            <button type="submit" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 11, padding: "11px 22px", fontWeight: 800, fontSize: 13 }}>Enregistrer</button>
             {saved && <span style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 700 }}>✓ Profil mis à jour</span>}
           </div>
         </form>
@@ -174,9 +176,78 @@ export function Profil() {
             <div style={{ fontWeight: 800, fontSize: 14 }}>Sécurité</div>
             <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>Modifiez votre mot de passe pour sécuriser votre compte.</div>
           </div>
-          <Link href="/reinitialiser-mot-de-passe" className="btn-outline" style={{ background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>Changer le mot de passe</Link>
+          <Link href="/reinitialiser-mot-de-passe" className="btn-outline" style={{ background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "10px 16px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>Changer le mot de passe</Link>
         </div>
       </Card>
+    </>
+  )
+}
+
+/* ── Liste d'attente ─────────────────────────────────────────────────
+   Requests the customer made instead of booking a créneau. Shown only when
+   there are some; a freed slot the salon proposes appears here with the time
+   it is held until. */
+const WL_STATUS = {
+  waiting: { l: "En attente d'un créneau", c: "var(--gold-dark)", bg: "var(--accent-soft)" },
+  invited: { l: "Créneau proposé", c: "var(--green)", bg: "var(--green-soft)" },
+  declined: { l: "Proposition déclinée", c: "var(--muted)", bg: "var(--accent-soft)" },
+}
+
+function WaitlistRequests() {
+  const { data, reload } = useAccountFetch("waitlist")
+  const [leaving, setLeaving] = useState(null)
+  const rows = Array.isArray(data) ? data : []
+  if (!rows.length) return null
+
+  const leave = async (w) => {
+    if (!window.confirm(`Retirer votre demande « ${w.service} » chez ${w.salon?.name} ?`)) return
+    setLeaving(w.id)
+    try {
+      await fetch(`/api/account/waitlist/${w.id}`, { method: "DELETE" })
+      reload()
+    } finally {
+      setLeaving(null)
+    }
+  }
+
+  return (
+    <>
+      <div style={{ fontWeight: 800, fontSize: 11, marginTop: 26, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Liste d'attente</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
+        {rows.map((w) => {
+          const st = WL_STATUS[w.status] || WL_STATUS.waiting
+          return (
+            <Card key={w.id} style={{ padding: "14px 18px" }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <div style={{ fontWeight: 800, fontSize: 14, minWidth: 0 }}>{w.service}</div>
+                <span style={{ fontSize: 11, fontWeight: 800, borderRadius: 999, padding: "4px 12px", background: st.bg, color: st.c, whiteSpace: "nowrap" }}>{st.l}</span>
+                <span style={{ flex: 1 }} />
+                <button onClick={() => leave(w)} disabled={leaving === w.id} style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--muted-2)", borderRadius: 10, padding: "7px 12px", fontWeight: 700, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+                  {leaving === w.id ? "Retrait…" : "Retirer ma demande"}
+                </button>
+              </div>
+              <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 5 }}>
+                {w.salon?.slug ? (
+                  <Link href={`/salon/${w.salon.slug}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>{w.salon.name}</Link>
+                ) : (
+                  w.salon?.name
+                )}
+                {" · "}Disponibilité : <b style={{ color: "var(--muted-2)" }}>{w.window}</b>
+              </div>
+              {w.offer && (
+                <div style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 700, marginTop: 7, lineHeight: 1.6 }}>
+                  Le salon vous propose : <span style={{ textTransform: "capitalize" }}>{dLong(w.offer.startAt)}</span> à {dTime(w.offer.startAt)} — réservé pour vous jusqu'à {dTime(w.offer.holdUntil)}.
+                  {w.salon?.phone ? (
+                    <> Appelez le <a href={`tel:${w.salon.phone.replace(/\s/g, "")}`} style={{ color: "var(--green)", textDecoration: "underline" }}>{w.salon.phone}</a> pour confirmer.</>
+                  ) : (
+                    " Le salon vous contactera pour confirmer."
+                  )}
+                </div>
+              )}
+            </Card>
+          )
+        })}
+      </div>
     </>
   )
 }
@@ -245,11 +316,11 @@ export function Rendezvous() {
                       {b.salon.phone}
                     </a>
                   )}
-                  <Link href={`/salon/${b.salon?.slug}`} title={b.salon?.name || "Rezervy"} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", border: "1px solid rgba(0,0,0,0.45)", borderRadius: 10, padding: "8px 13px" }}>Voir le salon</Link>
+                  <Link href={`/salon/${b.salon?.slug}`} title={b.salon?.name || "Rezervy"} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", border: "1px solid var(--accent-line)", borderRadius: 10, padding: "8px 13px" }}>Voir le salon</Link>
                   <span style={{ flex: 1 }} />
                   <span style={{ fontSize: 11, color: "var(--faint)" }}>Annulation gratuite jusqu'à 24h avant</span>
                   {b.canCancel && (
-                    <Link href={`/salon/${b.salon?.slug}/reserver?resched=${b.id}`} title="Reprogrammer ce rendez-vous" className="btn-gold" style={{ background: "var(--gold)", color: "#FFFFFF", borderRadius: 10, padding: "8px 14px", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap", flex: "none" }}>
+                    <Link href={`/salon/${b.salon?.slug}/reserver?resched=${b.id}`} title="Reprogrammer ce rendez-vous" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 10, padding: "8px 14px", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap", flex: "none" }}>
                       Reprogrammer
                     </Link>
                   )}
@@ -264,6 +335,8 @@ export function Rendezvous() {
           })}
         </div>
       )}
+
+      <WaitlistRequests />
 
       {past.length > 0 && (
         <>
@@ -408,7 +481,7 @@ function ReviewModal({ booking, onClose, onDone }) {
           <button onClick={onClose} disabled={busy} style={{ background: "none", border: "1px solid var(--line-strong)", borderRadius: 10, padding: "10px 16px", fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)", cursor: "pointer" }}>
             Annuler
           </button>
-          <button onClick={submit} disabled={!complete || busy} style={{ background: "var(--gold)", color: "#FFFFFF", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 12.5, fontWeight: 800, cursor: complete && !busy ? "pointer" : "default", opacity: complete && !busy ? 1 : 0.55 }}>
+          <button onClick={submit} disabled={!complete || busy} style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 10, padding: "10px 18px", fontSize: 12.5, fontWeight: 800, cursor: complete && !busy ? "pointer" : "default", opacity: complete && !busy ? 1 : 0.55 }}>
             {busy ? "Envoi…" : prev ? "Mettre à jour mon avis" : "Publier mon avis"}
           </button>
         </div>
@@ -445,7 +518,7 @@ export function Favoris() {
                   {s.rate && <span style={{ fontSize: 12, fontWeight: 800, color: "var(--gold-dark)" }}>★ {s.rate}</span>}
                   {s.from != null && <span style={{ fontSize: 11.5, color: "var(--muted)" }}>dès {s.from} TND</span>}
                   <span style={{ flex: 1 }} />
-                  <Link href={`/salon/${s.slug}/reserver`} style={{ background: "var(--gold)", color: "#FFFFFF", borderRadius: 9, padding: "7px 13px", fontWeight: 800, fontSize: 11.5, whiteSpace: "nowrap" }} className="btn-gold">Réserver</Link>
+                  <Link href={`/salon/${s.slug}/reserver`} style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 9, padding: "7px 13px", fontWeight: 800, fontSize: 11.5, whiteSpace: "nowrap" }} className="btn-gold">Réserver</Link>
                 </div>
               </div>
             </div>
@@ -457,19 +530,87 @@ export function Favoris() {
 }
 
 /* ── Abonnements & fidélité ──────────────────────────────────────── */
+/* ── One carnet a salon gave the client ───────────────────────────── */
+const CARNET_STATUS = {
+  active: { l: "Actif", c: "var(--green)", bg: "var(--green-soft)" },
+  exhausted: { l: "Épuisé", c: "var(--muted)", bg: "var(--accent-soft)" },
+  expired: { l: "Expiré", c: "var(--muted)", bg: "var(--accent-soft)" },
+}
+
+function CarnetCard({ m }) {
+  const st = CARNET_STATUS[m.status] || CARNET_STATUS.active
+  const running = m.status === "active"
+  const pct = m.total ? Math.round(((m.total - m.left) / m.total) * 100) : 0
+  return (
+    <Card style={{ padding: 0, overflow: "hidden" }}>
+      <div style={{ padding: 18 }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <div className="serif" style={{ fontSize: 18 }}>{m.name}</div>
+          <span style={{ fontSize: 11, fontWeight: 800, borderRadius: 999, padding: "4px 12px", background: st.bg, color: st.c }}>{st.l}</span>
+          {m.offered && <span style={{ fontSize: 11, fontWeight: 800, borderRadius: 999, padding: "4px 12px", background: "var(--line)", color: "var(--ink)" }}>Offert</span>}
+          <span style={{ flex: 1 }} />
+          <span style={{ fontSize: 12.5, color: "var(--muted)" }}>
+            <b style={{ color: "var(--ink)" }}>{m.left}</b> / {m.total} séance{m.total > 1 ? "s" : ""}
+          </span>
+        </div>
+        <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 4 }}>
+          {m.salon ? <Link href={`/salon/${m.salon.slug}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>{m.salon.name}</Link> : "Salon"}
+          {m.status === "expired" ? ` · expiré le ${dFull(m.endsAt)}` : ` · valable jusqu'au ${dFull(m.endsAt)}`}
+        </div>
+        <div style={{ height: 5, background: "var(--line-soft)", borderRadius: 99, marginTop: 10, overflow: "hidden" }}>
+          <div style={{ width: `${pct}%`, height: "100%", background: "var(--ink)", borderRadius: 99 }} />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 14 }}>
+          {m.credits.map((c) => {
+            const canBook = running && c.left > 0 && m.salon
+            return (
+              <div key={c.serviceId} style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", background: "var(--bg)", borderRadius: 12, padding: "10px 14px" }}>
+                <div style={{ flex: 1, minWidth: 160 }}>
+                  <div style={{ fontWeight: 800, fontSize: 13.5 }}>{c.service}</div>
+                  <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 2 }}>
+                    {c.left} séance{c.left > 1 ? "s" : ""} restante{c.left > 1 ? "s" : ""} sur {c.qty}
+                  </div>
+                </div>
+                {canBook ? (
+                  <Link
+                    href={`/salon/${m.salon.slug}/reserver?svc=${encodeURIComponent(c.serviceId)}&abo=${encodeURIComponent(m.id)}`}
+                    className="btn-gold"
+                    style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 10, padding: "9px 14px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}
+                  >
+                    Réserver avec mon carnet
+                  </Link>
+                ) : (
+                  <span style={{ fontSize: 12, color: "var(--faint)" }}>{c.left <= 0 ? "Séances utilisées" : "Indisponible"}</span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        {!running && m.salon?.phone && (
+          <div style={{ fontSize: 12.5, color: "var(--muted-2)", marginTop: 12, lineHeight: 1.55 }}>
+            Pour un nouveau carnet, contactez {m.salon.name} ({m.salon.phone}).
+          </div>
+        )}
+      </div>
+    </Card>
+  )
+}
+
 export function Fidelite() {
   const { data: ov } = useAccountFetch("overview")
   const points = ov?.loyalty?.points ?? 0
   const visits = ov?.loyalty?.visits ?? 0
   const rewardAt = ov?.loyalty?.rewardAt ?? 500
   const pct = Math.min(100, Math.round((points / rewardAt) * 100))
-  const memberships = ov?.memberships || []
+  const { data: mem } = useAccountFetch("memberships")
+  const memberships = Array.isArray(mem) ? mem : []
 
   return (
     <>
-      <H>Abonnements & fidélité</H>
+      <H>Carnets & fidélité</H>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 14, marginTop: 4, minWidth: 0 }}>
-        <div style={{ background: "linear-gradient(150deg,#1a1a1a,#000000)", borderRadius: 18, padding: 22, color: "#FFFFFF", minWidth: 0 }}>
+        <div style={{ background: "var(--inverse-bg)", border: "1px solid var(--inverse-line)", borderRadius: 18, padding: 22, color: "#FFFFFF", minWidth: 0 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.9)" }}>Points fidélité</div>
           <div style={{ fontSize: 36, fontWeight: 800, marginTop: 8 }}>{points} <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>pts</span></div>
           <div style={{ height: 7, background: "rgba(255,255,255,0.18)", borderRadius: 99, marginTop: 14, overflow: "hidden" }}><div style={{ width: `${pct}%`, height: "100%", background: "#FFFFFF", borderRadius: 99 }} /></div>
@@ -481,24 +622,29 @@ export function Fidelite() {
         <Card style={{ padding: 22, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--muted)" }}>Parrainage</div>
-            <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "2px 9px", background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)" }}>Bientôt disponible</span>
+            <span style={{ fontSize: 10, fontWeight: 800, borderRadius: 999, padding: "2px 9px", background: "var(--accent-soft)", color: "var(--gold-dark)" }}>Bientôt disponible</span>
           </div>
           <div style={{ fontSize: 13, color: "var(--muted-2)", lineHeight: 1.65, marginTop: 8 }}>
             Offrez <b style={{ color: "var(--ink)" }}>−20%</b> à une amie sur sa première visite — et gagnez <b style={{ color: "var(--ink)" }}>50 pts</b> à chaque venue. Le programme arrive très bientôt.
           </div>
-          <Link href="/parrainage" className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid rgba(0,0,0,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>En savoir plus</Link>
+          <Link href="/parrainage" className="btn-outline" style={{ display: "inline-block", marginTop: 14, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>En savoir plus</Link>
         </Card>
       </div>
 
-      <div style={{ fontWeight: 800, fontSize: 11, marginTop: 26, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Mes abonnements</div>
+      <div style={{ fontWeight: 800, fontSize: 11, marginTop: 26, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Mes carnets</div>
       {memberships.length === 0 ? (
         <Card style={{ marginTop: 10, padding: 22 }}>
-          <div style={{ fontWeight: 800, fontSize: 14, color: "var(--muted)" }}>Aucun abonnement actif</div>
+          <div style={{ fontWeight: 800, fontSize: 14, color: "var(--muted)" }}>Aucun carnet</div>
           <div style={{ fontSize: 12.5, color: "var(--faint)", marginTop: 6, lineHeight: 1.6 }}>
-            Certains salons proposeront bientôt des formules illimitées (brushing, barbe…) à prix fixe mensuel. Vous les retrouverez ici.
+            Quand un salon vous vend ou vous offre un carnet de séances, il apparaît ici et vous réservez avec en un clic.
+            Il est lié au numéro de téléphone de votre compte.
           </div>
         </Card>
-      ) : null}
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 10 }}>
+          {memberships.map((m) => <CarnetCard key={m.id} m={m} />)}
+        </div>
+      )}
     </>
   )
 }

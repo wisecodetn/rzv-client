@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { useAuth } from "./AuthProvider"
 import { useCatalog } from "./CatalogProvider"
 import ThemeToggle from "./ThemeToggle"
+import Logo from "./brand/Logo"
 
 /* Account sections — mirrored from app/compte/layout.js. On mobile the in-page
    account nav is hidden, so this popup IS the account navigation. */
@@ -20,7 +21,7 @@ const ACCT_SECTIONS = [
   { href: "/compte/profil", l: "Mon profil", icon: "profil" },
   { href: "/compte/rendez-vous", l: "Mes rendez-vous", icon: "rdv" },
   { href: "/compte/favoris", l: "Mes favoris", icon: "favoris" },
-  { href: "/compte/abonnements", l: "Abonnements & fidélité", icon: "fid" },
+  { href: "/compte/abonnements", l: "Carnets & fidélité", icon: "fid" },
 ]
 
 export default function Navbar() {
@@ -60,7 +61,9 @@ export default function Navbar() {
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16 M4 12h16 M4 18h16" /></svg>
         </button>
 
-        <Link href="/" title="Rezervy — Accueil" className="serif" style={{ fontSize: 23, color: "var(--ink)", letterSpacing: "0.01em", flex: "none" }}>Rezervy</Link>
+        <Link href="/" title="Rezervy — Accueil" aria-label="Rezervy — Accueil" style={{ color: "var(--ink)", flex: "none", display: "inline-flex" }}>
+          <Logo size={26} wordSize={23} animate />
+        </Link>
 
         {/* Desktop category nav */}
         <nav className="nav-cats" style={{ display: "flex", alignItems: "center", gap: 20, marginLeft: 8 }}>
@@ -128,7 +131,7 @@ export default function Navbar() {
                 {categories.map((c) => (
                   <div key={c.slug}>
                     <Link href={`/${c.slug}`} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 13.5, color: "var(--ink)" }}>
-                      <span style={{ width: 26, height: 26, borderRadius: 8, background: "rgba(0,0,0,0.12)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{c.name[0]}</span>
+                      <span style={{ width: 26, height: 26, borderRadius: 8, background: "var(--accent-soft)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{c.name[0]}</span>
                       {c.name}
                     </Link>
                     <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 9 }}>
@@ -144,7 +147,7 @@ export default function Navbar() {
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--line)", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12.5, color: "var(--muted)" }}>Rezervy couvre 24 gouvernorats — Tunis, Sfax, Sousse, Nabeul, Bizerte…</span>
                 <div style={{ flex: 1 }} />
-                <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 800 }}>Explorer tous les salons</Link>
+                <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 800 }}>Explorer tous les salons</Link>
               </div>
             </div>
           </div>

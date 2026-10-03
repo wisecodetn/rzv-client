@@ -61,7 +61,7 @@ export default function SearchForm({ initial }) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" /></svg>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Prestation, salon, catégorie… (ex. balayage, barbier)" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 14.5, color: "var(--ink)", padding: 0 }} />
         </div>
-        <button type="submit" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 12, padding: "13px 26px", display: "inline-flex", alignItems: "center", gap: 9, fontSize: 14, fontWeight: 800, cursor: "pointer", flex: "none" }}>
+        <button type="submit" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "13px 26px", display: "inline-flex", alignItems: "center", gap: 9, fontSize: 14, fontWeight: 800, cursor: "pointer", flex: "none" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" /></svg>
           Rechercher
         </button>

@@ -76,7 +76,7 @@ export default function ResetForm() {
             <div style={{ flex: 1 }}>
               <Field label="Code de vérification" value={code} onChange={setCode} placeholder="6 chiffres" autoComplete="one-time-code" required />
             </div>
-            <button type="button" onClick={sendCode} disabled={sending} style={{ flex: "none", marginBottom: 14, background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "11px 14px", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
+            <button type="button" onClick={sendCode} disabled={sending} style={{ flex: "none", marginBottom: 14, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "11px 14px", fontWeight: 800, fontSize: 12, cursor: "pointer", whiteSpace: "nowrap" }}>
               {sending ? "Envoi…" : "Recevoir un code"}
             </button>
           </div>

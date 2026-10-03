@@ -4,11 +4,13 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "./AuthProvider"
 import { flatServices } from "@/lib/salon-utils"
+import WaitlistJoin from "./salon/WaitlistJoin"
+import AboChooser from "./salon/AboChooser"
 
 const DEPOSIT_PCT = 30
 const fmtD = (m) => (m >= 60 ? Math.floor(m / 60) + "h" + (m % 60 ? String(m % 60).padStart(2, "0") : "") : m + " min")
 const T = (m) => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0")
-const sel = (on) => (on ? ["rgba(169,124,72,0.6)", "rgba(169,124,72,0.09)"] : ["var(--line-2)", "transparent"])
+const sel = (on) => (on ? ["var(--ink)", "var(--line-soft)"] : ["var(--line-2)", "var(--card)"])
 // Slots come from the API — the salon's own hours, its agenda and the chosen
 // service's duration. A fixed 9h–17h30 grid was wrong for every salon that
 // closes at another hour.
@@ -18,6 +20,40 @@ const PAY = [
 ]
 const PAY_ONSITE = 1
 const lbl = { fontSize: 11, color: "var(--muted)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }
+
+/** A numbered step: filled and ticked once done, with an optional action ("Modifier"). */
+function StepHead({ n, title, done, sub, action }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <span
+        aria-hidden="true"
+        style={{
+          flex: "none", width: 26, height: 26, borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center",
+          fontSize: 12, fontWeight: 800,
+          background: done ? "var(--ink)" : "transparent",
+          color: done ? "var(--card)" : "var(--muted)",
+          border: `1.5px solid ${done ? "var(--ink)" : "var(--line-strong)"}`,
+        }}
+      >
+        {done ? "✓" : n}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 800 }}>{title}</div>
+        {sub && <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 1 }}>{sub}</div>}
+      </div>
+      {action}
+    </div>
+  )
+}
+const stepBox = { padding: "18px 0", borderTop: "1px solid var(--line-soft)" }
+
+/** Slots by time of day — a long row of times is hard to scan on a phone. */
+const SLOT_PREVIEW = 8
+const PERIODS = [
+  ["Matin", (m) => m < 12 * 60],
+  ["Après-midi", (m) => m >= 12 * 60 && m < 17 * 60],
+  ["Soir", (m) => m >= 17 * 60],
+]
 
 /** YYYY-MM-DD in the visitor's own timezone — the salon's calendar day. */
 const dayKey = (dt) => {
@@ -42,10 +78,35 @@ const loadPending = (salonSlug) => {
 /* One-page booking (single prestation — matches the Rezervy reservation UI):
    prestation card = service + "Avec qui ?" avatar tiles + month calendar +
    créneaux. Sticky aside = recap + acompte + CTA. */
-export default function BookingFlow({ salon, preselect = null, confirmOnArrival = false, paidSessionId = null, cancelSessionId = null, reschedId = null }) {
+export default function BookingFlow({ salon, preselect = null, confirmOnArrival = false, paidSessionId = null, cancelSessionId = null, reschedId = null, aboId = null }) {
   const router = useRouter()
   const { user, ready: authReady } = useAuth()
-  const flat = useMemo(() => flatServices(salon), [salon])
+  // Forfaits join the list as one more bookable prestation: the booking engine
+  // books their services as a chain, at the forfait's price. Appended after the
+  // services so existing indices — and restored selections — are unchanged.
+  const flat = useMemo(
+    () => [
+      ...flatServices(salon),
+      ...(salon.packages ?? [])
+        .filter((pk) => (pk.services ?? []).length >= 2)
+        .map((pk) => ({
+          id: `pack:${pk.id}`,
+          n: pk.n,
+          d: pk.d,
+          m: pk.m,
+          p: pk.p,
+          cat: "Prestation personnalisée",
+          // Different steps are often done by different people: the engine
+          // assigns each one, so no single "avec qui" choice applies.
+          who: [],
+          isPack: true,
+          packId: pk.id,
+          serviceIds: pk.services.map((x) => x.id),
+          contents: pk.services.map((x) => x.n),
+        })),
+    ],
+    [salon],
+  )
   const staff = salon.team
 
   // `preselect` is a service id from the salon page's "Réserver" link.
@@ -69,8 +130,6 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
   const [promo, setPromo] = useState(null)   // { code, discountTnd, totalTnd, … }
   const [promoErr, setPromoErr] = useState("")
   const [promoBusy, setPromoBusy] = useState(false)
-  const [wlPhone, setWlPhone] = useState("")
-  const [wlJoined, setWlJoined] = useState(false)
   const restoredRef = useRef(false)
   const verifiedRef = useRef(false)
   const cancelledRef = useRef(false)
@@ -202,6 +261,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     const stf = p.staffId === "any" || flat[i].who.includes(p.staffId) ? p.staffId : "any"
     setSvcI(i)
     setStaffId(stf)
+    if (p.aboId) { setAboChoice(p.aboId); setUseAbo(true) }
     if (typeof p.payI === "number" && p.payI >= 0 && p.payI < PAY.length) setPayI(p.payI)
     // The saved selection is restored as-is; availability is fetched right
     // after and drops the slot if the salon no longer offers it. Re-deriving it
@@ -223,10 +283,42 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
   }, [authReady, user, salon.slug, flat, staff, today, confirmOnArrival, reschedId])
 
   const svc = svcI != null ? flat[svcI] : null
+
+  /* The customer's subscriptions (given by salons). One that includes this
+     service here, with a credit left, can cover the visit: nothing to pay. */
+  const [memberships, setMemberships] = useState([])
+  const [aboChoice, setAboChoice] = useState(aboId)
+  const [useAbo, setUseAbo] = useState(!!aboId)
+  useEffect(() => {
+    if (!user || reschedId) { setMemberships([]); return }
+    let alive = true
+    fetch("/api/account/memberships")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((d) => alive && setMemberships(Array.isArray(d) ? d : []))
+      .catch(() => {})
+    return () => { alive = false }
+  }, [user, reschedId])
+  const aboOptions = useMemo(
+    () =>
+      svc && !svc.isPack
+        ? memberships.filter(
+            (m) => m.salon?.slug === salon.slug && m.status === "active" &&
+              m.credits.some((c) => c.serviceId === String(svc.id) && c.left > 0),
+          )
+        : [],
+    [memberships, svc, salon.slug],
+  )
+  const abo = aboOptions.find((m) => m.id === aboChoice) ?? aboOptions[0] ?? null
+  const aboCredit = abo ? abo.credits.find((c) => c.serviceId === String(svc?.id)) : null
+  const aboEnd = abo?.endsAt ? new Date(`${abo.endsAt}T00:00:00`) : null
+  // A credit is paid for one period: the visit must fall inside it.
+  const aboDateOk = !abo || !date || !aboEnd || date < aboEnd
+  const covered = !!(useAbo && abo && aboCredit)
+
   const subtotal = svc ? svc.p : 0
   // The discount is whatever the SERVER said this code is worth for this basket.
-  const discount = promo ? Math.min(promo.discountTnd, subtotal) : 0
-  const total = Math.max(0, subtotal - discount)
+  const discount = covered ? 0 : promo ? Math.min(promo.discountTnd, subtotal) : 0
+  const total = covered ? 0 : Math.max(0, subtotal - discount)
   const totalM = svc ? svc.m : 0
   const deposit = total > 0 ? Math.max(1, Math.round((total * DEPOSIT_PCT) / 100)) : 0
   const durB = Math.max(totalM, 30)
@@ -239,7 +331,15 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
      month came back empty and rendered as open, closed Mondays included. */
   const [item, setItem] = useState(null)
   useEffect(() => {
-    setItem(!svc?.id ? null : staffId && staffId !== "any" ? `${svc.id}:${staffId}` : String(svc.id))
+    setItem(
+      !svc?.id
+        ? null
+        : svc.isPack
+          ? `pack:${svc.packId}`
+          : staffId && staffId !== "any"
+            ? `${svc.id}:${staffId}`
+            : String(svc.id),
+    )
   }, [svc?.id, staffId])
 
   const [monthAvail, setMonthAvail] = useState(null)
@@ -247,6 +347,9 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
   const [dayAvail, setDayAvail] = useState(null)
   const [availLoading, setAvailLoading] = useState(false)
   const [availErr, setAvailErr] = useState("")
+
+  /** The selection as query params: a forfait by its id, services as items. */
+  const target = (it) => (it.startsWith("pack:") ? { pack: it.slice(5) } : { items: it })
 
   const ask = (qs) =>
     fetch(`/api/salon/${encodeURIComponent(salon.slug)}/availability?${qs}`).then(async (r) => {
@@ -265,7 +368,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     let alive = true
     setMonthLoading(true)
     setAvailErr("")
-    ask(new URLSearchParams({ items: item, date: dayKey(from), days: String(daysIn + 1) }))
+    ask(new URLSearchParams({ ...target(item), date: dayKey(from), days: String(daysIn + 1) }))
       .then((d) => alive && setMonthAvail(d))
       .catch((e) => { if (alive) { setMonthAvail(null); setAvailErr(e.message) } })
       .finally(() => alive && setMonthLoading(false))
@@ -278,7 +381,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     let alive = true
     setAvailLoading(true)
     setAvailErr("")
-    ask(new URLSearchParams({ items: item, date: dayKey(date), days: "1" }))
+    ask(new URLSearchParams({ ...target(item), date: dayKey(date), days: "1" }))
       .then((d) => alive && setDayAvail(d))
       .catch((e) => { if (alive) { setDayAvail(null); setAvailErr(e.message) } })
       .finally(() => alive && setAvailLoading(false))
@@ -314,12 +417,28 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     return dayAvail.slots ?? []
   }, [dayAvail, date])
   const dateFull = date ? isFull(date) : false
+  /** Nobody at the salon can perform this online (no team / nobody assigned) —
+   *  not a full agenda, and not something a waiting list can fix. */
+  const unbookable = monthAvail?.bookable === false || dayAvail?.bookable === false
 
   // Keep the chosen time across service/staff changes; the effect refetches and
   // a slot that no longer exists is dropped when the new list arrives.
   useEffect(() => {
     if (time != null && slots.length && !slots.includes(time)) setTime(null)
   }, [slots, time])
+
+  const slotsRef = useRef(null)
+  /** Periods whose slots are shown in full (reset when the day changes). */
+  const [openPeriods, setOpenPeriods] = useState([])
+  useEffect(() => setOpenPeriods([]), [date])
+  /** Picking a day: show its slots — on a phone they are below the fold. */
+  const pickDate = (dt) => {
+    setDate(dt)
+    setTime(null)
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 940px)").matches) {
+      setTimeout(() => slotsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60)
+    }
+  }
 
   const pickSvc = (i) => {
     const nextStaff = staffId !== "any" && !flat[i].who.includes(staffId) ? "any" : staffId
@@ -332,8 +451,8 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     setTime(null)
   }
 
-  const ready = svc && date && time != null && !dateFull && !submitting
-  const hint = !svc ? "Choisissez une prestation" : !date ? "Choisissez une date" : dateFull ? "Cette journée est complète" : time == null ? "Choisissez un créneau" : null
+  const ready = svc && date && time != null && !dateFull && !submitting && (!covered || aboDateOk)
+  const hint = !svc ? "Choisissez une prestation" : unbookable ? "Réservation en ligne indisponible pour cette prestation" : !date ? "Choisissez une date" : dateFull ? "Cette journée est complète" : time == null ? "Choisissez un créneau" : null
 
   /** Step 2/3: persist the selections, then either route a guest to sign-in
    *  (they come back on ?confirm=1 with everything restored) or show the résumé. */
@@ -347,6 +466,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       dateISO: date.toISOString(),
       time,
       payI,
+      aboId: covered ? abo.id : null,
     })
     if (authReady && !user) {
       router.push(`/connexion?next=${encodeURIComponent(`/salon/${salon.slug}/reserver?confirm=1`)}`)
@@ -369,14 +489,15 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           salonSlug: salon.slug,
-          services: [svc.n],
+          ...(svc.isPack ? { packageId: svc.packId } : { services: [svc.n] }),
           staffName: staffId === "any" ? "any" : staff.find((p) => p.id === staffId)?.n.split(" ")[0],
           startAt: startAt.toISOString(),
           // Online payment is not offered yet, so the booking is always
           // settled at the salon. The API still supports Stripe; nothing in
           // the UI can reach it.
           payment: "onsite",
-          promoCode: promo?.code || undefined,
+          promoCode: covered ? undefined : promo?.code || undefined,
+          membershipId: covered ? abo.id : undefined,
         }),
       })
       const data = await res.json().catch(() => null)
@@ -419,7 +540,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       const res = await fetch("/api/promo", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ salonSlug: salon.slug, code, services: [svc.n] }),
+        body: JSON.stringify({ salonSlug: salon.slug, code, services: svc.isPack ? svc.contents : [svc.n] }),
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) throw new Error(data?.message || "Ce code promo est invalide.")
@@ -455,7 +576,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
         </div>
         <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 22, flexWrap: "wrap" }}>
           <Link href={`/salon/${salon.slug}`} style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--muted-2)", borderRadius: 11, padding: "11px 18px", fontWeight: 700, fontSize: 12.5 }}>Retour au salon</Link>
-          <button onClick={() => router.push("/compte/rendez-vous")} className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 11, padding: "11px 20px", fontWeight: 800, fontSize: 12.5 }}>Voir mes rendez-vous</button>
+          <button onClick={() => router.push("/compte/rendez-vous")} className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 11, padding: "11px 20px", fontWeight: 800, fontSize: 12.5 }}>Voir mes rendez-vous</button>
         </div>
       </div>
     )
@@ -468,7 +589,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
         <div className="serif" style={{ fontSize: 22 }}>Ce rendez-vous ne peut plus être reprogrammé</div>
         <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 8, lineHeight: 1.7 }}>Il est peut-être passé, annulé ou introuvable.</div>
         <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 22, flexWrap: "wrap" }}>
-          <Link href="/compte/rendez-vous" className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", borderRadius: 11, padding: "11px 20px", fontWeight: 800, fontSize: 12.5 }}>Voir mes rendez-vous</Link>
+          <Link href="/compte/rendez-vous" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 11, padding: "11px 20px", fontWeight: 800, fontSize: 12.5 }}>Voir mes rendez-vous</Link>
         </div>
       </div>
     )
@@ -500,6 +621,13 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           <div style={row}><span style={k}>Prestation</span><span style={{ fontWeight: 800, flex: 1 }}>{svc.n}</span><span style={{ color: "var(--muted)", fontSize: 12.5 }}>{svc.d}</span><span style={{ fontWeight: 800 }}>{svc.p} TND</span></div>
           <div style={row}><span style={k}>Praticien·ne</span><span style={{ fontWeight: 700 }}>{staffLabel}</span></div>
           <div style={row}><span style={k}>Date & heure</span><span style={{ fontWeight: 700, textTransform: "capitalize" }}>{longDate} à {T(time)}</span></div>
+          {covered && (
+            <div style={row}>
+              <span style={k}>Carnet</span>
+              <span style={{ fontWeight: 700, flex: 1 }}>Carnet « {abo.name} » — 1 séance {aboCredit.service} ({aboCredit.left - 1} restante{aboCredit.left - 1 > 1 ? "s" : ""} après)</span>
+              <span style={{ fontWeight: 800, color: "var(--green)" }}>−{subtotal} TND</span>
+            </div>
+          )}
           {discount > 0 && (
             <div style={row}>
               <span style={k}>Code {promo.code}</span>
@@ -511,12 +639,14 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
             <span style={k}>Total{totalM > 0 ? ` · ${fmtD(totalM)}` : ""}</span>
             <span style={{ flex: 1 }} />
             <span className="serif" style={{ fontSize: 24 }}>
-              {discount > 0 && <span style={{ fontSize: 14, color: "var(--faint)", textDecoration: "line-through", marginRight: 8 }}>{subtotal}</span>}
+              {(discount > 0 || covered) && <span style={{ fontSize: 14, color: "var(--faint)", textDecoration: "line-through", marginRight: 8 }}>{subtotal}</span>}
               {total} <span style={{ fontSize: 13 }}>TND</span>
             </span>
           </div>
 
-          {/* Promo code — the discount is computed and re-checked server-side */}
+          {/* Promo code — the discount is computed and re-checked server-side.
+              Not with a subscription credit: the visit is already covered. */}
+          {!covered && <>
           <div style={{ ...lbl, marginTop: 16 }}>Code promo</div>
           {promo ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, background: "var(--green-soft)", border: "1px solid var(--green-soft)", borderRadius: 10, padding: "9px 12px" }}>
@@ -542,14 +672,15 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
             </div>
           )}
           {promoErr && <div style={{ fontSize: 12, color: "var(--red)", fontWeight: 600, marginTop: 6 }}>{promoErr}</div>}
+          </>}
 
-          <button onClick={createBooking} disabled={submitting} className="btn-gold" style={{ width: "100%", marginTop: 16, background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 12, padding: "14px 16px", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: submitting ? 0.7 : 1 }}>
+          <button onClick={createBooking} disabled={submitting} className="btn-gold" style={{ width: "100%", marginTop: 16, background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "14px 16px", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: submitting ? 0.7 : 1 }}>
             {submitting ? "Envoi…" : "Confirmer la réservation"}
           </button>
           {submitErr && <div style={{ fontSize: 12.5, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 10 }}>{submitErr}</div>}
 
           <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 12, borderTop: "1px solid var(--line-soft)", paddingTop: 10 }}>
-            {`Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
+            {covered ? "Couvert par votre carnet — rien à régler au salon." : `Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
             <br />✓ Confirmation & rappel par SMS{user ? <> · connecté·e en tant que <b style={{ color: "var(--ink)" }}>{user.email}</b></> : null}
           </div>
         </div>
@@ -593,14 +724,32 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
             const unknown = isUnknown(dt)
             const dis = past || closed || tooFar || unknown
             const on = date && dt.getTime() === date.getTime()
+            const full = !dis && isFull(dt)
+            const isToday = dt.getTime() === today.getTime()
             return (
-              <button key={i} disabled={dis} onClick={() => { setDate(dt); setTime(null); setWlJoined(false) }}
-                title={closed ? "Fermé" : tooFar ? "Trop loin — réservations pas encore ouvertes" : isFull(dt) ? "Complet" : undefined}
-                style={{ height: 38, borderRadius: "50%", width: 38, margin: "0 auto", border: "none", cursor: dis ? "default" : "pointer", fontSize: 13, fontWeight: on ? 800 : 600, background: on ? "var(--gold)" : "transparent", color: dis ? "var(--faint)" : on ? "#FDF8EF" : "var(--ink)", textDecoration: closed ? "line-through" : "none" }}>
+              <button key={i} disabled={dis} onClick={() => pickDate(dt)}
+                aria-label={`${dt.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}${closed ? " — fermé" : full ? " — complet" : ""}`}
+                aria-pressed={!!on}
+                title={closed ? "Fermé" : tooFar ? "Trop loin — réservations pas encore ouvertes" : full ? "Complet" : undefined}
+                style={{
+                  position: "relative", height: 42, width: 42, maxWidth: "100%", borderRadius: "50%", margin: "0 auto", cursor: dis ? "default" : "pointer",
+                  fontSize: 13.5, fontWeight: on || isToday ? 800 : 600,
+                  border: isToday && !on ? "1.5px solid var(--line-strong)" : "1.5px solid transparent",
+                  background: on ? "var(--ink)" : "transparent",
+                  color: dis ? "var(--faint)" : on ? "var(--card)" : full ? "var(--muted)" : "var(--ink)",
+                  textDecoration: closed ? "line-through" : "none",
+                }}>
                 {d}
+                {/* A full day can still be picked (the waiting list lives there), but it reads as full. */}
+                {full && !on && <span style={{ position: "absolute", bottom: 5, left: "50%", transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: "var(--red)" }} />}
               </button>
             )
           })}
+        </div>
+        <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginTop: 10, fontSize: 11, color: "var(--muted)" }}>
+          <span><span style={{ textDecoration: "line-through" }}>12</span> fermé</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--red)" }} /> complet</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ width: 12, height: 12, borderRadius: "50%", border: "1.5px solid var(--line-strong)" }} /> aujourd'hui</span>
         </div>
       </div>
     )
@@ -610,7 +759,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     <>
       {/* Salon header */}
       <Link href={`/salon/${salon.slug}`} style={{ fontSize: 12.5, color: "var(--gold-dark)", fontWeight: 700, display: "inline-block", marginBottom: 10 }}>← Retour</Link>
-      <h1 className="serif" style={{ fontSize: 27, margin: 0, fontWeight: 400 }}>{salon.name}</h1>
+      <h1 className="serif booking-title" style={{ margin: 0, fontWeight: 400 }}>{salon.name}</h1>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 7, fontSize: 12.5, color: "var(--muted)", flexWrap: "wrap" }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z" /><circle cx="12" cy="10" r="2.6" /></svg>
         <span>{salon.address}, {salon.city}</span>
@@ -619,7 +768,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       </div>
 
       {reschedId && resched && resched !== "missing" && (
-        <div style={{ marginTop: 16, background: "rgba(169,124,72,0.08)", border: "1px solid rgba(169,124,72,0.35)", borderRadius: 14, padding: "13px 18px", fontSize: 12.5, color: "var(--muted-2)", lineHeight: 1.6 }}>
+        <div style={{ marginTop: 16, background: "var(--accent-soft)", border: "1px solid var(--accent-line)", borderRadius: 14, padding: "13px 18px", fontSize: 12.5, color: "var(--muted-2)", lineHeight: 1.6 }}>
           <b style={{ color: "var(--gold-dark)" }}>Reprogrammation</b> — Réf. <b style={{ color: "var(--ink)" }}>{resched.ref}</b> · actuellement le{" "}
           <b style={{ color: "var(--ink)", textTransform: "capitalize" }}>{new Date(resched.startAt).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} à {new Date(resched.startAt).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }).replace(":", "h")}</b>.
           Choisissez un nouveau créneau ci-dessous{resched.payment === "deposit" ? " — votre acompte payé reste valable" : ""}.
@@ -627,97 +776,156 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       )}
 
       <div className="booking-grid" style={{ marginTop: 20 }}>
-        {/* ── Main: the prestation card ── */}
+        {/* ── Main: the booking, as numbered steps ── */}
         <div style={{ minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 9 }}>
-            <span className="serif" style={{ fontSize: 20, color: "var(--gold-dark)" }}>1.</span>
-            <h2 className="serif" style={{ fontSize: 20, margin: 0, fontWeight: 400 }}>Prestation & disponibilités</h2>
-          </div>
-
-          <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "20px 22px", marginTop: 14 }}>
-            {/* service (or picker) */}
-            {svc ? (
-              <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                <div className="serif" style={{ fontSize: 19 }}>{svc.n}</div>
-                <div style={{ fontSize: 12.5, color: "var(--muted)" }}>◷ {svc.d} · <strong style={{ color: "var(--ink)" }}>{svc.p} TND</strong></div>
-                <div style={{ flex: 1 }} />
-                {!reschedId && <span onClick={() => { setSvcI(null); setTime(null) }} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", cursor: "pointer" }}>Modifier</span>}
-              </div>
-            ) : (
-              <>
-                <div className="serif" style={{ fontSize: 19 }}>Choisir une prestation</div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 8, marginTop: 12 }}>
-                  {flat.map((s, i) => (
-                    <button key={i} onClick={() => pickSvc(i)} style={{ border: "1px solid var(--line-2)", background: "transparent", borderRadius: 12, padding: "11px 13px", textAlign: "left", cursor: "pointer" }}>
-                      <div style={{ display: "flex", fontSize: 12.5, fontWeight: 700, gap: 7 }}>
-                        <span style={{ flex: 1, minWidth: 0 }}>{s.n}</span>
-                        <span style={{ color: "var(--gold-dark)", whiteSpace: "nowrap" }}>{s.p} TND</span>
+          <div className="booking-card" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18 }}>
+            {/* 1 · Prestation */}
+            <div style={{ paddingBottom: 18 }}>
+              <StepHead
+                n={1}
+                title={svc ? svc.n : "Choisissez une prestation"}
+                done={!!svc}
+                sub={svc ? `${svc.d} · ${svc.p} TND${svc.isPack ? ` · ${svc.contents.join(" + ")}` : ""}` : null}
+                action={svc && !reschedId ? (
+                  <button onClick={() => { setSvcI(null); setTime(null) }} style={{ background: "none", border: "1px solid var(--line-2)", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink)", cursor: "pointer", flex: "none" }}>Modifier</button>
+                ) : null}
+              />
+              {!svc && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(210px,1fr))", gap: 8, marginTop: 14 }}>
+                  {flat.map((x, i) => (
+                    <button key={i} onClick={() => pickSvc(i)} style={{ border: "1px solid var(--line-2)", background: "var(--card)", borderRadius: 12, padding: "12px 14px", textAlign: "left", cursor: "pointer", color: "var(--ink)" }}>
+                      <div style={{ display: "flex", fontSize: 13, fontWeight: 700, gap: 7 }}>
+                        <span style={{ flex: 1, minWidth: 0 }}>{x.n}</span>
+                        <span style={{ whiteSpace: "nowrap" }}>{x.p} TND</span>
                       </div>
-                      <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 3 }}>{s.cat} · {s.d}</div>
+                      <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 3 }}>{x.cat} · {x.d}</div>
                     </button>
                   ))}
                 </div>
-              </>
-            )}
+              )}
+            </div>
 
-            {/* Avec qui ? — avatar tiles */}
-            {svc && (
-              <>
-                <div style={{ ...lbl, marginTop: 18 }}>Avec qui ? <span style={{ textTransform: "none", fontWeight: 600, letterSpacing: 0 }}>(optionnel)</span></div>
-                <div style={{ display: "flex", gap: 9, marginTop: 10, flexWrap: "wrap" }}>
-                  {[{ id: "any", n: "Sans préférence", r: "Premier·ère disponible", c: null, ini: "✦" }, ...elig].map((p) => {
-                    const on = staffId === p.id
+            {/* 2 · Avec qui — not for a forfait: the engine assigns each of its steps. */}
+            {svc && !svc.isPack && elig.length > 0 && (
+              <div style={stepBox}>
+                <StepHead n={2} title="Avec qui ?" done sub={staffId === "any" ? "Sans préférence — le premier disponible" : `Avec ${staffLabel}`} />
+                <div className="booking-scroll" style={{ display: "flex", gap: 9, marginTop: 14, overflowX: "auto", paddingBottom: 4 }}>
+                  {[{ id: "any", n: "Sans préférence", r: "1er·ère dispo", c: null, ini: "✦" }, ...elig].map((pp) => {
+                    const on = staffId === pp.id
                     return (
-                      <button key={p.id} onClick={() => pickStaff(p.id)} style={{ position: "relative", width: 96, border: `1.5px solid ${on ? "var(--gold)" : "var(--line-2)"}`, background: on ? "rgba(169,124,72,0.07)" : "var(--card)", borderRadius: 14, padding: "12px 8px 10px", textAlign: "center", cursor: "pointer" }}>
-                        {on && <span style={{ position: "absolute", top: 6, right: 6, width: 16, height: 16, borderRadius: "50%", background: "var(--gold)", color: "#FDF8EF", fontSize: 10, fontWeight: 900, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>✓</span>}
-                        <span style={{ width: 38, height: 38, borderRadius: "50%", background: p.c || "rgba(169,124,72,0.15)", color: p.c ? "#2A1A08" : "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: p.c ? 12 : 15, fontWeight: 800 }}>{p.ini}</span>
-                        <div style={{ fontSize: 11.5, fontWeight: 800, marginTop: 7, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.id === "any" ? "Sans préf." : p.n.split(" ")[0]}</div>
-                        <div style={{ fontSize: 10, color: "var(--muted)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.id === "any" ? "1er·ère dispo" : p.r}</div>
+                      <button key={pp.id} onClick={() => pickStaff(pp.id)} aria-pressed={on} style={{ flex: "none", width: 92, border: `1.5px solid ${on ? "var(--ink)" : "var(--line-2)"}`, background: on ? "var(--line-soft)" : "var(--card)", borderRadius: 14, padding: "12px 6px 10px", textAlign: "center", cursor: "pointer", color: "var(--ink)" }}>
+                        <span style={{ width: 40, height: 40, borderRadius: "50%", background: pp.c || "var(--line)", color: pp.c ? "#111111" : "var(--ink)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: pp.c ? 12.5 : 15, fontWeight: 800 }}>{pp.ini}</span>
+                        <div style={{ fontSize: 12, fontWeight: 800, marginTop: 7, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{pp.id === "any" ? "Sans préf." : pp.n.split(" ")[0]}</div>
+                        <div style={{ fontSize: 10.5, color: "var(--muted)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{pp.r}</div>
                       </button>
                     )
                   })}
                 </div>
-              </>
+              </div>
             )}
 
-            {/* calendar + slots */}
-            {svc && (
-              <>
-                <div style={{ ...lbl, marginTop: 20 }}>Choisir une date & heure</div>
-                <div style={{ maxWidth: 420, marginTop: 12 }}>{renderCal()}</div>
+            {/* Pay with a carnet — only when one here covers this service. */}
+            {svc && !reschedId && aboOptions.length > 0 && abo && aboCredit && (
+              <div style={{ paddingBottom: 18 }}>
+                <AboChooser
+                  abo={abo}
+                  credit={aboCredit}
+                  options={aboOptions}
+                  onPickAbo={setAboChoice}
+                  useAbo={useAbo}
+                  setUseAbo={setUseAbo}
+                  price={svc.p}
+                  endDate={aboEnd}
+                  dateOk={aboDateOk}
+                />
+              </div>
+            )}
 
-                {date && !dateFull && (
-                  <>
-                    <div style={{ ...lbl, marginTop: 16 }}>Créneaux disponibles</div>
-                    <div style={{ display: "flex", gap: 7, marginTop: 10, flexWrap: "wrap" }}>
-                      {slots.map((m) => {
-                        const on = time === m
-                        const [bd, bg] = sel(on)
-                        return <button key={m} onClick={() => setTime(m)} style={{ fontSize: 12.5, fontWeight: 700, border: `1px solid ${bd}`, background: bg, borderRadius: 10, padding: "9px 15px", color: on ? "var(--gold-dark)" : "var(--muted-2)", cursor: "pointer" }}>{T(m)}</button>
-                      })}
-                      {availLoading && !slots.length && <div style={{ fontSize: 12.5, color: "var(--muted)" }}>Recherche des créneaux…</div>}
-                      {availErr && <div style={{ fontSize: 12.5, color: "var(--red)", fontWeight: 600 }}>{availErr}</div>}
-                      {!availLoading && !availErr && !slots.length && <div style={{ fontSize: 12.5, color: "var(--muted)" }}>Aucun créneau ce jour — essayez une autre date.</div>}
-                    </div>
-                  </>
-                )}
-                {date && dateFull && (
-                  <div style={{ marginTop: 16, background: "rgba(201,162,39,0.09)", border: "1px solid rgba(201,162,39,0.35)", borderRadius: 14, padding: "16px 18px" }}>
-                    <div style={{ fontWeight: 800, fontSize: 13.5, color: "#8A6A17" }}>Cette journée est complète</div>
-                    {!wlJoined ? (
-                      <>
-                        <div style={{ fontSize: 12.5, color: "var(--muted-2)", marginTop: 5, lineHeight: 1.6 }}>Rejoignez la liste d'attente : si un créneau se libère, vous recevrez un SMS avec un lien prioritaire, valable 30 minutes.</div>
-                        <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-                          <input value={wlPhone} onChange={(e) => setWlPhone(e.target.value)} placeholder="+216 …" style={{ flex: 1, minWidth: 160, background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "var(--ink)", outline: "none" }} />
-                          <button onClick={() => setWlJoined(true)} className="btn-gold" style={{ background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5 }}>Rejoindre la liste d'attente</button>
-                        </div>
+            {svc && unbookable && (
+              <div style={stepBox}>
+                <div style={{ background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: 14, padding: "16px 18px" }}>
+                  <div style={{ fontWeight: 800, fontSize: 13.5 }}>Réservation en ligne pas encore ouverte pour cette prestation</div>
+                  <div style={{ fontSize: 12.5, color: "var(--muted-2)", marginTop: 5, lineHeight: 1.6 }}>
+                    {salon.name} n'a pas encore d'agenda en ligne pour « {svc.n} ».{" "}
+                    {salon.phone ? (
+                      <>Contactez le salon pour prendre rendez-vous :{" "}
+                        <a href={`tel:${String(salon.phone).replace(/\s/g, "")}`} style={{ color: "var(--ink)", fontWeight: 800 }}>{salon.phone}</a>
                       </>
                     ) : (
-                      <div style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 700, marginTop: 8 }}>✓ Vous êtes sur la liste d'attente — nous vous préviendrons par SMS.</div>
+                      "Contactez directement le salon pour prendre rendez-vous."
                     )}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* 3 · Date */}
+            {svc && !unbookable && (
+              <div style={stepBox}>
+                <StepHead
+                  n={svc.isPack || !elig.length ? 2 : 3}
+                  title="Date"
+                  done={!!date}
+                  sub={date ? date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) : "Les jours barrés sont fermés"}
+                />
+                <div style={{ maxWidth: 440, marginTop: 14 }}>{renderCal()}</div>
+              </div>
+            )}
+
+            {/* 4 · Heure */}
+            {svc && !unbookable && date && (
+              <div style={{ ...stepBox, scrollMarginTop: 84 }} ref={slotsRef}>
+                <StepHead
+                  n={svc.isPack || !elig.length ? 3 : 4}
+                  title="Heure"
+                  done={time != null}
+                  sub={time != null ? `${T(time)} · ${fmtD(totalM)}` : dateFull ? "Cette journée est complète" : `Créneaux du ${date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}`}
+                />
+                {!dateFull && (
+                  <div style={{ marginTop: 14 }}>
+                    {availLoading && !slots.length && <div style={{ fontSize: 13, color: "var(--muted)" }}>Recherche des créneaux…</div>}
+                    {availErr && <div style={{ fontSize: 13, color: "var(--red)", fontWeight: 600 }}>{availErr}</div>}
+                    {!availLoading && !availErr && !slots.length && <div style={{ fontSize: 13, color: "var(--muted)" }}>Aucun créneau ce jour — essayez une autre date.</div>}
+                    {PERIODS.map(([label, inPeriod]) => {
+                      const all = slots.filter(inPeriod)
+                      if (!all.length) return null
+                      // Two rows per period, the rest on demand — the chosen time always stays visible.
+                      const open = openPeriods.includes(label) || all.length <= SLOT_PREVIEW
+                      const list = open ? all : all.slice(0, SLOT_PREVIEW).concat(time != null && all.indexOf(time) >= SLOT_PREVIEW ? [time] : [])
+                      return (
+                        <div key={label} style={{ marginBottom: 12 }}>
+                          <div style={{ fontSize: 11.5, fontWeight: 800, color: "var(--muted)", marginBottom: 7 }}>{label}</div>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(74px,1fr))", gap: 7 }}>
+                            {list.map((m) => {
+                              const on = time === m
+                              const [bd, bg] = sel(on)
+                              return (
+                                <button key={m} onClick={() => setTime(m)} aria-pressed={on} style={{ height: 44, fontSize: 13.5, fontWeight: on ? 800 : 700, border: `1.5px solid ${bd}`, background: on ? "var(--ink)" : bg, borderRadius: 11, color: on ? "var(--card)" : "var(--ink)", cursor: "pointer" }}>
+                                  {T(m)}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          {!open && (
+                            <button onClick={() => setOpenPeriods((xs) => [...xs, label])} style={{ marginTop: 7, background: "none", border: "none", padding: "4px 0", fontSize: 12.5, fontWeight: 700, color: "var(--ink)", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>
+                              Afficher les {all.length - list.length} autres créneaux
+                            </button>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
                 )}
-              </>
+                {dateFull && !(salon.waitlist && !reschedId) && (
+                  <div style={{ marginTop: 12, fontSize: 13, color: "var(--muted-2)" }}>Essayez une autre date dans le calendrier.</div>
+                )}
+
+                {/* Instead of a créneau: the waiting list — once a day is chosen,
+                    only where the salon offers it, never while rescheduling. */}
+                {salon.waitlist && !reschedId && (
+                  <WaitlistJoin salon={salon} svc={svc} staffId={staffId} date={date} user={user} authReady={authReady} full={dateFull} />
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -742,6 +950,12 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
               </div>
             </div>
 
+            {covered && (
+              <div style={{ display: "flex", marginTop: 10, fontSize: 12.5 }}>
+                <span style={{ color: "var(--muted)", flex: 1 }}>Carnet « {abo.name} »</span>
+                <span style={{ fontWeight: 800, color: "var(--green)" }}>1 crédit</span>
+              </div>
+            )}
             {discount > 0 && (
               <div style={{ display: "flex", marginTop: 10, fontSize: 12.5 }}>
                 <span style={{ color: "var(--muted)", flex: 1 }}>Code {promo.code}</span>
@@ -752,13 +966,13 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
               <span style={{ fontSize: 12.5, color: "var(--muted)" }}>Total{totalM > 0 ? ` · ${fmtD(totalM)}` : ""}</span>
               <span style={{ flex: 1 }} />
               <span className="serif" style={{ fontSize: 22 }}>
-                {discount > 0 && <span style={{ fontSize: 13, color: "var(--faint)", textDecoration: "line-through", marginRight: 7 }}>{subtotal}</span>}
+                {(discount > 0 || covered) && <span style={{ fontSize: 13, color: "var(--faint)", textDecoration: "line-through", marginRight: 7 }}>{subtotal}</span>}
                 {total} <span style={{ fontSize: 13 }}>TND</span>
               </span>
             </div>
 
 
-            <button onClick={goConfirm} disabled={!ready} className={ready ? "btn-gold" : undefined} style={{ width: "100%", marginTop: 14, background: ready ? "var(--gold)" : "#E2D9C6", color: ready ? "#FDF8EF" : "var(--faint)", border: "none", borderRadius: 12, padding: "13px 16px", fontWeight: 800, fontSize: 13.5, cursor: ready ? "pointer" : "default" }}>
+            <button onClick={goConfirm} disabled={!ready} className={ready ? "btn-gold" : undefined} style={{ width: "100%", marginTop: 14, background: ready ? "var(--gold)" : "var(--line-2)", color: ready ? "var(--on-gold)" : "var(--muted)", border: "none", borderRadius: 12, padding: "13px 16px", fontWeight: 800, fontSize: 13.5, cursor: ready ? "pointer" : "default" }}>
               {reschedId
                 ? submitting ? "Reprogrammation…" : "Confirmer le nouveau créneau"
                 : authReady && !user ? "Se connecter et réserver" : "Vérifier et confirmer"}
@@ -771,11 +985,42 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                 ? resched?.payment === "deposit"
                   ? "Le paiement ne change pas — votre acompte payé reste valable pour le nouveau créneau."
                   : "Le paiement ne change pas — réglez sur place comme prévu."
-                : `Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
+                : covered
+                  ? "Couvert par votre carnet — rien à régler au salon."
+                  : `Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
               <br />✓ Confirmation & rappel par SMS
             </div>
           </div>
         </aside>
+      </div>
+
+      {/* Phones: the recap and the button live at the bottom of the screen,
+          where the thumb is — never a scroll away from the slot just picked. */}
+      <div className="booking-bar-spacer" aria-hidden="true" />
+      <div className="booking-bar" role="region" aria-label="Votre rendez-vous">
+        {submitErr && <div style={{ fontSize: 12, color: "var(--red)", fontWeight: 700, marginBottom: 6 }}>{submitErr}</div>}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {svc ? svc.n : "Aucune prestation"}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textTransform: date && time != null ? "capitalize" : "none" }}>
+              {date && time != null ? `${dateLabel} · ${T(time)}` : hint || ""}
+            </div>
+          </div>
+          <div style={{ textAlign: "right", flex: "none" }}>
+            {(discount > 0 || covered) && <div style={{ fontSize: 11, color: "var(--faint)", textDecoration: "line-through" }}>{subtotal} TND</div>}
+            <div className="serif" style={{ fontSize: 19, lineHeight: 1 }}>{total} <span style={{ fontSize: 11 }}>TND</span></div>
+          </div>
+          <button
+            onClick={goConfirm}
+            disabled={!ready}
+            className={ready ? "btn-gold" : undefined}
+            style={{ flex: "none", background: ready ? "var(--gold)" : "var(--line-2)", color: ready ? "var(--on-gold)" : "var(--muted)", border: "none", borderRadius: 12, padding: "12px 16px", fontWeight: 800, fontSize: 13.5, cursor: ready ? "pointer" : "default", minHeight: 46 }}
+          >
+            {reschedId ? (submitting ? "…" : "Confirmer") : authReady && !user ? "Continuer" : "Réserver"}
+          </button>
+        </div>
       </div>
     </>
   )

@@ -65,7 +65,7 @@ export default function VerifyEmailForm() {
         <Field label="E-mail" type="email" value={email} onChange={setEmail} placeholder="vous@exemple.tn" autoComplete="email" required />
         <Field label="Code de vérification" value={code} onChange={setCode} placeholder="6 chiffres" autoComplete="one-time-code" required />
         <SubmitBtn loading={loading}>Activer mon compte</SubmitBtn>
-        <button type="button" onClick={resend} disabled={sending} style={{ width: "100%", marginTop: 10, background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 12, padding: "12px 16px", fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>
+        <button type="button" onClick={resend} disabled={sending} style={{ width: "100%", marginTop: 10, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 12, padding: "12px 16px", fontWeight: 800, fontSize: 12.5, cursor: "pointer" }}>
           {sending ? "Envoi…" : "Renvoyer le code"}
         </button>
       </form>

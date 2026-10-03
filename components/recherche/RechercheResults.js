@@ -44,7 +44,7 @@ export default async function RechercheResults({ params, page }) {
   const nums = []
   for (let i = 1; i <= res.totalPages; i++) nums.push(i)
   const pnav = { minWidth: 36, height: 36, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, padding: "0 10px", border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink)" }
-  const pactive = { ...pnav, background: "var(--gold)", color: "#FDF8EF", border: "1px solid var(--gold)" }
+  const pactive = { ...pnav, background: "var(--gold)", color: "var(--on-gold)", border: "1px solid var(--gold)" }
   const pdis = { ...pnav, opacity: 0.4, pointerEvents: "none" }
 
   return (

@@ -18,16 +18,16 @@ export default function GiftCardPanel() {
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1.05fr)", gap: 22, alignItems: "start" }} className="faq-grid">
       {/* Gift card visual + amounts */}
       <div>
-        <div style={{ background: "linear-gradient(135deg,#3A2B1A,#6B4E2E 60%,#2A1F12)", borderRadius: 18, padding: "26px 24px", color: "#F8F0E2", position: "relative", overflow: "hidden", minHeight: 190 }}>
-          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "#D9BE97" }}>Carte cadeau</div>
+        <div style={{ background: "linear-gradient(135deg,#2B2B2B,#4A4A4A 60%,#141414)", borderRadius: 18, padding: "26px 24px", color: "#FAFAFA", position: "relative", overflow: "hidden", minHeight: 190 }}>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "#CFCFCF" }}>Carte cadeau</div>
           <div className="serif" style={{ fontSize: 26, marginTop: 6 }}>Rezervy</div>
-          <div className="serif" style={{ fontSize: 44, marginTop: 22 }}>{amount} <span style={{ fontSize: 20, color: "#D9BE97" }}>TND</span></div>
-          <div style={{ fontSize: 12, color: "#D9BE97", marginTop: 6 }}>Valable dans tous les salons partenaires · 12 mois</div>
+          <div className="serif" style={{ fontSize: 44, marginTop: 22 }}>{amount} <span style={{ fontSize: 20, color: "#CFCFCF" }}>TND</span></div>
+          <div style={{ fontSize: 12, color: "#CFCFCF", marginTop: 6 }}>Valable dans tous les salons partenaires · 12 mois</div>
         </div>
         <div style={{ ...label, marginTop: 18 }}>Montant</div>
         <div style={{ display: "flex", gap: 8, marginTop: 8, flexWrap: "wrap" }}>
           {AMOUNTS.map((a) => (
-            <button key={a} onClick={() => setAmount(a)} style={{ fontSize: 13, fontWeight: 700, borderRadius: 999, padding: "9px 16px", cursor: "pointer", background: amount === a ? "rgba(169,124,72,0.12)" : "var(--card)", border: `1px solid ${amount === a ? "rgba(169,124,72,0.5)" : "var(--line-2)"}`, color: amount === a ? "var(--gold-dark)" : "var(--muted-2)" }}>{a} TND</button>
+            <button key={a} onClick={() => setAmount(a)} style={{ fontSize: 13, fontWeight: 700, borderRadius: 999, padding: "9px 16px", cursor: "pointer", background: amount === a ? "var(--accent-soft)" : "var(--card)", border: `1px solid ${amount === a ? "var(--accent-line)" : "var(--line-2)"}`, color: amount === a ? "var(--gold-dark)" : "var(--muted-2)" }}>{a} TND</button>
           ))}
         </div>
       </div>
@@ -39,7 +39,7 @@ export default function GiftCardPanel() {
             <div style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--green)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto", fontSize: 22, fontWeight: 800 }}>✓</div>
             <div style={{ fontWeight: 800, fontSize: 15, marginTop: 12 }}>Carte cadeau envoyée !</div>
             <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 6, lineHeight: 1.6 }}>Une carte de <b style={{ color: "var(--ink)" }}>{amount} TND</b>{to ? <> a été envoyée à <b style={{ color: "var(--ink)" }}>{to}</b></> : ""}. Merci de faire plaisir avec Rezervy.</div>
-            <button onClick={() => setSent(false)} className="btn-outline" style={{ marginTop: 16, background: "transparent", border: "1px solid rgba(169,124,72,0.45)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>Offrir une autre carte</button>
+            <button onClick={() => setSent(false)} className="btn-outline" style={{ marginTop: 16, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>Offrir une autre carte</button>
           </div>
         ) : (
           <form onSubmit={submit}>
@@ -48,7 +48,7 @@ export default function GiftCardPanel() {
             <label style={{ display: "block", marginTop: 12 }}><span style={label}>E-mail du destinataire</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="amie@exemple.tn" style={inp} required /></label>
             <label style={{ display: "block", marginTop: 12 }}><span style={label}>De la part de</span><input value={from} onChange={(e) => setFrom(e.target.value)} placeholder="Votre nom" style={inp} required /></label>
             <label style={{ display: "block", marginTop: 12 }}><span style={label}>Message (optionnel)</span><textarea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Un petit mot…" rows={3} style={{ ...inp, resize: "vertical", minHeight: 70, fontFamily: "inherit" }} /></label>
-            <button type="submit" className="btn-gold" style={{ width: "100%", background: "var(--gold)", color: "#FDF8EF", border: "none", borderRadius: 12, padding: "13px", fontWeight: 800, fontSize: 14, marginTop: 16 }}>Offrir la carte · {amount} TND</button>
+            <button type="submit" className="btn-gold" style={{ width: "100%", background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "13px", fontWeight: 800, fontSize: 14, marginTop: 16 }}>Offrir la carte · {amount} TND</button>
           </form>
         )}
       </div>

@@ -37,7 +37,7 @@ export default function ContactCard() {
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "22px 22px 24px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-        <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(169,124,72,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
+        <div style={{ width: 42, height: 42, borderRadius: 12, background: "var(--accent-soft)", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
         </div>
         <div>

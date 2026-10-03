@@ -17,7 +17,7 @@ const SECTIONS = [
   { href: "/compte/profil", l: "Mon profil", icon: "profil" },
   { href: "/compte/rendez-vous", l: "Mes rendez-vous", icon: "rdv" },
   { href: "/compte/favoris", l: "Mes favoris", icon: "favoris" },
-  { href: "/compte/abonnements", l: "Abonnements & fidélité", icon: "fid" },
+  { href: "/compte/abonnements", l: "Carnets & fidélité", icon: "fid" },
   { href: "/compte/aide", l: "Aide & support", icon: "aide" },
 ]
 
@@ -32,7 +32,7 @@ export default function CompteLayout({ children }) {
   return (
     <div style={{ maxWidth: 1040, margin: "0 auto", padding: "34px 24px 60px", overflowX: "hidden" }}>
       <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-        <div style={{ width: 54, height: 54, borderRadius: "50%", background: "var(--gold)", color: "#FDF8EF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, flex: "none" }}>{user.initials}</div>
+        <div style={{ width: 54, height: 54, borderRadius: "50%", background: "var(--gold)", color: "var(--on-gold)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, flex: "none" }}>{user.initials}</div>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div className="serif" style={{ fontSize: 23 }}>{user.name}</div>
           <div style={{ fontSize: 12.5, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis" }}>{user.email || user.phone} · cliente depuis janvier 2026</div>

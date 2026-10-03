@@ -5,7 +5,7 @@ import { NextResponse } from "next/server"
  *  it transparently refreshes the session (rotating token) and retries once, so
  *  a page left open past the 15-min access-token lifetime keeps working. */
 const BASE = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/$/, "")
-const ALLOWED_ROOTS = new Set(["bookings", "favorites", "overview", "support"])
+const ALLOWED_ROOTS = new Set(["bookings", "favorites", "overview", "support", "waitlist", "memberships"])
 
 /** Concurrent 401s (overview + favorites + bookings on one page load) must share
  *  ONE refresh call — the refresh token is single-use, so parallel refreshes

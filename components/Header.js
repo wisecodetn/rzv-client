@@ -31,7 +31,7 @@ export default function Header() {
           href="/compte"
           aria-label="Mon compte"
           style={{
-            width: 34, height: 34, borderRadius: "50%", background: "var(--gold)", color: "#FDF8EF",
+            width: 34, height: 34, borderRadius: "50%", background: "var(--gold)", color: "var(--on-gold)",
             display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800,
           }}
         >

@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { getCategories, getCities } from "@/lib/data"
+import Logo from "./brand/Logo"
+import NewsletterForm from "./newsletter/NewsletterForm"
 
 const Social = ({ d, label }) => (
   <a href="#" aria-label={label} className="pill" style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--muted-2)" }}>
@@ -26,13 +28,27 @@ export default async function Footer() {
   const footCities = cities.slice(0, 6)
   return (
     <footer style={{ borderTop: "1px solid var(--line)", background: "var(--footer-bg)", marginTop: 8 }}>
-      <div className="wrap" style={{ padding: "48px 24px 20px" }}>
+      <div className="wrap" style={{ padding: "40px 24px 20px" }}>
+        {/* Newsletter */}
+        <section className="nl-band" aria-labelledby="nl-band-title">
+          <div className="nl-band-text">
+            <h2 id="nl-band-title" className="nl-band-title">La newsletter Rezervy</h2>
+            <p className="nl-band-sub">Nouveaux salons, conseils beauté et nouveautés — un e-mail de temps en temps, jamais de spam.</p>
+          </div>
+          <div className="nl-band-form">
+            <NewsletterForm source="footer" />
+            <p className="nl-fine">
+              Désinscription en un clic. <Link href="/confidentialite" prefetch={false}>Confidentialité</Link>
+            </p>
+          </div>
+        </section>
+
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr 1fr", gap: 30 }} className="footer-grid">
           {/* Brand */}
           <div>
-            <div className="serif" style={{ fontSize: 24, color: "var(--ink)" }}>Rezervy</div>
+            <Logo size={28} wordSize={24} />
             <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.65, marginTop: 10, maxWidth: 260 }}>
-              La façon la plus simple de réserver coiffure, barbier, onglerie et spa en Tunisie — en ligne, 24h/24, confirmation par SMS.
+              La façon la plus simple de réserver coiffure, barbier, onglerie et spa en Tunisie — en ligne, 24h/24, sans frais.
             </p>
             <div style={{ display: "flex", gap: 9, marginTop: 16 }}>
               <Social label="Instagram" d={<><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" /></>} />
@@ -68,7 +84,7 @@ export default async function Footer() {
           <span>© 2026 Rezervy — la beauté, sur rendez-vous</span>
           <div style={{ flex: 1 }} />
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Tunisie · Français</span>
-          <a href="https://pro.rezervy.tn" target="_blank" rel="noopener noreferrer" className="link-soft" style={{ color: "var(--muted)" }}>Espace professionnel</a>
+          <a href="https://pro.rezervy.io" target="_blank" rel="noopener noreferrer" className="link-soft" style={{ color: "var(--muted)" }}>Espace professionnel</a>
         </div>
       </div>
     </footer>

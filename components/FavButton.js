@@ -35,7 +35,7 @@ export default function FavButton({ slug, variant = "icon", size = 40 }) {
   }
 
   return (
-    <button onClick={handle} aria-pressed={on} aria-label={on ? "Retirer des favoris" : "Ajouter aux favoris"} title={on ? "Retirer des favoris" : "Ajouter aux favoris"} className="lift" style={{ position: "absolute", top: 10, right: 10, width: size, height: size, borderRadius: "50%", background: "rgba(253,248,239,0.95)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(26,18,8,0.28)", zIndex: 3 }}>
+    <button onClick={handle} aria-pressed={on} aria-label={on ? "Retirer des favoris" : "Ajouter aux favoris"} title={on ? "Retirer des favoris" : "Ajouter aux favoris"} className="lift" style={{ position: "absolute", top: 10, right: 10, width: size, height: size, borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.28)", zIndex: 3 }}>
       <Heart filled={on} />
     </button>
   )

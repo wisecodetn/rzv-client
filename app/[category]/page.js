@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
   if (!cat) return {}
   const cities = await categoryCities(cat.slug)
   const total = cities.reduce((t, c) => t + c.count, 0)
-  const title = `${cat.name} en Tunisie — ${total} salons à réserver en ligne`
+  const title = `${cat.name} en Tunisie — ${total} ${total > 1 ? "salons" : "salon"} à réserver en ligne`
   const description = `Trouvez les meilleurs salons de ${cat.lower} en Tunisie : comparez prix et avis vérifiés, et réservez en ligne en 30 secondes. ${total} établissements dans ${cities.length} villes.`
   return {
     title,
@@ -98,8 +98,8 @@ export default async function CategoryPage({ params }) {
               ) : (
                 <Photo label={`${cat.name} à ${c.name}`} />
               )}
-              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56, background: "linear-gradient(transparent,rgba(26,18,8,0.55))", pointerEvents: "none" }} />
-              <div className="serif" style={{ position: "absolute", left: 14, bottom: 10, fontSize: 19, color: "#FDF8EF", textShadow: "0 1px 10px rgba(26,18,8,0.6)" }}>{c.name}</div>
+              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 56, background: "linear-gradient(transparent,rgba(0,0,0,0.55))", pointerEvents: "none" }} />
+              <div className="serif" style={{ position: "absolute", left: 14, bottom: 10, fontSize: 19, color: "#FFFFFF", textShadow: "0 1px 10px rgba(0,0,0,0.6)" }}>{c.name}</div>
             </div>
             <div style={{ padding: "13px 16px", display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ minWidth: 0, flex: 1 }}>

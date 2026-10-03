@@ -59,7 +59,7 @@ export default function SalonMap({ lat, lng, name, address, zoom = 15 }) {
           className: "",
           html:
             '<div style="width:26px;height:26px;border-radius:50% 50% 50% 0;background:#A97C48;' +
-            'transform:rotate(-45deg);border:2px solid #FDF8EF;box-shadow:0 3px 8px rgba(0,0,0,.35)"></div>',
+            'transform:rotate(-45deg);border:2px solid #FFFFFF;box-shadow:0 3px 8px rgba(0,0,0,.35)"></div>',
           iconSize: [26, 26],
           iconAnchor: [13, 26],
         })
@@ -106,7 +106,7 @@ export default function SalonMap({ lat, lng, name, address, zoom = 15 }) {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            border: "1px solid rgba(169,124,72,0.45)",
+            border: "1px solid var(--accent-line)",
             color: "var(--gold-dark)",
             borderRadius: 10,
             padding: "7px 14px",

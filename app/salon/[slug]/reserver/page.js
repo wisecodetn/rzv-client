@@ -21,15 +21,20 @@ export default async function ReserverPage({ params, searchParams }) {
   // Number — an index into the flattened service list — so a real id parsed to
   // NaN and nothing was ever preselected.
   const svc = sp.svc != null ? String(sp.svc) : null
+  // A forfait link (?pack=<id>) preselects the forfait — it sits in the same
+  // list as the services under a "pack:" id. It used to be ignored entirely,
+  // so "Réserver" on a forfait opened an empty form.
+  const pack = sp.pack != null ? `pack:${String(sp.pack)}` : null
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "36px 24px 60px" }}>
+    <div className="booking-page">
       <BookingFlow
         salon={s}
-        preselect={svc || null}
+        preselect={svc || pack || null}
         confirmOnArrival={sp.confirm === "1" || sp.paycancel === "1"}
         paidSessionId={sp.paid === "1" && sp.session_id ? String(sp.session_id) : null}
         cancelSessionId={sp.paycancel === "1" && sp.session_id ? String(sp.session_id) : null}
         reschedId={sp.resched ? String(sp.resched) : null}
+        aboId={sp.abo ? String(sp.abo) : null}
       />
     </div>
   )
