@@ -23,12 +23,15 @@ export default function SearchForm({ initial }) {
   const [rate, setRate] = useState(String(initial.rate || 0))
   const [dispo, setDispo] = useState(initial.dispo || "")
   const [sort, setSort] = useState(initial.sort || "note")
+  // Phones: the filters fold away behind a button (desktop always shows them).
+  const [showFilters, setShowFilters] = useState(false)
 
   const selName = city ? getCity(city)?.name || "" : ""
   const typed = cityQ.trim()
   const cityOpts = !typed || typed === selName ? cities : cities.filter((c) => norm(c.name).includes(norm(typed)))
 
   const dirty = q.trim() || city || category || Number(rate) || dispo || sort !== "note"
+  const activeFilters = [city, category, Number(rate), dispo, sort !== "note"].filter(Boolean).length
 
   const submit = (e) => {
     e.preventDefault()
@@ -73,7 +76,19 @@ export default function SearchForm({ initial }) {
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12, marginTop: 14 }}>
+      <button
+        type="button"
+        className="search-filters-toggle"
+        onClick={() => setShowFilters((v) => !v)}
+        aria-expanded={showFilters}
+        aria-controls="search-filters"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M3 5h18 M6 12h12 M10 19h4" /></svg>
+        Filtres{activeFilters ? ` (${activeFilters})` : ""}
+        <span style={{ marginLeft: "auto", fontSize: 12 }} aria-hidden="true">{showFilters ? "▲" : "▼"}</span>
+      </button>
+
+      <div id="search-filters" className={`search-filters ${showFilters ? "" : "is-collapsed"}`} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12, marginTop: 14 }}>
         {/* div, not <label>: a label re-focuses its input on any inner click, which
             would reopen the dropdown right after the overlay/an option closes it */}
         <div style={{ position: "relative" }}><span style={lab}>Ville</span>

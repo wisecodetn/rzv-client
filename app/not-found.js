@@ -6,7 +6,7 @@ const SUGGESTIONS = [
   { href: "/parrainage", l: "Parrainage", d: "Invitez, gagnez des points", icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M22 21v-2a4 4 0 0 0-3-3.9 M16 3.1a4 4 0 0 1 0 7.8" },
   { href: "/contact", l: "Nous contacter", d: "On vous répond sous 24h", icon: "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M22 6l-10 7L2 6" },
   { href: "/centre-aide", l: "Centre d'aide", d: "Questions fréquentes", icon: "M9.1 9a3 3 0 1 1 5.8 1c0 2-3 3-3 3 M12 17h.01 M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" },
-  { href: "/gerer-rendez-vous", l: "Gérer un rendez-vous", d: "Avec votre référence", icon: "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" },
+  { href: "/gerer-rendez-vous", l: "Gérer un rendez-vous", d: "Dans votre compte", icon: "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" },
   { href: "/conditions-generales", l: "Conditions générales", d: "Nos CGU", icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M9 13h6 M9 17h6" },
   { href: "/confidentialite", l: "Confidentialité", d: "Vos données", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z M9 12l2 2 4-4" },
 ]

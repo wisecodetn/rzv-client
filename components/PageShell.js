@@ -16,9 +16,9 @@ export default function PageShell({ title, subtitle, crumb, children, maxWidth =
   )
 }
 
-export function Section({ h, children }) {
+export function Section({ h, id, children }) {
   return (
-    <section style={{ marginTop: 26 }}>
+    <section id={id} style={{ marginTop: 26, scrollMarginTop: 90 }}>
       {h && <div className="serif" style={{ fontSize: 19, marginBottom: 10 }}>{h}</div>}
       <div style={{ fontSize: 13.5, color: "var(--muted-2)", lineHeight: 1.8 }}>{children}</div>
     </section>

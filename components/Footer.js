@@ -73,6 +73,7 @@ export default async function Footer() {
           </Col>
           <Col title="Aide">
             <F href="/centre-aide">Centre d'aide</F>
+            <F href="/assistant">Assistant Rezervy</F>
             <F href="/gerer-rendez-vous">Gérer un rendez-vous</F>
             <F href="/conditions-generales">Conditions générales</F>
             <F href="/confidentialite">Confidentialité</F>
@@ -85,6 +86,10 @@ export default async function Footer() {
           <div style={{ flex: 1 }} />
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Tunisie · Français</span>
           <a href="https://pro.rezervy.io" target="_blank" rel="noopener noreferrer" className="link-soft" style={{ color: "var(--muted)" }}>Espace professionnel</a>
+          <span>
+            Conçu et développé par{" "}
+            <a href="https://wisecode.tn" target="_blank" rel="noopener" className="link-soft" style={{ color: "var(--ink)", fontWeight: 700 }}>Wise Code</a>
+          </span>
         </div>
       </div>
     </footer>

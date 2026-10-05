@@ -1,13 +1,6 @@
-import ManageRdv from "@/components/ManageRdv"
+import { redirect } from "next/navigation"
 
-export const dynamicParams = true
-
-export async function generateMetadata({ params }) {
-  const { token } = await params
-  return { title: `Gérer le rendez-vous ${token}`, robots: { index: false, follow: false } }
-}
-
-export default async function RdvPage({ params }) {
-  const { token } = await params
-  return <ManageRdv code={token} />
+/* Old "manage by reference" links: bookings live in the client account. */
+export default function RdvPage() {
+  redirect("/compte/rendez-vous")
 }

@@ -61,7 +61,7 @@ export default function Navbar() {
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16 M4 12h16 M4 18h16" /></svg>
         </button>
 
-        <Link href="/" title="Rezervy — Accueil" aria-label="Rezervy — Accueil" style={{ color: "var(--ink)", flex: "none", display: "inline-flex" }}>
+        <Link href="/" title="Rezervy — Accueil" aria-label="Rezervy — Accueil" className="nav-logo" style={{ color: "var(--ink)", flex: "none", display: "inline-flex" }}>
           <Logo size={26} wordSize={23} animate />
         </Link>
 

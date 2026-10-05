@@ -3,7 +3,7 @@ import Link from "next/link"
 import { useState, useEffect, useCallback } from "react"
 import { useAuth } from "../AuthProvider"
 import { useFavorites } from "../FavoritesProvider"
-import Photo from "../Photo"
+import SalonCard from "../SalonCard"
 
 const Card = ({ children, style }) => <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 18, ...style }}>{children}</div>
 const H = ({ children }) => <div className="serif" style={{ fontSize: 21, marginBottom: 4 }}>{children}</div>
@@ -318,7 +318,7 @@ export function Rendezvous() {
                   )}
                   <Link href={`/salon/${b.salon?.slug}`} title={b.salon?.name || "Rezervy"} style={{ fontSize: 12, fontWeight: 700, color: "var(--gold-dark)", border: "1px solid var(--accent-line)", borderRadius: 10, padding: "8px 13px" }}>Voir le salon</Link>
                   <span style={{ flex: 1 }} />
-                  <span style={{ fontSize: 11, color: "var(--faint)" }}>Annulation gratuite jusqu'à 24h avant</span>
+                  <span style={{ fontSize: 11, color: "var(--faint)" }}>Annulable jusqu'au début du rendez-vous</span>
                   {b.canCancel && (
                     <Link href={`/salon/${b.salon?.slug}/reserver?resched=${b.id}`} title="Reprogrammer ce rendez-vous" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 10, padding: "8px 14px", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap", flex: "none" }}>
                       Reprogrammer
@@ -492,7 +492,7 @@ function ReviewModal({ booking, onClose, onDone }) {
 
 /* ── Mes favoris ─────────────────────────────────────────────────── */
 export function Favoris() {
-  const { salons, ready, removeFav } = useFavorites()
+  const { salons, ready } = useFavorites()
   return (
     <>
       <H>Mes favoris</H>
@@ -502,27 +502,10 @@ export function Favoris() {
       ) : salons.length === 0 ? (
         <Empty title="Aucun favori pour le moment" sub="Ajoutez des salons à vos favoris depuis leur page." cta="Explorer les salons" href="/recherche" />
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 14, minWidth: 0 }}>
-          {salons.map((s) => (
-            <div key={s.slug} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", position: "relative", minWidth: 0 }}>
-              <div style={{ height: 120, position: "relative" }}>
-                <Photo label={`Photo — ${s.name}`} />
-                <button onClick={() => removeFav(s.slug)} aria-label="Retirer des favoris" style={{ position: "absolute", top: 10, right: 10, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.94)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--red)" stroke="var(--red)" strokeWidth="1.5"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z" /></svg>
-                </button>
-              </div>
-              <div style={{ padding: "12px 14px", minWidth: 0 }}>
-                <Link href={`/salon/${s.slug}`} style={{ fontWeight: 800, fontSize: 13.5, color: "var(--ink)" }}>{s.name || s.slug}</Link>
-                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{s.kind}{s.city ? ` · ${s.city}` : ""}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 9, flexWrap: "wrap" }}>
-                  {s.rate && <span style={{ fontSize: 12, fontWeight: 800, color: "var(--gold-dark)" }}>★ {s.rate}</span>}
-                  {s.from != null && <span style={{ fontSize: 11.5, color: "var(--muted)" }}>dès {s.from} TND</span>}
-                  <span style={{ flex: 1 }} />
-                  <Link href={`/salon/${s.slug}/reserver`} style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 9, padding: "7px 13px", fontWeight: 800, fontSize: 11.5, whiteSpace: "nowrap" }} className="btn-gold">Réserver</Link>
-                </div>
-              </div>
-            </div>
-          ))}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16, minWidth: 0 }}>
+          {/* The marketplace's own card: same photo, logo, rating and price —
+              and its heart removes the favourite. */}
+          {salons.map((s) => <SalonCard key={s.slug} salon={s} />)}
         </div>
       )}
     </>

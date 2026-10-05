@@ -37,7 +37,7 @@ export default function Logo({ size = 26, wordmark = true, animate = false, word
     >
       <LogoMark size={size} animate={animate} title={wordmark ? undefined : "Rezervy"} />
       {wordmark && (
-        <span className="serif" style={{ fontSize: wordSize ?? Math.round(size * 0.88), letterSpacing: "0.01em" }}>
+        <span className="serif rzv-logo-word" style={{ fontSize: wordSize ?? Math.round(size * 0.88), letterSpacing: "0.01em" }}>
           Rezervy
         </span>
       )}

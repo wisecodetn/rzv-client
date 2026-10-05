@@ -16,7 +16,7 @@ export function useGuestOnly(to = "/compte") {
 
 export function AuthLayout({ title, subtitle, children, footer }) {
   return (
-    <div style={{ minHeight: "calc(100vh - 210px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "44px 20px" }}>
+    <div className="auth-shell" style={{ minHeight: "calc(100vh - 210px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "44px 20px" }}>
       <div style={{ width: "100%", maxWidth: 432 }}>
         <div style={{ textAlign: "center", marginBottom: 22 }}>
           <div style={{ display: "flex", justifyContent: "center" }}>

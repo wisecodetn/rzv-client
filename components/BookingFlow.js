@@ -680,7 +680,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           {submitErr && <div style={{ fontSize: 12.5, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 10 }}>{submitErr}</div>}
 
           <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 12, borderTop: "1px solid var(--line-soft)", paddingTop: 10 }}>
-            {covered ? "Couvert par votre carnet — rien à régler au salon." : `Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
+            {covered ? "Couvert par votre carnet — rien à régler au salon." : `Total de ${total} TND, à régler au salon.`}
             <br />✓ Confirmation & rappel par SMS{user ? <> · connecté·e en tant que <b style={{ color: "var(--ink)" }}>{user.email}</b></> : null}
           </div>
         </div>
@@ -987,7 +987,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                   : "Le paiement ne change pas — réglez sur place comme prévu."
                 : covered
                   ? "Couvert par votre carnet — rien à régler au salon."
-                  : `Aucun paiement en ligne — total de ${total} TND à régler sur place.`}
+                  : `Total de ${total} TND, à régler au salon.`}
               <br />✓ Confirmation & rappel par SMS
             </div>
           </div>

@@ -29,6 +29,7 @@ export default async function sitemap() {
   }
 
   entries.push({ url: url("/blog"), lastModified: now, changeFrequency: "weekly", priority: 0.6 })
+  entries.push({ url: url("/assistant"), lastModified: now, changeFrequency: "monthly", priority: 0.5 })
   for (const p of await getPosts()) {
     entries.push({ url: url(`/blog/${p.slug}`), lastModified: new Date(p.date), changeFrequency: "monthly", priority: 0.5 })
   }

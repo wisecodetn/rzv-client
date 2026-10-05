@@ -37,7 +37,7 @@ export default async function BlogPage() {
 
       {/* Featured post */}
       {lead && (
-      <Link href={`/blog/${lead.slug}`} className="card-hover" style={{ display: "grid", gridTemplateColumns: "minmax(0,1.1fr) minmax(0,1fr)", gap: 0, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, overflow: "hidden", marginTop: 22, color: "var(--ink)" }}>
+      <Link href={`/blog/${lead.slug}`} className="card-hover blog-lead" style={{ display: "grid", gridTemplateColumns: "minmax(0,1.1fr) minmax(0,1fr)", gap: 0, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, overflow: "hidden", marginTop: 22, color: "var(--ink)" }}>
         <div style={{ position: "relative", minHeight: 240 }}><PostCover post={lead} sizes="(max-width: 780px) 100vw, 55vw" /></div>
         <div style={{ padding: "26px 28px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <span style={chip}>{catLabel(lead)}</span>

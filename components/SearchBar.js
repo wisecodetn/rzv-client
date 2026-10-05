@@ -121,7 +121,7 @@ export default function SearchBar() {
   return (
     <div style={{ display: "flex", gap: 10, marginTop: 26, flexWrap: "wrap", maxWidth: 680, pointerEvents: "auto" }}>
       {/* ---- Que cherchez-vous ? ---- */}
-      <div style={{ position: "relative", flex: 2, minWidth: 200 }}>
+      <div className="sb-q" style={{ position: "relative", flex: 2, minWidth: 200 }}>
         <div style={label}>Que cherchez-vous ?</div>
         <div style={box(qOpen)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round">
@@ -195,7 +195,8 @@ export default function SearchBar() {
       <button
         onClick={go}
         className="btn-gold"
-        style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 10, padding: "0 22px", display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", flex: "none" }}
+        // minHeight: on its own line the button has no row to stretch against.
+        style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 10, padding: "0 22px", minHeight: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 13.5, fontWeight: 700, cursor: "pointer", flex: "none" }}
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round">
           <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" />

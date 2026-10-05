@@ -48,7 +48,7 @@ export default async function Home() {
       <section style={{ position: "relative", borderBottom: "1px solid var(--line-soft)" }}>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(115deg,#1a1a1a 100%,#000000)" }}>
           <Photo label="Ambiance salon de beauté" >
-            <Image src="/main/hero.webp" alt="Ambiance salon de beauté" fill sizes="100vw" loading="eager" fetchPriority="high" style={{ objectFit: "cover" }} />
+            <Image src="/main/hero.webp" alt="Ambiance salon de beauté" fill sizes="100vw" loading="eager" fetchPriority="high" className="hero-img" style={{ objectFit: "cover" }} />
           </Photo>
         </div>
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(100deg,rgba(0,0,0,0.92) 0%,rgba(0,0,0,0.72) 46%,rgba(0,0,0,0.28) 78%,rgba(0,0,0,0.08) 100%)", pointerEvents: "none" }} />
@@ -65,7 +65,7 @@ export default async function Home() {
           <SearchBar />
           <div style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap", pointerEvents: "auto" }}>
             {categories.map((c) => (
-              <Link key={c.slug} href={`/${c.slug}`} className="pill" style={{ fontSize: 12.5, fontWeight: 700, background: "rgba(255,255,255,0.96)", border: "1px solid var(--accent-soft)", borderRadius: 999, padding: "7px 15px", whiteSpace: "nowrap", color: "#111111" }}>
+              <Link key={c.slug} href={`/${c.slug}`} className="hero-pill" style={{ fontSize: 12.5, fontWeight: 700, borderRadius: 999, padding: "7px 15px", whiteSpace: "nowrap" }}>
                 {c.name}
               </Link>
             ))}
@@ -89,14 +89,8 @@ export default async function Home() {
             {HOW_STEPS.map((s, i) => (
               <div key={s.i} style={{ textAlign: "center", padding: "0 12px" }}>
                 <div style={{ height: 170, borderRadius: 16, overflow: "hidden", marginBottom: 12 }}>
-                  <Photo label={["Trouvez votre salon", "Réservez en 30 secondes", "Profitez, on s'occupe du reste"][i]}>
-                    <Image 
-                      src={`/main/step${i + 1}.webp`}
-                      alt={["Trouvez votre salon", "Réservez en 30 secondes", "Profitez, on s'occupe du reste"][i]}
-                      title={["Trouvez votre salon", "Réservez en 30 secondes", "Profitez, on s'occupe du reste"][i]}
-                      fill
-                      style={{ objectFit: "cover" }}
-                    />
+                  <Photo label={s.t}>
+                    <Image src={`/main/how-${i + 1}.webp`} alt={s.t} title={s.t} fill sizes="(max-width: 780px) 100vw, 33vw" style={{ objectFit: "cover" }} />
                   </Photo>
                 </div>
                 <div style={{ width: 46, height: 46, borderRadius: "50%", background: "var(--accent-soft)", color: "var(--gold-dark)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 16, margin: "0 auto" }}>{s.i}</div>

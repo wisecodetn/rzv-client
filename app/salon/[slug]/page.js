@@ -67,7 +67,6 @@ export default async function SalonPage({ params }) {
   const s = await getSalon(slug)
   if (!s) notFound()
   const cat = await getCategory(s.primary)
-  console.log(s)
   const packages = s.packages ?? []
   const reviews = s.reviews ?? []
   const gallery = s.gallery ?? []
@@ -109,6 +108,7 @@ export default async function SalonPage({ params }) {
             boxShadow: "0 18px 44px var(--line-2)",
             marginTop: 18,
           }}
+          className="salon-head"
         >
           {/* Only a real logo earns a place; an initials tile fills the gap
               without telling the visitor anything. */}
@@ -134,7 +134,7 @@ export default async function SalonPage({ params }) {
             )}
           </div>
 
-          <div style={{ display: "flex", gap: 10, flex: "none", flexWrap: "wrap", alignItems: "center" }}>
+          <div className="salon-head-actions" style={{ display: "flex", gap: 10, flex: "none", flexWrap: "wrap", alignItems: "center" }}>
             <FavButton slug={s.slug} variant="button" />
             <Link
               href={`/salon/${s.slug}/reserver`}
@@ -190,7 +190,7 @@ export default async function SalonPage({ params }) {
                 straight after them — a package is just another prestation. */}
             {packages.length > 0 && (
               <div>
-                <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Prestations personnalisées</div>
+                <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Forfaits</div>
                 <ServiceGroups
                   slug={s.slug}
                   groups={[
@@ -217,11 +217,11 @@ export default async function SalonPage({ params }) {
             {s.team?.length > 0 && (
               <div>
                 <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>L&apos;équipe</div>
-                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 10 }}>
                   {s.team.map((tm) => (
-                    <div key={tm.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", gap: 11 }}>
-                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: tm.c, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#111111" }}>{tm.ini}</div>
-                      <div>
+                    <div key={tm.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
+                      <div style={{ width: 38, height: 38, flex: "none", borderRadius: "50%", background: tm.c, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 13, color: "#111111" }}>{tm.ini}</div>
+                      <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: 13 }}>{tm.n}</div>
                         <div style={{ fontSize: 11.5, color: "var(--muted)" }}>{tm.r}</div>
                       </div>
@@ -311,6 +311,23 @@ export default async function SalonPage({ params }) {
         {/* Long-form copy, last: it serves search more than the visitor, so it
             sits below everything that leads to a booking. */}
         <SalonContent html={s.content} name={s.name} />
+
+        {/* Phones & tablets: the booking action stays in reach while scrolling. */}
+        <div className="salon-bar">
+          <div style={{ display: "flex", alignItems: "center", gap: 14, maxWidth: 640, margin: "0 auto" }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>
+              {s.from != null && <div style={{ fontSize: 12.5, color: "var(--muted)" }}>dès <b style={{ color: "var(--ink)" }}>{s.from} TND</b></div>}
+            </div>
+            <Link
+              href={`/salon/${s.slug}/reserver`}
+              className="btn-gold"
+              style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "13px 28px", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", flex: "none" }}
+            >
+              Réserver
+            </Link>
+          </div>
+        </div>
       </div>
     </>
   )

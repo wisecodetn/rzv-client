@@ -44,8 +44,9 @@ export default function NewsletterModal() {
     let fired = false
     const fire = () => {
       if (fired) return
-      // A visitor busy with another dialog is not interrupted; try later.
-      if (document.querySelector('[role="dialog"][aria-modal="true"]')) return
+      // A visitor busy with another dialog — or talking to the assistant — is
+      // not interrupted; try later.
+      if (document.querySelector('[role="dialog"][aria-modal="true"], .rzv-assist.is-open')) return
       fired = true
       cleanup()
       lastFocus.current = document.activeElement

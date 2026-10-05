@@ -1,4 +1,5 @@
 import { demoteHeadings, sanitizeRichHtml } from "@/lib/rich-html"
+import Expandable from "./Expandable"
 
 /**
  * The salon's "contenu détaillé", last on the page.
@@ -22,7 +23,9 @@ export default function SalonContent({ html, name }) {
       style={{ marginTop: 28, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "22px 24px" }}
     >
       <h2 style={{ fontSize: 17, fontWeight: 800, margin: "0 0 12px" }}>À propos de {name}</h2>
-      <div className="rich" dangerouslySetInnerHTML={{ __html: safe }} />
+      <Expandable>
+        <div className="rich" dangerouslySetInnerHTML={{ __html: safe }} />
+      </Expandable>
     </section>
   )
 }

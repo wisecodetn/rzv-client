@@ -1,4 +1,6 @@
+import Link from "next/link"
 import PageShell, { Section } from "@/components/PageShell"
+import { getAssistantStatus } from "@/lib/assistant"
 
 export const metadata = {
   title: "Politique de confidentialité",
@@ -7,9 +9,10 @@ export const metadata = {
   robots: { index: true, follow: true },
 }
 
-export default function Confidentialite() {
+export default async function Confidentialite() {
+  const { retentionDays: days } = await getAssistantStatus()
   return (
-    <PageShell title="Politique de confidentialité" crumb="Confidentialité" maxWidth={800} subtitle="Dernière mise à jour : janvier 2026.">
+    <PageShell title="Politique de confidentialité" crumb="Confidentialité" maxWidth={800} subtitle="Dernière mise à jour : octobre 2026.">
       <Section h="1. Données collectées">
         Nous collectons les informations que vous fournissez (nom, e-mail, téléphone), les détails de vos réservations,
         ainsi que des données techniques (appareil, pages consultées) pour améliorer le service.
@@ -33,6 +36,14 @@ export default function Confidentialite() {
       <Section h="6. Cookies">
         Nous utilisons des cookies pour le bon fonctionnement du site et la mesure d'audience. Vous pouvez les gérer
         depuis les paramètres de votre navigateur.
+      </Section>
+      <Section id="assistant" h="7. Assistant Rezervy">
+        <Link href="/assistant">L&apos;assistant du site</Link> répond à vos questions à partir des informations publiques des salons. Vos messages sont
+        transmis à Google (Gemini) pour générer les réponses. Nous conservons les conversations {days} jours après le
+        dernier message, pour corriger les réponses inexactes et savoir quels salons et quelles villes vous recherchez.
+        Elles sont anonymes : aucun lien avec votre compte ni votre adresse IP, et les numéros de téléphone et adresses
+        e-mail sont masqués avant tout enregistrement. Ne partagez pas d&apos;informations personnelles dans le chat. Pour
+        faire supprimer une conversation, écrivez-nous à contact@rezervy.io.
       </Section>
     </PageShell>
   )

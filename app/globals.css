@@ -138,6 +138,14 @@ button {
   padding-left: 24px;
   padding-right: 24px;
 }
+/* Phones: a 16px gutter — 24px ate an eighth of a 390px screen. Important
+   because many sections set their padding inline. */
+@media (max-width: 560px) {
+  .wrap {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
 
 /* Interactive styling — inline styles can't express :hover */
 .card-hover {
@@ -476,6 +484,16 @@ html {
 }
 
 /* Navbar responsive helpers */
+/* Phones: the mark alone — the wordmark would crowd the header. */
+@media (max-width: 640px) {
+  .nav-logo .rzv-logo-word {
+    display: none;
+  }
+  .nav-logo .rzv-mark {
+    width: 26px !important;
+    height: 29px !important;
+  }
+}
 .nav-menu-btn {
   display: none;
 }
@@ -531,19 +549,123 @@ html {
 .autocomplete-scroll::-webkit-scrollbar-thumb:hover {
   background: var(--gold);
 }
-/* Salon photos: a lead shot beside a grid, stacking to a single column on
-   narrow screens where a two-up split would make every photo unreadable. */
+/* Salon photos — desktop: a lead shot beside a grid of four (extras hidden,
+   reachable in the viewer). Phones: the same markup becomes a swipeable strip,
+   one large photo per slide with the next one peeking. */
+.salon-media-tile.is-extra { display: none; }
+.salon-media-count { display: none; }
 @media (max-width: 780px) {
   .salon-media {
-    grid-template-columns: 1fr !important;
+    display: flex !important;
     height: auto !important;
+    gap: 10px !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin: 0 -24px;
+    padding: 0 24px;
+    scroll-padding: 0 24px;
   }
-  .salon-media > :first-child {
-    height: 220px;
+  .salon-media::-webkit-scrollbar { display: none; }
+  .salon-media > .salon-shot,
+  .salon-media .salon-media-tile {
+    flex: 0 0 86%;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+    scroll-snap-align: start;
+    border-radius: 18px !important;
   }
-  .salon-media > :last-child {
-    height: 150px;
+  .salon-media.is-single > .salon-shot { flex-basis: 100%; }
+  .salon-media .salon-media-tile .salon-shot { border-radius: 18px !important; }
+  .salon-media-side { display: contents !important; }
+  .salon-media-tile.is-extra { display: block; }
+  .salon-media-more { display: none; }
+  .salon-media-count {
+    display: block;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 5px 11px;
+    pointer-events: none;
   }
+}
+
+/* Salon header: on phones the two actions share the full width. */
+@media (max-width: 560px) {
+  .salon-media { margin: 0 -16px; padding: 0 16px; scroll-padding: 0 16px; }
+  .salon-head { padding: 18px !important; gap: 14px !important; }
+  .salon-head-actions { width: 100%; flex-wrap: nowrap !important; }
+  .salon-head-actions > * { flex: 1 1 0 !important; justify-content: center; text-align: center; }
+}
+
+/* Salon page: the booking action pinned to the bottom on phones & tablets. */
+.salon-bar { display: none; }
+@media (max-width: 940px) {
+  .salon-bar {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    background: var(--card);
+    border-top: 1px solid var(--line-2);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+}
+/* A fixed bottom bar (salon page, booking page) must not cover the end of the
+   page: the room is made at the very bottom, under the footer — a spacer in
+   the content still left the footer's last lines hidden. */
+@media (max-width: 940px) {
+  body:has(.salon-bar) footer,
+  body:has(.booking-bar) footer {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  .booking-bar-spacer { display: none !important; }
+}
+
+/* Salon-written long copy (SalonContent): compact, never louder than the page. */
+.rich { font-size: 14px; line-height: 1.75; color: var(--muted-2); overflow-wrap: anywhere; }
+.rich > :first-child { margin-top: 0; }
+.rich h2, .rich h3, .rich h4 { color: var(--ink); line-height: 1.3; margin: 18px 0 8px; }
+.rich h2 { font-size: 17px; font-weight: 800; }
+.rich h3 { font-size: 15.5px; font-weight: 700; }
+.rich h4 { font-size: 14.5px; font-weight: 700; }
+.rich p { margin: 0 0 12px; }
+.rich ul, .rich ol { margin: 0 0 12px; padding-left: 20px; }
+.rich li { margin-bottom: 5px; }
+.rich li:empty { display: none; }
+.rich a { color: var(--gold-dark); text-decoration: underline; text-underline-offset: 2px; }
+.rich img { max-width: 100%; height: auto; border-radius: 12px; }
+.rich strong { color: var(--ink); }
+.expandable.is-clipped::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70px;
+  background: linear-gradient(rgba(0, 0, 0, 0), var(--card));
+  pointer-events: none;
+}
+.expandable-btn {
+  margin-top: 10px;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 /* Article bodies come from the editor as HTML — styled here rather than with
@@ -985,7 +1107,8 @@ html.rzv-splash-done #rzv-splash {
   pointer-events: auto;
 }
 @media (max-width: 940px) {
-  body:has(.booking-bar) .rzv-assist {
+  body:has(.booking-bar) .rzv-assist,
+  body:has(.salon-bar) .rzv-assist {
     bottom: calc(108px + env(safe-area-inset-bottom));
   }
 }
@@ -1208,6 +1331,34 @@ html.rzv-splash-done #rzv-splash {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
   animation: rzv-bob 4.2s ease-in-out infinite;
 }
+/* Looking something up: quick bob, eyes scanning side to side, a soft halo. */
+.rzv-assist-head-avatar.is-thinking {
+  animation: rzv-bob 1.1s ease-in-out infinite, rzv-halo 1.4s ease-in-out infinite;
+}
+.rzv-assist-head-avatar.is-thinking .rzv-assist-eyes {
+  animation: rzv-scan 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.95));
+}
+/* Writing the answer: the eyes glow in rhythm. */
+.rzv-assist-head-avatar.is-talking {
+  animation: rzv-bob 2.2s ease-in-out infinite;
+}
+.rzv-assist-head-avatar.is-talking .rzv-assist-eyes {
+  animation: rzv-glow 0.9s ease-in-out infinite;
+}
+@keyframes rzv-scan {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+@keyframes rzv-glow {
+  0%, 100% { filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.7)); opacity: 0.85; }
+  50% { filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)); opacity: 1; }
+}
+@keyframes rzv-halo {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18); }
+  50% { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18), 0 0 0 6px rgba(255, 255, 255, 0.08); }
+}
 .rzv-assist-title {
   font-weight: 800;
   font-size: 14.5px;
@@ -1327,6 +1478,12 @@ html.rzv-splash-done #rzv-splash {
   font: inherit;
   font-size: 13px;
   padding: 10px 12px;
+}
+.rzv-assist-input:focus {
+  outline: none;
+  border-color: var(--accent-line);
+}
+.rzv-assist-input:disabled {
   cursor: not-allowed;
 }
 .rzv-assist-input::placeholder {
@@ -1342,8 +1499,185 @@ html.rzv-splash-done #rzv-splash {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.rzv-assist-send:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+/* Live chat */
+.rzv-assist-online::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  vertical-align: 1px;
+}
+.rzv-assist-msg.is-user {
+  align-self: flex-end;
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  border-radius: 16px 4px 16px 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rzv-assist-msg.is-error {
+  background: var(--red-soft);
+  border-color: var(--red-line);
+}
+.rzv-assist-md {
+  overflow-wrap: anywhere;
+}
+.rzv-assist-md p {
+  margin: 0;
+}
+.rzv-assist-md p + p,
+.rzv-assist-md p + ul,
+.rzv-assist-md ul + p {
+  margin-top: 7px;
+}
+.rzv-assist-md ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.rzv-assist-md li + li {
+  margin-top: 3px;
+}
+.rzv-assist-md a {
+  color: var(--gold-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rzv-assist-typing-label {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.rzv-assist-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-chip {
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.rzv-assist-chip:hover {
+  border-color: var(--accent-line);
+}
+.rzv-assist-cards {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.rzv-assist-card:hover {
+  border-color: var(--accent-line);
+  transform: translateX(2px);
+}
+.rzv-assist-card-ini {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+.rzv-assist-card-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rzv-assist-card-meta {
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rzv-assist-note {
+  padding: 0 12px 10px;
+  background: var(--card);
+  color: var(--faint);
+  font-size: 10.5px;
+  line-height: 1.45;
+  text-align: center;
+}
+.rzv-assist-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rzv-assist-rate {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -2px;
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-rate-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--faint);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.rzv-assist-rate-btn:hover {
+  color: var(--ink);
+  border-color: var(--line-2);
+}
+.rzv-assist-rate-btn.is-on {
+  color: var(--gold-dark);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.rzv-assist-rate-thanks {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--muted);
 }
 @media (max-width: 560px) {
   .rzv-assist-btn {
@@ -1366,6 +1700,319 @@ html.rzv-splash-done #rzv-splash {
   }
   .rzv-assist-sparks {
     display: none;
+  }
+}
+
+/* ── /assistant — the assistant's own page ───────────────────────────────── */
+.ai-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 34px;
+  align-items: center;
+  padding: 34px 36px;
+  border-radius: 24px;
+  background: var(--inverse-bg);
+  border: 1px solid var(--inverse-line);
+  color: #ffffff;
+  overflow: hidden;
+}
+.ai-hero-face {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-hero-face .rzv-assist-face {
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.08), 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+/* The same slow pulse as the launcher button, but it keeps breathing. */
+.ai-hero-ring {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  animation: ai-breathe 3.2s ease-in-out infinite;
+}
+@keyframes ai-breathe {
+  0%, 100% { transform: scale(0.94); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 0.25; }
+}
+.ai-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+.ai-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
+.ai-status.is-on::before {
+  background: #7fce8b;
+  box-shadow: 0 0 0 3px rgba(127, 206, 139, 0.2);
+}
+.ai-hero-title {
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 14px 0 0;
+}
+.ai-hero-sub {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 12px 0 0;
+  max-width: 600px;
+}
+.ai-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  margin-top: 22px;
+}
+.ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ai-hero-fine {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+}
+.ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.ai-card,
+.ai-limit,
+.ai-step,
+.ai-data {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+}
+.ai-card-icon {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--gold-dark);
+}
+.ai-card-title {
+  font-weight: 800;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.ai-card .ai-card-title {
+  margin-top: 12px;
+}
+.ai-card-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.ai-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ai-example {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.ai-example:hover {
+  border-color: var(--accent-line);
+  transform: translateY(-1px);
+}
+.ai-example-mark {
+  color: var(--gold-dark);
+  font-size: 16px;
+  line-height: 0;
+}
+.ai-limits {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+.ai-limit {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 20px;
+}
+.ai-limit-icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--red-soft);
+  color: var(--red);
+}
+.ai-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  counter-reset: none;
+}
+.ai-step-n {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.ai-data {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.ai-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-faq-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.ai-faq-item summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 18px;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+.ai-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.ai-faq-item summary::after {
+  content: "+";
+  margin-left: auto;
+  color: var(--gold);
+  font-size: 16px;
+}
+.ai-faq-item[open] summary::after {
+  content: "−";
+}
+.ai-faq-item p {
+  margin: 0;
+  padding: 0 18px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted-2);
+}
+.ai-credit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 30px;
+  margin-top: 48px;
+  padding: 28px 30px;
+  border-radius: 20px;
+  background: var(--inverse-bg);
+  border: 1px solid var(--inverse-line);
+  color: #ffffff;
+}
+.ai-credit-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+.ai-credit-name {
+  font-size: 28px;
+  margin-top: 4px;
+}
+.ai-credit-text {
+  margin: 8px 0 0;
+  max-width: 560px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.8);
+}
+@media (max-width: 720px) {
+  .ai-hero {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    padding: 28px 20px;
+    gap: 18px;
+  }
+  .ai-hero-cta {
+    justify-content: center;
+  }
+  .ai-hero-title {
+    font-size: 25px;
+  }
+  .ai-limits {
+    grid-template-columns: 1fr;
+  }
+  .ai-credit {
+    padding: 24px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-hero-ring,
+  .ai-hero-face .rzv-assist-bob {
+    animation: none;
   }
 }
 
@@ -1712,4 +2359,65 @@ html.rzv-splash-done #rzv-splash {
   .nl-done {
     animation: none !important;
   }
+}
+
+/* ── Mobile-first fixes from the responsive review ─────────────────── */
+/* Search: filters fold behind a button on phones. */
+.search-filters-toggle { display: none; }
+@media (max-width: 640px) {
+  .search-filters-toggle {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--line-2);
+    background: var(--card);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .search-filters.is-collapsed { display: none !important; }
+}
+/* Blog: the featured article stacks — photo above, text below. */
+.blog-lead > :last-child > span:first-child { align-self: flex-start; }
+@media (max-width: 700px) {
+  .blog-lead { grid-template-columns: minmax(0, 1fr) !important; }
+  .blog-lead > :first-child { min-height: 200px; aspect-ratio: 16 / 9; }
+  .blog-lead > :last-child { padding: 18px !important; }
+}
+/* Login / sign-up: start at the top on phones instead of mid-screen. */
+@media (max-width: 560px) {
+  .auth-shell { align-items: flex-start !important; min-height: 0 !important; padding: 24px 16px 40px !important; }
+}
+
+/* Home hero — phones see a narrow slice of a wide photo: aim it at her face. */
+@media (max-width: 780px) {
+  .hero-img { object-position: 90% 30% !important; }
+}
+/* Home hero category links: a light frosted glass over the photo. */
+.hero-pill {
+  display: inline-block;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 4px 14px rgba(0, 0, 0, 0.18);
+  transition: background-color 0.15s, border-color 0.15s, transform 0.15s;
+}
+.hero-pill:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.55);
+  transform: translateY(-1px);
+}
+/* Home search: on phones "Que cherchez-vous ?" takes a full line, "Où ?" and
+   the button share the next — the same at every phone width. */
+@media (max-width: 640px) {
+  .sb-q { flex-basis: 100% !important; }
 }
