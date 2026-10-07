@@ -54,7 +54,7 @@ jobs:
             NEXT_PUBLIC_SITE_URL=https://rzv.wisecode.tn
             NEXT_PUBLIC_MEDIA_URL=https://rzv-api.wisecode.tn
             NEXT_PUBLIC_PRO_URL=https://rzv-pro.wisecode.tn
-            NEXT_PUBLIC_GOOGLE_CLIENT_ID=233914225183-46adol2bpqjqcq84af1h9qr8vjpa39r5.apps.googleusercontent.com
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID=476575411657-acpd5uo0qmmir900im1ua81a18nsk90o.apps.googleusercontent.com
             API_URL=https://rzv-api.wisecode.tn
           cache-from: type=gha
           cache-to: type=gha,mode=max
