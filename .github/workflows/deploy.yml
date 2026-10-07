@@ -12,7 +12,21 @@ env:
   APP_NAME: rzv-client   # <-- change to rzv-client for that repo
 
 jobs:
+  # Lint + tests first: a failing check stops the image from being built and
+  # deployed (see client/tests and eslint.config.mjs).
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
   build-and-push:
+    needs: check
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -39,6 +53,7 @@ jobs:
             NEXT_PUBLIC_API_URL=https://rzv-api.wisecode.tn
             NEXT_PUBLIC_SITE_URL=https://rzv.wisecode.tn
             NEXT_PUBLIC_MEDIA_URL=https://rzv-api.wisecode.tn
+            NEXT_PUBLIC_PRO_URL=https://rzv-pro.wisecode.tn
             NEXT_PUBLIC_GOOGLE_CLIENT_ID=233914225183-46adol2bpqjqcq84af1h9qr8vjpa39r5.apps.googleusercontent.com
             API_URL=https://rzv-api.wisecode.tn
           cache-from: type=gha

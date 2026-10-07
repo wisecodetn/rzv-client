@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { upstreamSignal } from "@/lib/bff"
 import { apiUrl } from "@/lib/api"
 
 /**
@@ -23,6 +24,7 @@ export async function GET(request, { params }) {
   try {
     const res = await fetch(`${apiUrl(`/public/salons/${encodeURIComponent(slug)}/availability`)}?${qs}`, {
       cache: "no-store",
+      signal: upstreamSignal(),
     })
     const data = await res.json().catch(() => null)
     if (!res.ok) {

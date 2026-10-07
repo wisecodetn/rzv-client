@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { liftHeadings } from "@/lib/rich-html"
 import { notFound } from "next/navigation"
 import Photo from "@/components/Photo"
 import JsonLd from "@/components/JsonLd"
@@ -6,6 +7,7 @@ import { breadcrumbLd } from "@/lib/jsonld"
 import { SITE, abs } from "@/lib/site"
 import { getPosts, getPost, getPostSlugs, catLabel, catHref, formatDate } from "@/lib/blog"
 import PostCover from "@/components/blog/PostCover"
+import { pageMeta } from "@/lib/meta"
 
 export async function generateStaticParams() {
   return (await getPostSlugs()).map((slug) => ({ slug }))
@@ -15,12 +17,17 @@ export async function generateMetadata({ params }) {
   const { slug } = await params
   const p = await getPost(slug)
   if (!p) return {}
-  return {
-    title: p.metaTitle || p.title,
+  const title = p.metaTitle || p.title
+  return pageMeta({
+    // A long article title would pass 60 characters once " · Rezervy" is
+    // added, and be cut in the results: it is then used as it is.
+    ...(title.length > 50 ? { absoluteTitle: title } : { title }),
     description: p.metaDescription || p.excerpt,
-    alternates: { canonical: `/blog/${p.slug}` },
-    openGraph: { type: "article", title: `${p.title} · ${SITE.name}`, description: p.excerpt, url: `${SITE.url}/blog/${p.slug}`, publishedTime: p.date },
-  }
+    path: `/blog/${p.slug}`,
+    type: "article",
+    // The article's own cover when it has one (the site card otherwise).
+    og: { publishedTime: p.date, ...(p.cover ? { images: [{ url: p.cover, alt: p.title }] } : {}) },
+  })
 }
 
 const chip = { fontSize: 11, fontWeight: 800, color: "var(--gold-dark)", background: "var(--accent-soft)", borderRadius: 999, padding: "4px 10px", letterSpacing: "0.03em", textTransform: "uppercase" }
@@ -55,12 +62,14 @@ export default async function BlogPost({ params }) {
             author: { "@type": "Person", name: p.author.name },
             publisher: { "@id": abs("/#organization") },
             mainEntityOfPage: abs(`/blog/${p.slug}`),
+            // Required for article rich results; only a real cover is used.
+            ...(p.cover ? { image: abs(p.cover) } : {}),
             articleSection: catLabel(p),
           },
         ]}
       />
 
-      <nav style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+      <nav aria-label="Fil d’Ariane" style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
         <Link href="/" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Accueil</Link>
         <span>/</span>
         <Link href="/blog" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Blog</Link>
@@ -88,15 +97,16 @@ export default async function BlogPost({ params }) {
       <div
         className="post-body"
         style={{ marginTop: 26, fontSize: 15.5, lineHeight: 1.8, color: "var(--ink-2, var(--ink))" }}
-        // Sanitised on write by the API — never rendered from untrusted input.
-        dangerouslySetInnerHTML={{ __html: p.content }}
+        // Cleaned by the API (sanitize-html, on write and on read); headings lifted
+        // so the article's top level sits right under the page's h1.
+        dangerouslySetInnerHTML={{ __html: liftHeadings(p.content) }}
       />
 
       {/* Book CTA */}
       <div style={{ background: "var(--inverse-bg)", border: "1px solid var(--inverse-line)", borderRadius: 18, padding: "24px 26px", marginTop: 32, display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
         <div style={{ minWidth: 220, flex: 1 }}>
           <div className="serif" style={{ fontSize: 20, color: "#FFFFFF" }}>Envie de passer à l'action ?</div>
-          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", marginTop: 6 }}>Réservez un salon de {catLabel(p).toLowerCase()} près de chez vous, en ligne et en 30 secondes.</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", marginTop: 6 }}>Réservez un salon de {catLabel(p).toLowerCase()} près de chez vous, en ligne, en quelques clics.</div>
         </div>
         <Link href={catHref(p)} className="btn-on-dark" style={{ borderRadius: 12, padding: "13px 22px", fontWeight: 800, fontSize: 13.5, whiteSpace: "nowrap" }}>Voir les salons</Link>
       </div>

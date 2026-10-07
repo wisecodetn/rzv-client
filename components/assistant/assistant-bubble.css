@@ -1,0 +1,578 @@
+/* Loaded with its component (imported there), not on every page. */
+/* rzv-pop / rzv-panel-in keyframes live in globals.css (the newsletter uses them too). */
+/* ── Assistant bubble (components/assistant/AssistantBubble.js) ─────────
+   Browser-only, mounted after the page is idle. Sits under drawers/modals
+   (z 70 < 80+) and lifts above the booking bar on phones. */
+.rzv-assist {
+  position: fixed;
+  right: 22px;
+  bottom: calc(22px + env(safe-area-inset-bottom));
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+.rzv-assist > * {
+  pointer-events: auto;
+}
+@media (max-width: 940px) {
+  body:has(.booking-bar) .rzv-assist,
+  body:has(.salon-bar) .rzv-assist {
+    bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 560px) {
+  .rzv-assist {
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Launcher button */
+.rzv-assist-btn {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: #f2f2f2;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px var(--shadow-strong), 0 2px 6px var(--shadow);
+  animation: rzv-assist-in 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) backwards;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.rzv-assist-btn:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 14px 34px var(--shadow-strong), 0 2px 6px var(--shadow);
+}
+.rzv-assist-btn:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+@keyframes rzv-assist-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.6); }
+  to { opacity: 1; transform: none; }
+}
+.rzv-assist-bob {
+  display: block;
+  border-radius: 50%;
+  animation: rzv-bob 4.2s ease-in-out infinite;
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.rzv-assist-btn:hover .rzv-assist-bob {
+  animation: rzv-tilt 0.9s ease-in-out;
+}
+@keyframes rzv-bob {
+  0%, 100% { transform: translateY(1px) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(-3deg); }
+}
+@keyframes rzv-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  60% { transform: rotate(7deg); }
+}
+/* A soft pulse ring — a few times, then it lets you be. */
+.rzv-assist-ring {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  opacity: 0;
+  animation: rzv-ring 2.6s ease-out 1.2s 3;
+  pointer-events: none;
+}
+@keyframes rzv-ring {
+  0% { opacity: 0.35; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.45); }
+}
+/* The "ding!" strokes beside the head */
+.rzv-assist-sparks {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.rzv-assist-sparks path {
+  stroke-dasharray: 10;
+  stroke-dashoffset: 10;
+  animation: rzv-spark 6s ease-out 1s infinite;
+}
+.rzv-assist-sparks path:nth-child(2) { animation-delay: 1.08s; }
+.rzv-assist-sparks path:nth-child(3) { animation-delay: 1.16s; }
+@keyframes rzv-spark {
+  0% { stroke-dashoffset: 10; opacity: 1; }
+  6% { stroke-dashoffset: 0; opacity: 1; }
+  16% { stroke-dashoffset: 0; opacity: 1; }
+  24%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+/* Open: the face gives way to a close icon. */
+.rzv-assist-close {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #111111;
+  color: #ffffff;
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.6);
+  transition: opacity 0.2s ease, transform 0.25s ease;
+}
+.rzv-assist.is-open .rzv-assist-close {
+  opacity: 1;
+  transform: none;
+}
+.rzv-assist.is-open .rzv-assist-bob {
+  animation: none;
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+/* One-line hello */
+.rzv-assist-teaser {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: min(280px, calc(100vw - 32px));
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: 16px 16px 4px 16px;
+  box-shadow: 0 10px 28px var(--shadow-strong);
+  animation: rzv-pop 0.4s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+.rzv-assist-teaser-body {
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+  padding: 11px 6px 11px 14px;
+  cursor: pointer;
+}
+.rzv-assist-teaser-x {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  padding: 8px 12px 8px 4px;
+  cursor: pointer;
+}
+
+/* Panel */
+.rzv-assist-panel {
+  width: 360px;
+  max-width: calc(100vw - 28px);
+  max-height: min(560px, calc(100vh - 130px));
+  display: flex;
+  flex-direction: column;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: 20px;
+  box-shadow: 0 24px 60px var(--shadow-strong), 0 4px 14px var(--shadow);
+  overflow: hidden;
+  transform-origin: bottom right;
+  animation: rzv-panel-in 0.28s cubic-bezier(0.2, 1, 0.3, 1) both;
+  outline: none;
+}
+.rzv-assist-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px 14px 16px;
+  background: var(--inverse-bg);
+  color: #ffffff;
+}
+.rzv-assist-head-avatar {
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18);
+  animation: rzv-bob 4.2s ease-in-out infinite;
+}
+/* Looking something up: quick bob, eyes scanning side to side, a soft halo. */
+.rzv-assist-head-avatar.is-thinking {
+  animation: rzv-bob 1.1s ease-in-out infinite, rzv-halo 1.4s ease-in-out infinite;
+}
+.rzv-assist-head-avatar.is-thinking .rzv-assist-eyes {
+  animation: rzv-scan 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.95));
+}
+/* Writing the answer: the eyes glow in rhythm. */
+.rzv-assist-head-avatar.is-talking {
+  animation: rzv-bob 2.2s ease-in-out infinite;
+}
+.rzv-assist-head-avatar.is-talking .rzv-assist-eyes {
+  animation: rzv-glow 0.9s ease-in-out infinite;
+}
+@keyframes rzv-scan {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+@keyframes rzv-glow {
+  0%, 100% { filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.7)); opacity: 0.85; }
+  50% { filter: drop-shadow(0 0 4px rgba(255, 255, 255, 1)); opacity: 1; }
+}
+@keyframes rzv-halo {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18); }
+  50% { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18), 0 0 0 6px rgba(255, 255, 255, 0.08); }
+}
+.rzv-assist-title {
+  font-weight: 800;
+  font-size: 14.5px;
+}
+.rzv-assist-sub {
+  margin-top: 3px;
+}
+.rzv-assist-soon {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}
+.rzv-assist-x {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+}
+.rzv-assist-x:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+.rzv-assist-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg);
+}
+.rzv-assist-msg {
+  align-self: flex-start;
+  max-width: 90%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 4px 16px 16px 16px;
+  padding: 10px 13px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink);
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-typing {
+  display: inline-flex;
+  gap: 4px;
+  padding: 13px 14px;
+}
+.rzv-assist-typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: rzv-dot 1s ease-in-out infinite;
+}
+.rzv-assist-typing i:nth-child(2) { animation-delay: 0.15s; }
+.rzv-assist-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes rzv-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+.rzv-assist-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.rzv-assist-link:hover {
+  border-color: var(--accent-line);
+  transform: translateX(2px);
+}
+.rzv-assist-arrow {
+  margin-left: auto;
+  color: var(--muted);
+}
+.rzv-assist-foot {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+  background: var(--card);
+}
+.rzv-assist-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  background: var(--inset);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  padding: 10px 12px;
+}
+.rzv-assist-input:focus {
+  outline: none;
+  border-color: var(--accent-line);
+}
+.rzv-assist-input:disabled {
+  cursor: not-allowed;
+}
+.rzv-assist-input::placeholder {
+  color: var(--faint);
+}
+.rzv-assist-send {
+  width: 40px;
+  flex: none;
+  border: 0;
+  border-radius: 12px;
+  background: var(--gold);
+  color: var(--on-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.rzv-assist-send:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Live chat */
+.rzv-assist-online::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  vertical-align: 1px;
+}
+.rzv-assist-msg.is-user {
+  align-self: flex-end;
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  border-radius: 16px 4px 16px 16px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rzv-assist-msg.is-error {
+  background: var(--red-soft);
+  border-color: var(--red-line);
+}
+.rzv-assist-md {
+  overflow-wrap: anywhere;
+}
+.rzv-assist-md p {
+  margin: 0;
+}
+.rzv-assist-md p + p,
+.rzv-assist-md p + ul,
+.rzv-assist-md ul + p {
+  margin-top: 7px;
+}
+.rzv-assist-md ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.rzv-assist-md li + li {
+  margin-top: 3px;
+}
+.rzv-assist-md a {
+  color: var(--gold-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rzv-assist-typing-label {
+  margin-left: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.rzv-assist-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-chip {
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.rzv-assist-chip:hover {
+  border-color: var(--accent-line);
+}
+.rzv-assist-cards {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 12px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.rzv-assist-card:hover {
+  border-color: var(--accent-line);
+  transform: translateX(2px);
+}
+.rzv-assist-card-ini {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+.rzv-assist-card-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rzv-assist-card-meta {
+  display: block;
+  font-size: 11.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rzv-assist-note {
+  padding: 0 12px 10px;
+  background: var(--card);
+  color: var(--faint);
+  font-size: 10.5px;
+  line-height: 1.45;
+  text-align: center;
+}
+.rzv-assist-note a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.rzv-assist-rate {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: -2px;
+  animation: rzv-pop 0.3s ease both;
+}
+.rzv-assist-rate-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--faint);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.rzv-assist-rate-btn:hover {
+  color: var(--ink);
+  border-color: var(--line-2);
+}
+.rzv-assist-rate-btn.is-on {
+  color: var(--gold-dark);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.rzv-assist-rate-thanks {
+  margin-left: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+@media (max-width: 560px) {
+  .rzv-assist-btn {
+    width: 58px;
+    height: 58px;
+  }
+  .rzv-assist-btn .rzv-assist-face {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .rzv-assist-panel {
+    max-height: calc(100vh - 110px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rzv-assist,
+  .rzv-assist * {
+    animation: none !important;
+    transition: none !important;
+  }
+  .rzv-assist-sparks {
+    display: none;
+  }
+}

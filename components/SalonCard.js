@@ -3,12 +3,12 @@ import Photo from "./Photo"
 import FavButton from "./FavButton"
 import Image from "next/image"
 
-/** Marketplace salon card (home + search). */
-export default function SalonCard({ salon }) {
-  console.log(salon)
+/** Marketplace salon card (home + search). `first`: the card at the top of a
+ *  listing, likely the largest thing on screen — its photo is preloaded. */
+export default function SalonCard({ salon, first = false }) {
   return (
     <div style={{ position: "relative" }}>
-    <FavButton slug={salon.slug} variant="icon" size={36} />
+    <FavButton slug={salon.slug} name={salon.name} variant="icon" size={36} />
     <Link
       href={`/salon/${salon.slug}`}
       title={`${salon.name} — ${salon.kind}, ${salon.city}`}
@@ -16,7 +16,7 @@ export default function SalonCard({ salon }) {
       style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, overflow: "hidden", display: "block", color: "var(--ink)" }}
     >
       <div style={{ height: 140, position: "relative" }}>
-        <Photo label={`Photo — ${salon.name}`}>{salon.cover && <Image src={salon.cover} alt={`${salon.name} — photo du salon`} fill style={{ objectFit: "cover" }} sizes="500px"/>}</Photo>
+        <Photo label={`Photo — ${salon.name}`}>{salon.cover && <Image src={salon.cover} alt={`${salon.name} — photo du salon`} fill style={{ objectFit: "cover" }} sizes="(max-width: 600px) 100vw, 360px" preload={first} />}</Photo>
         <div
           style={{
             position: "absolute", right: 12, bottom: -14, width: 44, height: 44, borderRadius: 13, background: "var(--card)",

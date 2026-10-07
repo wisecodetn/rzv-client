@@ -1,10 +1,12 @@
 import Link from "next/link"
-import { getCategories, getCities } from "@/lib/data"
+import { SITE, OPERATOR } from "@/lib/site"
+import { getSiteContent } from "@/lib/site-content"
+import { getCategories, getCities, getCoverage } from "@/lib/data"
 import Logo from "./brand/Logo"
 import NewsletterForm from "./newsletter/NewsletterForm"
 
-const Social = ({ d, label }) => (
-  <a href="#" aria-label={label} className="pill" style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--muted-2)" }}>
+const Social = ({ href, d, label }) => (
+  <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${label} (nouvel onglet)`} className="pill" style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--muted-2)" }}>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{d}</svg>
   </a>
 )
@@ -24,8 +26,13 @@ const F = ({ href, children }) => (
 )
 
 export default async function Footer() {
-  const [categories, cities] = await Promise.all([getCategories(), getCities()])
-  const footCities = cities.slice(0, 6)
+  const [categories, cities, { social }, coverage] = await Promise.all([getCategories(), getCities(), getSiteContent(), getCoverage()])
+  // Cities that have salons, busiest first — the first six of the catalogue
+  // linked to empty pages.
+  const footCities = cities
+    .filter((c) => coverage.cities[c.slug] > 0)
+    .sort((a, b) => coverage.cities[b.slug] - coverage.cities[a.slug])
+    .slice(0, 6)
   return (
     <footer style={{ borderTop: "1px solid var(--line)", background: "var(--footer-bg)", marginTop: 8 }}>
       <div className="wrap" style={{ padding: "40px 24px 20px" }}>
@@ -50,25 +57,30 @@ export default async function Footer() {
             <p style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.65, marginTop: 10, maxWidth: 260 }}>
               La façon la plus simple de réserver coiffure, barbier, onglerie et spa en Tunisie — en ligne, 24h/24, sans frais.
             </p>
-            <div style={{ display: "flex", gap: 9, marginTop: 16 }}>
-              <Social label="Instagram" d={<><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" /></>} />
-              <Social label="Facebook" d={<path d="M15 3h-2a4 4 0 0 0-4 4v3H6v4h3v7h4v-7h3l1-4h-4V7a1 1 0 0 1 1-1h2z" />} />
-              <Social label="TikTok" d={<path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />} />
-            </div>
+            {/* Only the profiles an admin entered (Site client → Réseaux sociaux) — never a "#" link. */}
+            {Object.values(social).some(Boolean) && (
+              <div style={{ display: "flex", gap: 9, marginTop: 16 }}>
+                {social.instagram && <Social href={social.instagram} label="Instagram" d={<><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" /></>} />}
+                {social.facebook && <Social href={social.facebook} label="Facebook" d={<path d="M15 3h-2a4 4 0 0 0-4 4v3H6v4h3v7h4v-7h3l1-4h-4V7a1 1 0 0 1 1-1h2z" />} />}
+                {social.tiktok && <Social href={social.tiktok} label="TikTok" d={<path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />} />}
+                {social.x && <Social href={social.x} label="X" d={<path d="M4 4l16 16 M20 4L4 20" />} />}
+              </div>
+            )}
           </div>
 
           <Col title="Découvrir">
             {categories.map((c) => <F key={c.slug} href={`/${c.slug}`}>{c.name}</F>)}
           </Col>
-          <Col title="Villes populaires">
-            {footCities.map((c) => <F key={c.slug} href={`/recherche/${c.slug}`}>Salons à {c.name}</F>)}
-          </Col>
+          {footCities.length > 0 && (
+            <Col title="Villes populaires">
+              {footCities.map((c) => <F key={c.slug} href={`/recherche/${c.slug}`}>Salons à {c.name}</F>)}
+            </Col>
+          )}
           <Col title="Rezervy">
             <F href="/devenir-partenaire">Devenir partenaire</F>
             <F href="/qui-sommes-nous">Qui sommes-nous</F>
+            <F href="/liste-attente">Liste d’attente</F>
             <F href="/blog">Blog</F>
-            <F href="/carte-cadeau">Carte cadeau</F>
-            <F href="/parrainage">Parrainage</F>
             <F href="/contact">Nous contacter</F>
           </Col>
           <Col title="Aide">
@@ -85,10 +97,11 @@ export default async function Footer() {
           <span>© 2026 Rezervy — la beauté, sur rendez-vous</span>
           <div style={{ flex: 1 }} />
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Tunisie · Français</span>
-          <a href="https://pro.rezervy.io" target="_blank" rel="noopener noreferrer" className="link-soft" style={{ color: "var(--muted)" }}>Espace professionnel</a>
+          <a href={SITE.proUrl} target="_blank" rel="noopener noreferrer" className="link-soft" style={{ color: "var(--muted)" }}>Espace professionnel</a>
           <span>
-            Conçu et développé par{" "}
-            <a href="https://wisecode.tn" target="_blank" rel="noopener" className="link-soft" style={{ color: "var(--ink)", fontWeight: 700 }}>Wise Code</a>
+            Rezervy est édité par{" "}
+            <a href="https://wisecode.tn" target="_blank" rel="noopener" className="link-soft" style={{ color: "var(--ink)", fontWeight: 700 }}>{OPERATOR.name}</a>
+            {" "}· {OPERATOR.city}
           </span>
         </div>
       </div>

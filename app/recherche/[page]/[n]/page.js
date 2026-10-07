@@ -1,22 +1,21 @@
 import { notFound, redirect } from "next/navigation"
 import VilleResults from "@/components/recherche/VilleResults"
-import { getCity, querySalons } from "@/lib/data"
+import { getCity, querySalons, getCoverage } from "@/lib/data"
 import { SITE } from "@/lib/site"
+import { pageMeta } from "@/lib/meta"
 
 /** /recherche/[ville]/page-N — crawlable pagination of the city search page. */
 const parsePage = (seg) => {
-  const m = /^page-(\d+)$/.exec(seg || "")
+  const m = /^page-([1-9]\d*)$/.exec(seg || "")
   return m ? parseInt(m[1], 10) : null
 }
 
 // Pre-render pages 2..N for each city that has salons.
 export async function generateStaticParams() {
-  const all = await querySalons({})
-  const byCity = {}
-  for (const s of all.mapItems) if (s.citySlug) byCity[s.citySlug] = (byCity[s.citySlug] || 0) + 1
+  const { cities, pageSize } = await getCoverage()
   const out = []
-  for (const [slug, count] of Object.entries(byCity)) {
-    const totalPages = Math.max(1, Math.ceil(count / all.pageSize))
+  for (const [slug, count] of Object.entries(cities)) {
+    const totalPages = Math.max(1, Math.ceil(count / pageSize))
     for (let p = 2; p <= totalPages; p++) out.push({ page: slug, n: `page-${p}` })
   }
   return out
@@ -27,14 +26,11 @@ export async function generateMetadata({ params }) {
   const num = parsePage(seg)
   const city = await getCity(citySlug)
   if (!city || !num || num < 2) return {}
-  const title = `Salons de beauté à ${city.name} — page ${num}`
-  return {
-    title,
-    description: `Page ${num} des salons à réserver en ligne à ${city.name} : prix, avis vérifiés et créneaux disponibles.`,
-    alternates: { canonical: `/recherche/${city.slug}/page-${num}` },
-    robots: { index: true, follow: true },
-    openGraph: { title: `${title} · ${SITE.name}`, url: `${SITE.url}/recherche/${city.slug}/page-${num}` },
-  }
+  return pageMeta({
+    title: `Salons de beauté à ${city.name} — page ${num}`,
+    description: `Page ${num} des salons à réserver en ligne à ${city.name} : prix, avis et créneaux disponibles.`,
+    path: `/recherche/${city.slug}/page-${num}`,
+  })
 }
 
 export default async function VillePagedPage({ params }) {

@@ -1,10 +1,6 @@
 import { notFound } from "next/navigation"
 import BookingFlow from "@/components/BookingFlow"
-import { salonSlugs, getSalon } from "@/lib/data"
-
-export async function generateStaticParams() {
-  return (await salonSlugs()).map((slug) => ({ slug }))
-}
+import { getSalon } from "@/lib/data"
 
 export async function generateMetadata({ params }) {
   const { slug } = await params

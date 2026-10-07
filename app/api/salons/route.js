@@ -21,12 +21,17 @@ export async function GET(request) {
     if ([n, s, e, w].every((x) => Number.isFinite(x))) filters.bounds = { n, s, e, w }
   }
 
-  const res = await querySalons({
-    category: sp.get("category"),
-    city: sp.get("city"),
-    page: parseInt(sp.get("page") || "1", 10),
-    sort: filters.sort,
-    filters,
-  })
-  return NextResponse.json(res)
+  try {
+    const res = await querySalons({
+      category: sp.get("category"),
+      city: sp.get("city"),
+      page: parseInt(sp.get("page") || "1", 10),
+      sort: filters.sort,
+      filters,
+      fresh: true,
+    })
+    return NextResponse.json(res)
+  } catch {
+    return NextResponse.json({ error: "unavailable" }, { status: 503 })
+  }
 }

@@ -2,9 +2,7 @@ import Link from "next/link"
 
 const SUGGESTIONS = [
   { href: "/qui-sommes-nous", l: "Qui sommes-nous", d: "Notre mission", icon: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M12 16v-4 M12 8h.01" },
-  { href: "/carte-cadeau", l: "Carte cadeau", d: "Offrir un moment beauté", icon: "M20 12v10H4V12 M2 7h20v5H2z M12 22V7 M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" },
-  { href: "/parrainage", l: "Parrainage", d: "Invitez, gagnez des points", icon: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M22 21v-2a4 4 0 0 0-3-3.9 M16 3.1a4 4 0 0 1 0 7.8" },
-  { href: "/contact", l: "Nous contacter", d: "On vous répond sous 24h", icon: "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M22 6l-10 7L2 6" },
+  { href: "/contact", l: "Nous contacter", d: "Une question ? Écrivez-nous", icon: "M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M22 6l-10 7L2 6" },
   { href: "/centre-aide", l: "Centre d'aide", d: "Questions fréquentes", icon: "M9.1 9a3 3 0 1 1 5.8 1c0 2-3 3-3 3 M12 17h.01 M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" },
   { href: "/gerer-rendez-vous", l: "Gérer un rendez-vous", d: "Dans votre compte", icon: "M8 2v4 M16 2v4 M3 10h18 M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" },
   { href: "/conditions-generales", l: "Conditions générales", d: "Nos CGU", icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M9 13h6 M9 17h6" },

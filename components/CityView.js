@@ -1,5 +1,6 @@
 "use client"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { OPERATOR } from "@/lib/site"
+import { memo, useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Photo from "./Photo"
@@ -7,9 +8,10 @@ import SalonMap from "./SalonMap"
 import FavButton from "./FavButton"
 import { useCatalog } from "./CatalogProvider"
 import Image from 'next/image'
+import { de } from "@/lib/fr"
+import { scrollBehavior } from "@/lib/motion"
 
 const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n)
-const DISTS = ["1,2 km", "2,4 km", "3,1 km", "4,0 km", "5,3 km"]
 const SORTS = [
   { k: "note", l: "Mieux notés" },
   { k: "avis", l: "Plus d'avis" },
@@ -42,9 +44,9 @@ function DateCal({ value, onPick }) {
   return (
     <div style={{ background: "var(--bg)", border: "1px solid var(--line)", borderRadius: 12, padding: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-        <button onClick={() => nav(-1)} disabled={!canPrev} style={{ ...navBtn, opacity: canPrev ? 1 : 0.4 }}>‹</button>
-        <div style={{ flex: 1, textAlign: "center", fontSize: 12.5, fontWeight: 700, textTransform: "capitalize", color: "var(--ink)" }}>{label}</div>
-        <button onClick={() => nav(1)} style={navBtn}>›</button>
+        <button type="button" aria-label="Mois précédent" onClick={() => nav(-1)} disabled={!canPrev} style={{ ...navBtn, opacity: canPrev ? 1 : 0.4 }}>‹</button>
+        <div aria-live="polite" style={{ flex: 1, textAlign: "center", fontSize: 12.5, fontWeight: 700, textTransform: "capitalize", color: "var(--ink)" }}>{label}</div>
+        <button type="button" aria-label="Mois suivant" onClick={() => nav(1)} style={navBtn}>›</button>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, fontSize: 10, color: "var(--faint)", fontWeight: 800, textAlign: "center", marginBottom: 3 }}>
         {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => <div key={i}>{d}</div>)}
@@ -63,31 +65,38 @@ function DateCal({ value, onPick }) {
   )
 }
 
+const PAGE_CELL = { minWidth: 36, height: 36, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, padding: "0 10px", border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink)", cursor: "pointer", textDecoration: "none", font: "inherit" }
+const PAGE_CELL_ACTIVE = { ...PAGE_CELL, background: "var(--gold)", color: "var(--on-gold)", border: "1px solid var(--gold)" }
+const PAGE_CELL_DISABLED = { ...PAGE_CELL, opacity: 0.4, cursor: "default" }
+
+/* Module-level, not created inside Pagination: a component re-created on each
+   render is a new type to React, so it remounts (and drops focus) every time. */
+function PageCell({ n, children, active, disabled, apiMode, href, onPage }) {
+  if (disabled) return <span style={PAGE_CELL_DISABLED}>{children}</span>
+  const st = active ? PAGE_CELL_ACTIVE : PAGE_CELL
+  if (apiMode) return <button type="button" aria-current={active ? "page" : undefined} onClick={() => onPage(n)} style={st}>{children}</button>
+  return <Link href={href(n)} aria-current={active ? "page" : undefined} style={st} className="lift">{children}</Link>
+}
+
 function Pagination({ pageNow, pagesTotal, apiMode, basePath, onPage }) {
   if (pagesTotal <= 1) return null
   const nums = []
   for (let i = 1; i <= pagesTotal; i++) nums.push(i)
   const href = (n) => (n === 1 ? basePath : `${basePath}/page-${n}`)
-  const base = { minWidth: 36, height: 36, borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, padding: "0 10px", border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink)", cursor: "pointer", textDecoration: "none" }
-  const activeStyle = { ...base, background: "var(--gold)", color: "var(--on-gold)", border: "1px solid var(--gold)" }
-  const disabledStyle = { ...base, opacity: 0.4, cursor: "default" }
-  const Cell = ({ n, children, active, disabled }) => {
-    if (disabled) return <span style={disabledStyle}>{children}</span>
-    const st = active ? activeStyle : base
-    if (apiMode) return <button onClick={() => onPage(n)} style={st}>{children}</button>
-    return <Link href={href(n)} style={st} className="lift">{children}</Link>
-  }
+  const cell = { apiMode, href, onPage }
   return (
     <nav aria-label="Pagination" style={{ display: "flex", gap: 6, alignItems: "center", justifyContent: "center", flexWrap: "wrap", marginTop: 24 }}>
-      <Cell n={pageNow - 1} disabled={pageNow <= 1}>‹ Précédent</Cell>
-      {nums.map((n) => <Cell key={n} n={n} active={n === pageNow}>{n}</Cell>)}
-      <Cell n={pageNow + 1} disabled={pageNow >= pagesTotal}>Suivant ›</Cell>
+      <PageCell {...cell} n={pageNow - 1} disabled={pageNow <= 1}>‹ Précédent</PageCell>
+      {nums.map((n) => <PageCell {...cell} key={n} n={n} active={n === pageNow}>{n}</PageCell>)}
+      <PageCell {...cell} n={pageNow + 1} disabled={pageNow >= pagesTotal}>Suivant ›</PageCell>
     </nav>
   )
 }
 
 /* One salon result card — responsive (photo stacks on top on phones) */
-function SalonRow({ s, dist, catSlugs, active, onHover }) {
+/* memo: hovering a row or a pin re-renders the page (hoverSlug); only the two
+   rows whose `active` flips need to follow. */
+const SalonRow = memo(function SalonRow({ s, catSlugs, active, onHover, first = false }) {
   const [tab, setTab] = useState(null)
   const all = s.serviceGroups.flatMap((g) => g.rows)
   // Show what the visitor came for: on /coiffure-femme the card lists the
@@ -95,6 +104,10 @@ function SalonRow({ s, dist, catSlugs, active, onHover }) {
   // whose services carry no category still show something rather than nothing.
   const matching = catSlugs ? all.filter((r) => r.cat && catSlugs.has(r.cat)) : []
   const top = (matching.length ? matching : all).slice(0, 3)
+  // "dès" for what the visitor browses: on /coiffure, the cheapest coiffure
+  // service — the salon's overall cheapest could be a barbier one.
+  const prices = matching.map((r) => r.p).filter((p) => Number.isFinite(p) && p > 0)
+  const from = prices.length ? prices.reduce((a, b) => Math.min(a, b)) : s.from
   return (
     <div
       id={`salon-${s.slug}`}
@@ -104,7 +117,7 @@ function SalonRow({ s, dist, catSlugs, active, onHover }) {
       style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: 14 }}
     >
       <div className="salon-top">
-        <div className="salon-photo" style={{ position: "relative" }}><Photo label={`Photo — ${s.name}`}><Image src={s.logo} fill sizes="200px" alt={`Photo — ${s.name} — Rezervy`} title={`Photo — ${s.name} — Rezervy`}/></Photo><FavButton slug={s.slug} variant="icon" size={34} /></div>
+        <div className="salon-photo" style={{ position: "relative" }}><Photo label={`Photo — ${s.name}`}>{s.logo && <Image src={s.logo} fill sizes="(max-width: 560px) 100vw, 200px" preload={first} style={{ objectFit: "cover" }} alt={`Photo — ${s.name}`} />}</Photo><FavButton slug={s.slug} name={s.name} variant="icon" size={34} /></div>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div style={{ display: "flex", gap: 10, alignItems: "baseline", flexWrap: "wrap" }}>
             {/* H3: each salon is a section under the page's H2 (H1 → H2 → H3). */}
@@ -113,16 +126,16 @@ function SalonRow({ s, dist, catSlugs, active, onHover }) {
             </h3>
             <span style={{ whiteSpace: "nowrap" }}><span style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>★ {s.rate}</span> <span style={{ fontSize: 12, color: "var(--faint)" }}>({s.rev})</span></span>
           </div>
-          <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>{s.address} · {dist}</div>
+          <div style={{ fontSize: 12.5, color: "var(--muted)", marginTop: 2 }}>{[s.address, s.area].filter(Boolean).join(" · ")}</div>
           <div style={{ display: "flex", gap: 5, marginTop: 8, flexWrap: "wrap" }}>
             {s.tags.slice(0, 3).map((t) => (
               <span key={t} style={{ fontSize: 11, fontWeight: 600, background: "var(--surface-2)", color: "var(--muted-2)", borderRadius: 999, padding: "3px 10px" }}>{t}</span>
             ))}
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 9, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12, color: "var(--muted)" }}>dès <span style={{ fontWeight: 800, color: "var(--ink)" }}>{s.from} TND</span></span>
+            <span style={{ fontSize: 12, color: "var(--muted)" }}>dès <span style={{ fontWeight: 800, color: "var(--ink)" }}>{from} TND</span></span>
             {/* Green only when the doors are actually open now. */}
-            <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 9px", background: s.open ? "var(--green-soft)" : "var(--accent-soft)", color: s.open ? "var(--green)" : "#404040" }}>{s.slotLabel}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 9px", background: s.open ? "var(--green-soft)" : "var(--accent-soft)", color: s.open ? "var(--green)" : "var(--muted-2)" }}>{s.slotLabel}</span>
             <span style={{ flex: 1 }} />
             {/* Each card links to the same 2 routes several times; only the
                 salon-name link prefetches, so 20 cards don't fire ~100 requests. */}
@@ -160,14 +173,14 @@ function SalonRow({ s, dist, catSlugs, active, onHover }) {
               <div style={{ fontSize: 12, color: "var(--muted-2)", lineHeight: 1.6, marginTop: 3 }}>{tr.txt}</div>
             </div>
           ))}
-          <Link href={`/salon/${s.slug}`} prefetch={false} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>Voir les {s.rev} avis →</Link>
+          <Link href={`/salon/${s.slug}`} prefetch={false} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>{s.rev > 1 ? `Voir les ${s.rev} avis` : "Voir l’avis"} →</Link>
         </div>
       )}
     </div>
   )
-}
+})
 
-export default function CityView({ salons, mapSalons, cat, city, page = 1, totalPages = 1, total = 0, basePath }) {
+export default function CityView({ salons, mapSalons, cat, city, page = 1, totalPages = 1, total = 0, basePath, live = [] }) {
   const router = useRouter()
   const { categories, cities, categoryChildren, categoryParent } = useCatalog()
   const TOP_NAME = Object.fromEntries(categories.map((c) => [c.slug, c.name]))
@@ -175,6 +188,13 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
   const parent = categoryParent(cat.slug)
   const badgeNodes = children.length ? children : (parent ? categoryChildren(parent.slug) : [])
   const badgeOwner = children.length ? cat : (parent || cat)
+  // Links go only to (category, city) pages that have salons — an empty one is
+  // a dead end for the visitor and a wasted, noindexed page for crawlers. The
+  // page being viewed always keeps its own chip.
+  const liveSet = new Set(live)
+  const isLive = (slug) => slug === cat.slug || liveSet.has(slug)
+  const shownBadges = badgeNodes.filter((n) => isLive(n.slug))
+  const showParent = parent && isLive(parent.slug)
   /** The browsed category and everything under it — what its prestations are. */
   const catSlugs = useMemo(() => {
     const out = new Set([cat.slug])
@@ -221,12 +241,20 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
     if (bounds) p.set("bounds", `${bounds.n},${bounds.s},${bounds.e},${bounds.w}`)
     return p.toString()
   }
+  // Only the latest request may update the list: filters and the map area can
+  // change faster than the API answers, and a slow earlier reply used to win.
+  const querySeq = useRef(0)
   const runQuery = (pageNum) => {
+    const seq = ++querySeq.current
     setLoading(true)
     return fetch(`/api/salons?${buildQuery(pageNum)}`)
-      .then((r) => r.json())
-      .then((d) => { setResults(d.items); setMapItems(d.mapItems); setMeta({ page: d.page, totalPages: d.totalPages, total: d.total }); setApiMode(true); setLoading(false) })
-      .catch(() => setLoading(false))
+      // An error answer has no items: keep the current list rather than blank it.
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json() })
+      .then((d) => {
+        if (seq !== querySeq.current) return
+        setResults(d.items); setMapItems(d.mapItems); setMeta({ page: d.page, totalPages: d.totalPages, total: d.total }); setApiMode(true); setLoading(false)
+      })
+      .catch(() => { if (seq === querySeq.current) setLoading(false) })
   }
   // Fetch ONLY when applied filters or the map zone change — both are button-driven,
   // so editing the panel (draft) never triggers a request.
@@ -237,7 +265,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applied, bounds])
 
-  const goToPage = (n) => { runQuery(n); if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" }) }
+  const goToPage = (n) => { runQuery(n); if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: scrollBehavior() }) }
 
   const goCity = (slug) => router.push(`/${cat.slug}/${slug}`)
   const goNode = (slug) => { setSearchOpen(false); setDrawer(null); if (slug !== cat.slug) router.push(`/${slug}/${city.slug}`) }
@@ -253,13 +281,36 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
   useEffect(() => {
     const open = filtOpen || !!drawer
     if (!open) return
-    const onEsc = (e) => { if (e.key === "Escape") { setFiltOpen(false); setDrawer(null) } }
+    const onEsc = (e) => {
+      if (e.key === "Escape") { setFiltOpen(false); setDrawer(null); return }
+      if (e.key !== "Tab") return
+      // Tab stays inside the open drawer: it is modal, and focus wandering to
+      // the page behind it — hidden under the backdrop — lost keyboard users.
+      const d = document.querySelector('[role="dialog"][aria-modal="true"]')
+      if (!d) return
+      const items = [...d.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')].filter((el) => el.getClientRects().length > 0)
+      if (!items.length) return
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (e.shiftKey && (document.activeElement === first || !d.contains(document.activeElement))) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && (document.activeElement === last || !d.contains(document.activeElement))) { e.preventDefault(); first.focus() }
+    }
     document.addEventListener("keydown", onEsc)
     const prev = document.documentElement.style.overflow
     document.documentElement.style.overflow = "hidden"
+    // Keyboard users land back where they were once the drawer closes; focus
+    // moves into the drawer once it is painted (its search field first, else
+    // its first button). Recorded before that move, so the opener is right.
+    const opener = document.activeElement
+    const t = setTimeout(() => {
+      const d = document.querySelector('[role="dialog"][aria-modal="true"]')
+      ;(d?.querySelector("input") || d?.querySelector("button, a[href]"))?.focus()
+    }, 0)
     return () => {
+      clearTimeout(t)
       document.removeEventListener("keydown", onEsc)
       document.documentElement.style.overflow = prev
+      if (opener && typeof opener.focus === "function" && document.contains(opener)) opener.focus()
     }
   }, [filtOpen, drawer])
 
@@ -305,20 +356,23 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
   }
 
   const chip = (active) => ({
+    display: "inline-block", fontFamily: "inherit", lineHeight: "normal",
     fontSize: 12.5, fontWeight: 600, borderRadius: 999, padding: "7px 14px", whiteSpace: "nowrap", cursor: "pointer",
     background: active ? "var(--accent-soft)" : "var(--card)",
     border: `1px solid ${active ? "var(--accent-line)" : "var(--line-2)"}`,
     color: active ? "var(--gold-dark)" : "var(--muted-2)",
   })
   const secLabel = { fontSize: 11, color: "var(--muted)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }
+  /** A button that looks like plain text (rows, "Tout effacer", "×"). */
+  const bare = { background: "transparent", border: "none", padding: 0, font: "inherit", color: "inherit", textAlign: "left", cursor: "pointer" }
 
   const FilterPanel = () => (
     <>
       {FILT_METRICS.map((m) => (
         <div key={m.key} style={{ marginBottom: 14 }}>
-          <div style={secLabel}>{m.label}</div>
-          <div style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}>
-            {m.opts.map(([v, l]) => <span key={String(v)} onClick={() => setDraftField(m.key, v)} style={chip(draft[m.key] === v)}>{l}</span>)}
+          <div id={`f-${m.key}`} style={secLabel}>{m.label}</div>
+          <div role="group" aria-labelledby={`f-${m.key}`} style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}>
+            {m.opts.map(([v, l]) => <button type="button" key={String(v)} aria-pressed={draft[m.key] === v} onClick={() => setDraftField(m.key, v)} style={chip(draft[m.key] === v)}>{l}</button>)}
           </div>
           {m.key === "dispo" && draft.dispo === "date" && (
             <div style={{ marginTop: 10 }}><DateCal value={draft.date || null} onPick={(iso) => setDraft((d) => ({ ...d, date: iso }))} /></div>
@@ -326,9 +380,9 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
         </div>
       ))}
       <div style={{ marginBottom: 8 }}>
-        <div style={secLabel}>Trier par</div>
-        <div style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}>
-          {SORTS.map((s) => <span key={s.k} onClick={() => setDraftField("sort", s.k)} style={chip(draft.sort === s.k)}>{s.l}</span>)}
+        <div id="f-sort" style={secLabel}>Trier par</div>
+        <div role="group" aria-labelledby="f-sort" style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}>
+          {SORTS.map((s) => <button type="button" key={s.k} aria-pressed={draft.sort === s.k} onClick={() => setDraftField("sort", s.k)} style={chip(draft.sort === s.k)}>{s.l}</button>)}
         </div>
       </div>
     </>
@@ -342,13 +396,13 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
     </svg>
   )
   const SRow = ({ t, label, sub, active, onClick }) => (
-    <div onClick={onClick} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 11, padding: "10px 14px", cursor: "pointer" }}>
+    <button type="button" onClick={onClick} className="row-hover" style={{ ...bare, width: "100%", display: "flex", alignItems: "center", gap: 11, padding: "10px 14px" }}>
       <span style={{ width: 30, height: 30, borderRadius: 8, background: "var(--accent-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}><Ico t={t} /></span>
       <div style={{ minWidth: 0, flex: 1 }}>
         <div style={{ fontSize: 13.5, fontWeight: active ? 800 : 600, color: active ? "var(--gold-dark)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</div>
         {sub && <div style={{ fontSize: 11.5, color: "var(--muted)" }}>{sub}</div>}
       </div>
-    </div>
+    </button>
   )
   const SGroup = ({ children: ch }) => <div style={{ ...secLabel, padding: "11px 14px 3px" }}>{ch}</div>
   const ResultsList = () => {
@@ -376,7 +430,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
   const focusSalon = (slug) => {
     setActiveSlug(slug)
     const row = typeof document !== "undefined" ? document.getElementById(`salon-${slug}`) : null
-    if (row) row.scrollIntoView({ behavior: "smooth", block: "start" })
+    if (row) row.scrollIntoView({ behavior: scrollBehavior(), block: "start" })
     clearTimeout(focusTimer.current)
     focusTimer.current = setTimeout(() => setActiveSlug(null), 2600)
   }
@@ -391,37 +445,37 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
       <div className="cv-desktop">
         <div className="city-gutter" style={{ display: "flex", gap: 16, alignItems: "stretch", paddingTop: 20, paddingBottom: 14 }}>
           <div style={{ position: "relative", flex: 1.1 }}>
-            <div style={{ position: "absolute", top: -8, left: 13, background: "var(--bg)", padding: "0 5px", fontSize: 12, color: "var(--muted-2)", fontWeight: 500, zIndex: 2 }}>Que cherchez-vous ?</div>
+            <label htmlFor="cv-q" style={{ position: "absolute", top: -8, left: 13, background: "var(--bg)", padding: "0 5px", fontSize: 12, color: "var(--muted-2)", fontWeight: 500, zIndex: 2 }}>Que cherchez-vous ?</label>
             <div style={{ display: "flex", alignItems: "center", gap: 11, border: `1px solid ${searchOpen ? "var(--gold)" : "var(--line-strong)"}`, borderRadius: 10, padding: "15px 16px", background: "var(--card)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" /></svg>
-              <input value={q} onChange={(e) => { setQ(e.target.value); setSearchOpen(true) }} onFocus={(e) => { setSearchOpen(true); setCityOpen(false); e.target.select() }} onKeyDown={(e) => e.key === "Enter" && submitSearch()} placeholder="Prestation, salon, catégorie…" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "var(--ink)", padding: 0 }} />
-              {browsing ? <span style={{ fontSize: 10, color: "var(--muted)" }}>▼</span> : <span onClick={() => setQ("")} style={{ cursor: "pointer", color: "var(--muted)", fontSize: 16, lineHeight: 1 }}>×</span>}
+              <input id="cv-q" className="shell-input" value={q} onChange={(e) => { setQ(e.target.value); setSearchOpen(true) }} onFocus={(e) => { setSearchOpen(true); setCityOpen(false); e.target.select() }} onKeyDown={(e) => e.key === "Enter" && submitSearch()} placeholder="Prestation, salon, catégorie…" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "var(--ink)", padding: 0 }} />
+              {browsing ? <span aria-hidden="true" style={{ fontSize: 10, color: "var(--muted)" }}>▼</span> : <button type="button" aria-label="Effacer la recherche" onClick={() => setQ("")} style={{ ...bare, color: "var(--muted)", fontSize: 16, lineHeight: 1 }}>×</button>}
             </div>
             {searchOpen && (
               <>
                 <div onClick={() => { setSearchOpen(false); setQ(cat.name) }} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
                 <div className="autocomplete-scroll" style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, maxHeight: 400, overflowY: "auto", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "0 18px 44px var(--shadow-strong)", zIndex: 20, paddingBottom: 6 }}>
-                  <ResultsList />
+                  {ResultsList()}
                 </div>
               </>
             )}
           </div>
           <div style={{ position: "relative", flex: 1.1 }}>
-            <div style={{ position: "absolute", top: -8, left: 13, background: "var(--bg)", padding: "0 5px", fontSize: 12, color: "var(--muted-2)", fontWeight: 500, zIndex: 2 }}>Où ?</div>
+            <label htmlFor="cv-city" style={{ position: "absolute", top: -8, left: 13, background: "var(--bg)", padding: "0 5px", fontSize: 12, color: "var(--muted-2)", fontWeight: 500, zIndex: 2 }}>Où ?</label>
             <div style={{ display: "flex", alignItems: "center", gap: 11, border: "1px solid var(--line-strong)", borderRadius: 10, padding: "15px 16px", background: "var(--card)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /></svg>
-              <input value={cityQ} onChange={(e) => setCityQ(e.target.value)} onFocus={(e) => { setCityOpen(true); setSearchOpen(false); e.target.select() }} placeholder={city.name} style={{ background: "transparent", border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "var(--ink)", width: "100%", padding: 0 }} />
-              <span style={{ fontSize: 10, color: "var(--muted)" }}>▼</span>
+              <input id="cv-city" className="shell-input" value={cityQ} onChange={(e) => setCityQ(e.target.value)} onFocus={(e) => { setCityOpen(true); setSearchOpen(false); e.target.select() }} placeholder={city.name} style={{ background: "transparent", border: "none", outline: "none", fontSize: 15, fontWeight: 500, color: "var(--ink)", width: "100%", padding: 0 }} />
+              <span aria-hidden="true" style={{ fontSize: 10, color: "var(--muted)" }}>▼</span>
             </div>
             {cityOpen && (
               <>
                 <div onClick={() => { setCityOpen(false); setCityQ(city.name) }} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
                 <div className="autocomplete-scroll" style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, minWidth: 250, maxHeight: 320, overflowY: "auto", background: "var(--card)", border: "1px solid var(--line-2)", borderRadius: 12, boxShadow: "0 16px 40px var(--shadow)", zIndex: 20 }}>
                   {cityOpts.map((c) => (
-                    <div key={c.slug} onClick={() => { setCityOpen(false); setCityQ(""); goCity(c.slug) }} className="row-hover" style={{ padding: "11px 16px", fontSize: 14, cursor: "pointer", display: "flex", gap: 8, alignItems: "baseline", whiteSpace: "nowrap" }}>
+                    <button type="button" key={c.slug} onClick={() => { setCityOpen(false); setCityQ(""); goCity(c.slug) }} className="row-hover" style={{ ...bare, width: "100%", padding: "11px 16px", fontSize: 14, display: "flex", gap: 8, alignItems: "baseline", whiteSpace: "nowrap" }}>
                       <span style={{ fontWeight: c.slug === city.slug ? 800 : 500, color: c.slug === city.slug ? "var(--gold-dark)" : "var(--ink)" }}>{c.name}</span>
-                      <span style={{ fontSize: 12, color: "var(--faint)" }}>{c.total} salons</span>
-                    </div>
+                      <span style={{ fontSize: 12, color: "var(--faint)" }}>{c.total} salon{c.total > 1 ? "s" : ""}</span>
+                    </button>
                   ))}
                 </div>
               </>
@@ -435,26 +489,26 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
 
         <div className="city-gutter" style={{ display: "flex", gap: 8, paddingBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: "none" }}>
-            <div onClick={() => { if (!filtOpen) openFilters(); setFiltOpen((o) => !o) }} style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 16px", cursor: "pointer", borderRadius: 999, border: `1px solid ${filtCount ? "var(--accent-line)" : "var(--line-2)"}`, background: filtCount ? "var(--accent-soft)" : "var(--card)" }}>
+            <button type="button" aria-haspopup="dialog" aria-expanded={filtOpen} onClick={() => { if (!filtOpen) openFilters(); setFiltOpen((o) => !o) }} style={{ font: "inherit", display: "flex", alignItems: "center", gap: 8, padding: "9px 16px", cursor: "pointer", borderRadius: 999, border: `1px solid ${filtCount ? "var(--accent-line)" : "var(--line-2)"}`, background: filtCount ? "var(--accent-soft)" : "var(--card)" }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 3H2l8 9.5V19l4 2v-8.5z" /></svg>
               <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--ink)", whiteSpace: "nowrap" }}>Filtres & tri</span>
               {filtCount > 0 && <span style={{ background: "var(--gold)", color: "var(--on-gold)", fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "1px 7px" }}>{filtCount}</span>}
-            </div>
+            </button>
             {filtOpen && (
               <>
                 {/* Off-canvas drawer: full viewport height, own scroll area and a
                     footer always in view — no page scrolling to reach Appliquer. */}
                 <div onClick={() => setFiltOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(0,0,0,0.35)", backdropFilter: "blur(2px)" }} />
-                <aside className="filter-drawer" role="dialog" aria-label="Filtres et tri" style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: 370, maxWidth: "92vw", background: "var(--card)", borderLeft: "1px solid var(--line-2)", boxShadow: "-24px 0 60px var(--shadow-strong)", zIndex: 81, display: "flex", flexDirection: "column" }}>
+                <aside className="filter-drawer" role="dialog" aria-modal="true" aria-labelledby="cv-filters-title" style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: 370, maxWidth: "92vw", background: "var(--card)", borderLeft: "1px solid var(--line-2)", boxShadow: "-24px 0 60px var(--shadow-strong)", zIndex: 81, display: "flex", flexDirection: "column" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 18px", borderBottom: "1px solid var(--line-soft)", flex: "none" }}>
-                    <div className="serif" style={{ fontSize: 18, flex: 1 }}>Filtres & tri</div>
-                    <button onClick={() => setFiltOpen(false)} aria-label="Fermer" style={{ width: 32, height: 32, borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink)", fontSize: 15, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                    <h2 id="cv-filters-title" className="serif" style={{ fontSize: 18, flex: 1, margin: 0, fontWeight: 400 }}>Filtres & tri</h2>
+                    <button type="button" onClick={() => setFiltOpen(false)} aria-label="Fermer les filtres" style={{ width: 32, height: 32, borderRadius: 9, border: "1px solid var(--line-2)", background: "var(--card)", color: "var(--ink)", fontSize: 15, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>×</button>
                   </div>
                   <div className="autocomplete-scroll" style={{ flex: 1, overflowY: "auto", padding: "16px 18px" }}>
-                    <FilterPanel />
+                    {FilterPanel()}
                   </div>
                   <div style={{ display: "flex", gap: 9, alignItems: "center", borderTop: "1px solid var(--line-soft)", padding: "13px 18px", flex: "none", background: "var(--card)" }}>
-                    <div onClick={clearDraft} style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 600, cursor: "pointer" }}>Tout effacer</div>
+                    <button type="button" onClick={clearDraft} style={{ ...bare, fontSize: 12.5, color: "var(--muted)", fontWeight: 600 }}>Tout effacer</button>
                     <div style={{ flex: 1 }} />
                     <button onClick={applyFilters} className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 10, padding: "11px 22px", fontWeight: 800, fontSize: 13, cursor: "pointer", whiteSpace: "nowrap" }}>Appliquer</button>
                   </div>
@@ -462,23 +516,23 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
               </>
             )}
           </div>
-          {parent && <span onClick={() => goNode(parent.slug)} style={{ ...chip(false), display: "inline-flex", alignItems: "center", gap: 5 }}><span style={{ fontSize: 13 }}>‹</span>{parent.name}</span>}
-          {badgeNodes.map((n) => (
-            <span key={n.slug} onClick={() => goNode(n.slug)} style={chip(n.slug === cat.slug)}>{n.name}</span>
+          {showParent && <Link href={`/${parent.slug}/${city.slug}`} prefetch={false} style={{ ...chip(false), display: "inline-flex", alignItems: "center", gap: 5 }}><span aria-hidden="true" style={{ fontSize: 13 }}>‹</span>{parent.name}</Link>}
+          {shownBadges.map((n) => (
+            <Link key={n.slug} href={`/${n.slug}/${city.slug}`} prefetch={false} aria-current={n.slug === cat.slug ? "page" : undefined} style={chip(n.slug === cat.slug)}>{n.name}</Link>
           ))}
         </div>
       </div>
 
       {/* ══════════ MOBILE search pill + tab buttons ══════════ */}
       <div className="cv-mobile city-gutter" style={{ paddingTop: 14 }}>
-        <div onClick={() => { setQ(cat.name); setDrawer("search") }} className="lift" style={{ display: "flex", alignItems: "center", gap: 13, border: "1px solid var(--line-2)", borderRadius: 14, padding: "15px 16px", boxShadow: "0 1px 4px var(--shadow)", cursor: "pointer", background: "var(--card)" }}>
+        <button type="button" aria-haspopup="dialog" onClick={() => { setQ(cat.name); setDrawer("search") }} className="lift" style={{ ...bare, width: "100%", display: "flex", alignItems: "center", gap: 13, border: "1px solid var(--line-2)", borderRadius: 14, padding: "15px 16px", boxShadow: "0 1px 4px var(--shadow)", cursor: "pointer", background: "var(--card)" }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" /></svg>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 15.5, fontWeight: 700, color: "var(--ink)" }}>{cat.name} <span style={{ color: "var(--faint)", fontWeight: 400 }}>•</span> {city.name}</div>
             <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 2 }}>{pillSummary}</div>
           </div>
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" /></svg>
-        </div>
+          <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z" /></svg>
+        </button>
         <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
           <button onClick={() => setDrawer("prest")} style={mtab}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="2" strokeLinecap="round"><path d="M4 6h16 M4 12h10 M4 18h6" /></svg>
@@ -502,25 +556,38 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
             <h1 className="serif" style={{ fontSize: 24, margin: 0, fontWeight: 400 }}>{cat.name} à {city.name}</h1>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 6 }}>
               <h2 style={{ fontSize: 14, margin: 0, fontWeight: 600, color: "var(--muted-2)" }}>
-                Trouvez votre salon de {cat.lower || cat.name.toLowerCase()} à {city.name} parmi {count} salon{count > 1 ? "s" : ""}
+                {count > 0
+                  ? <>Trouvez votre salon {de(cat.lower || cat.name.toLowerCase())} à {city.name} parmi {count} salon{count > 1 ? "s" : ""}</>
+                  : <>Aucun salon {de(cat.lower || cat.name.toLowerCase())} référencé à {city.name} pour le moment</>}
               </h2>
               {loading && <span style={{ fontSize: 13, color: "var(--muted)" }}>…</span>}
               {bounds && (
-                <span onClick={() => setBounds(null)} className="pill" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, color: "var(--gold-dark)", background: "var(--accent-soft)", border: "1px solid var(--accent-line)", borderRadius: 999, padding: "4px 10px", cursor: "pointer" }}>Zone de la carte ✕</span>
+                <button type="button" aria-label="Retirer la zone de la carte" onClick={() => setBounds(null)} className="pill" style={{ font: "inherit", display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, color: "var(--gold-dark)", background: "var(--accent-soft)", border: "1px solid var(--accent-line)", borderRadius: 999, padding: "4px 10px", cursor: "pointer" }}>Zone de la carte ✕</button>
               )}
             </div>
 
             {results.length === 0 ? (
               <div style={{ textAlign: "center", padding: "72px 20px 90px" }}>
                 <div style={{ fontSize: 17, fontWeight: 700, color: "var(--muted)" }}>Aucun salon trouvé</div>
-                <div style={{ fontSize: 14, color: "var(--faint)", marginTop: 10 }}>Essayez de modifier vos filtres ou votre recherche.</div>
-                <button onClick={() => { setApplied({ ...DEFAULTS }); setBounds(null) }} className="btn-outline" style={{ marginTop: 16, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>Réinitialiser</button>
+                {/* Filters can only explain an empty list when some are set. */}
+                {apiMode || bounds ? (
+                  <>
+                    <div style={{ fontSize: 14, color: "var(--faint)", marginTop: 10 }}>Essayez de modifier vos filtres ou votre recherche.</div>
+                    <button onClick={() => { setApplied({ ...DEFAULTS }); setBounds(null) }} className="btn-outline" style={{ marginTop: 16, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>Réinitialiser</button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 14, color: "var(--muted)", marginTop: 10 }}>Aucun salon {de(cat.lower || cat.name.toLowerCase())} n&apos;est encore référencé à {city.name}.</div>
+                    <Link href={`/${cat.slug}`} className="btn-outline" style={{ display: "inline-block", marginTop: 16, background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 10, padding: "9px 16px", fontWeight: 800, fontSize: 12.5 }}>Voir les autres villes</Link>
+                  </>
+                )}
               </div>
             ) : (
               <>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16, opacity: loading ? 0.55 : 1, transition: "opacity .15s" }}>
                   {results.map((s, i) => (
-                    <SalonRow key={s.slug} s={s} dist={DISTS[i % 5]} catSlugs={catSlugs} active={activeSlug === s.slug} onHover={setHoverSlug} />
+                    // The first photo is the page's largest paint on a phone: preloaded, not lazy.
+                    <SalonRow key={s.slug} s={s} catSlugs={catSlugs} active={activeSlug === s.slug} onHover={setHoverSlug} first={i === 0} />
                   ))}
                 </div>
                 <Pagination pageNow={pageNow} pagesTotal={pagesTotal} apiMode={apiMode} basePath={basePath} onPage={goToPage} />
@@ -540,7 +607,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
       {/* <div style={{ textAlign: "center", padding: "60px 24px 68px" }}>
         <div className="serif" style={{ fontSize: 26 }}>Encore des questions ?</div>
         <div style={{ fontSize: 14.5, color: "var(--muted)", marginTop: 12, lineHeight: 1.65, maxWidth: 540, marginLeft: "auto", marginRight: "auto" }}>Décrivez votre situation pour recevoir des conseils adaptés de la part de l'équipe Rezervy.</div>
-        <a href="mailto:contact@rezervy.io" className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "var(--gold)", color: "var(--on-gold)", borderRadius: 999, padding: "14px 28px", fontSize: 14.5, fontWeight: 700, marginTop: 26, whiteSpace: "nowrap" }}>
+        <a href={`mailto:${OPERATOR.email}`} className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "var(--gold)", color: "var(--on-gold)", borderRadius: 999, padding: "14px 28px", fontSize: 14.5, fontWeight: 700, marginTop: 26, whiteSpace: "nowrap" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M22 6l-10 7L2 6" /></svg>
           Contactez-nous
         </a>
@@ -549,34 +616,34 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
       {/* ══════════ Mobile drawers ══════════ */}
       {drawer && (
         <div onClick={() => setDrawer(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 90 }}>
-          <div onClick={(e) => e.stopPropagation()} className="autocomplete-scroll" style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "var(--card)", borderRadius: "22px 22px 0 0", zIndex: 95, padding: "10px 20px 26px", maxHeight: "82vh", overflowY: "auto", boxShadow: "0 -16px 50px rgba(0,0,0,0.4)" }}>
+          <div role="dialog" aria-modal="true" aria-label={{ search: "Rechercher", prest: "Prestations", map: "Carte des salons", filt: "Filtres et tri" }[drawer]} onClick={(e) => e.stopPropagation()} className="autocomplete-scroll" style={{ position: "fixed", left: 0, right: 0, bottom: 0, background: "var(--card)", borderRadius: "22px 22px 0 0", zIndex: 95, padding: "10px 20px 26px", maxHeight: "82vh", overflowY: "auto", boxShadow: "0 -16px 50px rgba(0,0,0,0.4)" }}>
             <div style={{ width: 38, height: 4, borderRadius: 99, background: "var(--line-strong)", margin: "8px auto 4px" }} />
 
             {drawer === "search" && (<>
               <DrawerHead title="Rechercher" onClose={() => setDrawer(null)} />
               <div style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--bg)", border: `1px solid ${q ? "var(--gold)" : "var(--line-strong)"}`, borderRadius: 12, padding: "12px 14px", marginTop: 12 }}>
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" /></svg>
-                <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} onFocus={(e) => e.target.select()} placeholder="Catégorie, prestation, salon…" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 14, fontWeight: 600, color: "var(--ink)", padding: 0 }} />
-                {!browsing && <span onClick={() => setQ("")} style={{ cursor: "pointer", color: "var(--muted)", fontSize: 17 }}>×</span>}
+                <input aria-label="Catégorie, prestation ou salon" className="shell-input" value={q} onChange={(e) => setQ(e.target.value)} onFocus={(e) => e.target.select()} placeholder="Catégorie, prestation, salon…" style={{ flex: 1, minWidth: 0, background: "transparent", border: "none", outline: "none", fontSize: 14, fontWeight: 600, color: "var(--ink)", padding: 0 }} />
+                {!browsing && <button type="button" aria-label="Effacer la recherche" onClick={() => setQ("")} style={{ ...bare, color: "var(--muted)", fontSize: 17 }}>×</button>}
               </div>
               {!browsing ? (
-                <div style={{ marginTop: 6 }}><ResultsList /></div>
+                <div style={{ marginTop: 6 }}>{ResultsList()}</div>
               ) : (<>
                 <div style={{ ...secLabel, marginTop: 16 }}>Catégorie</div>
                 <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
-                  {categories.map((c) => <span key={c.slug} onClick={() => goNode(c.slug)} style={{ ...chip(c.slug === cat.slug || c.slug === cat.top), fontWeight: c.slug === cat.top ? 800 : 600 }}>{c.name}</span>)}
+                  {categories.filter((c) => isLive(c.slug) || c.slug === cat.top).map((c) => <Link key={c.slug} href={`/${c.slug}/${city.slug}`} prefetch={false} style={{ ...chip(c.slug === cat.slug || c.slug === cat.top), fontWeight: c.slug === cat.top ? 800 : 600 }}>{c.name}</Link>)}
                 </div>
                 <div style={{ ...secLabel, marginTop: 16 }}>Ville</div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center", background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: 12, padding: "12px 14px", marginTop: 8 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" /></svg>
-                  <input value={cityQ} onChange={(e) => setCityQ(e.target.value)} placeholder={city.name} style={{ background: "transparent", border: "none", outline: "none", fontSize: 13.5, fontWeight: 600, color: "var(--ink)", width: "100%", padding: 0 }} />
+                  <input aria-label="Ville" className="shell-input" value={cityQ} onChange={(e) => setCityQ(e.target.value)} placeholder={city.name} style={{ background: "transparent", border: "none", outline: "none", fontSize: 13.5, fontWeight: 600, color: "var(--ink)", width: "100%", padding: 0 }} />
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", marginTop: 6 }}>
                   {cityOpts.map((c) => (
-                    <div key={c.slug} onClick={() => { setDrawer(null); setCityQ(""); goCity(c.slug) }} style={{ display: "flex", gap: 8, alignItems: "baseline", padding: "12px 6px", borderBottom: "1px solid var(--line-soft)", cursor: "pointer" }}>
+                    <button type="button" key={c.slug} onClick={() => { setDrawer(null); setCityQ(""); goCity(c.slug) }} style={{ ...bare, width: "100%", display: "flex", gap: 8, alignItems: "baseline", padding: "12px 6px", borderBottom: "1px solid var(--line-soft)" }}>
                       <span style={{ fontSize: 13.5, fontWeight: c.slug === city.slug ? 800 : 600, color: c.slug === city.slug ? "var(--gold-dark)" : "var(--ink)" }}>{c.name}</span>
-                      <span style={{ fontSize: 11.5, color: "var(--faint)" }}>{c.total} salons</span>
-                    </div>
+                      <span style={{ fontSize: 11.5, color: "var(--faint)" }}>{c.total} salon{c.total > 1 ? "s" : ""}</span>
+                    </button>
                   ))}
                 </div>
               </>)}
@@ -585,15 +652,15 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
             {drawer === "prest" && (<>
               <DrawerHead title={`Prestations — ${badgeOwner.name}`} onClose={() => setDrawer(null)} />
               <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
-                {parent && (
-                  <div onClick={() => goNode(parent.slug)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 12, border: "1px solid var(--line-2)", background: "var(--card)", cursor: "pointer" }}>
+                {showParent && (
+                  <Link href={`/${parent.slug}/${city.slug}`} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 12, border: "1px solid var(--line-2)", background: "var(--card)" }}>
                     <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--gold-dark)", flex: 1 }}>‹ {parent.name}</span>
-                  </div>
+                  </Link>
                 )}
-                {badgeNodes.map((n) => (
-                  <div key={n.slug} onClick={() => goNode(n.slug)} style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 12, border: `1px solid ${n.slug === cat.slug ? "var(--accent-line)" : "var(--line-2)"}`, background: n.slug === cat.slug ? "var(--accent-soft)" : "var(--card)", cursor: "pointer" }}>
-                    <span style={{ fontSize: 13.5, fontWeight: 600, color: n.slug === cat.slug ? "var(--gold-dark)" : "var(--ink)", flex: 1 }}>{n.name}</span>{n.slug === cat.slug && <span style={{ color: "var(--gold)", fontWeight: 800 }}>✓</span>}
-                  </div>
+                {shownBadges.map((n) => (
+                  <Link key={n.slug} href={`/${n.slug}/${city.slug}`} prefetch={false} aria-current={n.slug === cat.slug ? "page" : undefined} style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 12, border: `1px solid ${n.slug === cat.slug ? "var(--accent-line)" : "var(--line-2)"}`, background: n.slug === cat.slug ? "var(--accent-soft)" : "var(--card)" }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 600, color: n.slug === cat.slug ? "var(--gold-dark)" : "var(--ink)", flex: 1 }}>{n.name}</span>{n.slug === cat.slug && <span aria-hidden="true" style={{ color: "var(--gold)", fontWeight: 800 }}>✓</span>}
+                  </Link>
                 ))}
               </div>
             </>)}
@@ -607,12 +674,12 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
 
             {drawer === "filt" && (<>
               <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
-                <div className="serif" style={{ fontSize: 18 }}>Filtres & tri</div>
+                <h2 className="serif" style={{ fontSize: 18, margin: 0, fontWeight: 400 }}>Filtres & tri</h2>
                 <div style={{ flex: 1 }} />
-                <div onClick={clearDraft} style={{ fontSize: 12.5, color: "var(--muted)", fontWeight: 600, cursor: "pointer", marginRight: 12 }}>Tout effacer</div>
-                <div onClick={() => setDrawer(null)} style={{ color: "var(--muted)", fontSize: 19, padding: "2px 8px", cursor: "pointer" }}>×</div>
+                <button type="button" onClick={clearDraft} style={{ ...bare, fontSize: 12.5, color: "var(--muted)", fontWeight: 600, marginRight: 12 }}>Tout effacer</button>
+                <button type="button" aria-label="Fermer" onClick={() => setDrawer(null)} style={{ ...bare, color: "var(--muted)", fontSize: 19, padding: "2px 8px" }}>×</button>
               </div>
-              <div style={{ marginTop: 12 }}><FilterPanel /></div>
+              <div style={{ marginTop: 12 }}>{FilterPanel()}</div>
               <button onClick={applyFilters} className="btn-gold" style={{ width: "100%", background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: 14, fontWeight: 800, fontSize: 14, marginTop: 8 }}>Appliquer</button>
             </>)}
           </div>
@@ -625,9 +692,9 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
 function DrawerHead({ title, onClose }) {
   return (
     <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
-      <div className="serif" style={{ fontSize: 18 }}>{title}</div>
+      <h2 className="serif" style={{ fontSize: 18, margin: 0, fontWeight: 400 }}>{title}</h2>
       <div style={{ flex: 1 }} />
-      <div onClick={onClose} style={{ color: "var(--muted)", fontSize: 19, padding: "2px 8px", cursor: "pointer" }}>×</div>
+      <button type="button" aria-label="Fermer" onClick={onClose} style={{ background: "transparent", border: "none", font: "inherit", color: "var(--muted)", fontSize: 19, padding: "2px 8px", cursor: "pointer" }}>×</button>
     </div>
   )
 }

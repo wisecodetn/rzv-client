@@ -6,7 +6,12 @@ import { suggestSearch } from "@/lib/data"
  *  s-maxage lets a CDN/proxy absorb repeated keystrokes across users. */
 export async function GET(request) {
   const q = request.nextUrl.searchParams.get("q") || ""
-  const data = await suggestSearch(q)
+  let data
+  try {
+    data = await suggestSearch(q)
+  } catch {
+    return NextResponse.json({ cats: [], subs: [], estabs: [] }, { status: 503 })
+  }
   return NextResponse.json(data, {
     headers: { "Cache-Control": "public, max-age=0, s-maxage=60, stale-while-revalidate=300" },
   })

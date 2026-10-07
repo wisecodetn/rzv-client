@@ -1,5 +1,6 @@
 "use client"
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { purgeExpiredPending } from "@/lib/pending-booking"
 
 /* Real customer auth. Sessions are httpOnly cookies set by the API and proxied
    same-origin through /api/auth/* (see app/api/auth/[...path]/route.js) — no
@@ -51,6 +52,7 @@ export function AuthProvider({ children }) {
   // expired access token server-side, so anonymous visitors cost one 401 and
   // returning users one 200 (instead of me → refresh → me on every page).
   useEffect(() => {
+    purgeExpiredPending()
     let alive = true
     ;(async () => {
       try {

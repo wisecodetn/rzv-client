@@ -4,6 +4,8 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../AuthProvider"
 import { AuthLayout, Field, SubmitBtn, ErrorMsg } from "./AuthUI"
+import { safeNext } from "@/lib/safe-next"
+import { errorText } from "@/lib/errors"
 
 /**
  * The one thing a Google sign-in never provides.
@@ -25,7 +27,7 @@ export default function PhoneForm() {
   const [loading, setLoading] = useState(false)
 
   const next = () => {
-    try { return new URLSearchParams(window.location.search).get("next") || "/compte" } catch { return "/compte" }
+    try { return safeNext(new URLSearchParams(window.location.search).get("next")) } catch { return "/compte" }
   }
 
   // Nothing to do here for an account that already has a number.
@@ -43,7 +45,7 @@ export default function PhoneForm() {
       await updateUser({ phone })
       router.push(next())
     } catch (ex) {
-      setErr(ex.message)
+      setErr(errorText(ex))
       setLoading(false)
     }
   }
@@ -62,7 +64,7 @@ export default function PhoneForm() {
           type="tel"
           value={phone}
           onChange={setPhone}
-          placeholder="+216 52 118 400"
+          placeholder="+216 …"
           autoComplete="tel"
           required
           autoFocus

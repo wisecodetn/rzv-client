@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../AuthProvider"
 import { AuthLayout, Field, SubmitBtn, ErrorMsg, SuccessMsg, linkStyle, useGuestOnly } from "./AuthUI"
+import { errorText } from "@/lib/errors"
 
 export default function ForgotForm() {
   const redirecting = useGuestOnly()
@@ -23,7 +24,7 @@ export default function ForgotForm() {
       await forgotPassword(email.trim().toLowerCase())
       setSent(true)
     } catch (ex) {
-      setErr(ex.message || "Une erreur est survenue. Réessayez.")
+      setErr(errorText(ex, "Une erreur est survenue. Réessayez."))
     } finally {
       setLoading(false)
     }

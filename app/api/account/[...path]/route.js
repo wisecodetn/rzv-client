@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { forwardedFor, readBody, rejectCrossSite, safeSegments, upstreamSignal } from "@/lib/bff"
 
 /** BFF proxy for the customer account area (bookings / favorites / overview).
  *  Same-origin like /api/auth: cookies forwarded both ways, no CORS. On a 401
@@ -14,7 +15,7 @@ const inflightRefresh = (globalThis.__rzvClientRefresh ??= new Map())
 const refreshSession = (cookie) => {
   const token = /rzv_client_refresh=([^;]+)/.exec(cookie)?.[1] || ""
   if (!inflightRefresh.has(token)) {
-    const p = fetch(`${BASE}/client/auth/refresh`, { method: "POST", headers: { cookie }, cache: "no-store" })
+    const p = fetch(`${BASE}/client/auth/refresh`, { method: "POST", headers: { cookie }, cache: "no-store", signal: upstreamSignal() })
       .then((rr) => (rr.ok ? rr.headers.getSetCookie?.() || [] : []))
       .catch(() => [])
     inflightRefresh.set(token, p)
@@ -38,19 +39,29 @@ const mergeCookies = (cookieHeader, setCookies) => {
 }
 
 async function proxy(req, { params }) {
+  const blocked = rejectCrossSite(req)
+  if (blocked) return blocked
   const { path } = await params
-  const parts = path || []
-  if (!ALLOWED_ROOTS.has(parts[0])) return NextResponse.json({ message: "Introuvable." }, { status: 404 })
+  // Only the allow-listed roots, and no "."/".." segment that could climb out
+  // of /client/<root> once the upstream URL is normalised.
+  const parts = safeSegments(path)
+  if (!parts || !ALLOWED_ROOTS.has(parts[0])) return NextResponse.json({ message: "Introuvable." }, { status: 404 })
 
   const target = `${BASE}/client/${parts.map(encodeURIComponent).join("/")}`
   const cookie = req.headers.get("cookie") || ""
-  const body = req.method !== "GET" ? await req.text() : undefined
+  let body
+  if (req.method !== "GET") {
+    const read = await readBody(req)
+    if (read.error) return read.error
+    body = read.text
+  }
   const doFetch = (cookieHeader) =>
     fetch(target, {
       method: req.method,
-      headers: { "content-type": "application/json", cookie: cookieHeader },
+      headers: { "content-type": "application/json", cookie: cookieHeader, ...forwardedFor(req) },
       body,
       cache: "no-store",
+      signal: upstreamSignal(),
     })
 
   let res

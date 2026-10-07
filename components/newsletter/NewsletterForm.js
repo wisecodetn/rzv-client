@@ -23,7 +23,7 @@ export const nlStore = {
 /**
  * The newsletter sign-up: one field, one button.
  *
- * `source` records where the consent was given (footer | home_modal).
+ * `source` records where the consent was given (footer | home_modal | waitlist_page).
  * `tone="dark"` is for a dark surface whatever the theme.
  */
 export default function NewsletterForm({ source = "footer", tone, autoFocus = false, onDone }) {
@@ -65,7 +65,7 @@ export default function NewsletterForm({ source = "footer", tone, autoFocus = fa
           </svg>
         </span>
         <span>
-          <b>Merci, c’est noté !</b> Vous recevrez nos prochaines nouvelles à <b>{email.trim()}</b>.
+          <b>Plus qu’une étape !</b> Confirmez votre inscription grâce au lien envoyé à <b>{email.trim()}</b>.
         </span>
       </div>
     )

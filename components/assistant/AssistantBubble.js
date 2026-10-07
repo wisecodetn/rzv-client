@@ -1,7 +1,10 @@
 "use client"
 import { Fragment, useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import { safeNext } from "@/lib/safe-next"
 import { usePathname } from "next/navigation"
+import "./assistant-bubble.css"
+import AssistantAvatar from "./AssistantAvatar"
 
 /* L'assistant Rezervy — the chat bubble.
 
@@ -124,10 +127,12 @@ function inline(text, key = "i") {
       out.push(<strong key={`${key}-${n++}`}>{inline(m[1], `${key}-${n}`)}</strong>)
     } else {
       const href = m[3]
-      const internal = href.startsWith("/") && !href.startsWith("//")
+      // The same rule as the post-login redirect: "/\evil.tn" and "//evil.tn"
+      // look like paths but leave the site. Anything else is shown as text.
+      const internal = safeNext(href, null)
       out.push(
         internal ? (
-          <Link key={`${key}-${n++}`} href={href}>
+          <Link key={`${key}-${n++}`} href={internal}>
             {m[2]}
           </Link>
         ) : (
@@ -200,16 +205,6 @@ function SalonCards({ items }) {
 }
 
 /** The robot: a face layer + a glowing-eyes layer that blinks on its own. */
-export function AssistantAvatar({ size = 56, big = false }) {
-  const n = big || size > 64 ? 320 : 192
-  return (
-    <span className="rzv-assist-face" style={{ width: size, height: size }} aria-hidden="true">
-      <img src={`/assistant/face-${n}.webp`} alt="" width={size} height={size} draggable={false} />
-      <img className="rzv-assist-eyes" src={`/assistant/eyes-${n}.webp`} alt="" width={size} height={size} draggable={false} />
-    </span>
-  )
-}
-
 /** Three little strokes that pop beside the head — the "ding!" of the image. */
 function Sparks() {
   return (

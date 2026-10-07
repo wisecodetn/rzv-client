@@ -1,6 +1,9 @@
 "use client"
+import Link from "next/link"
 
-import { useCallback, useEffect, useState } from "react"
+import { useState } from "react"
+import { errorText } from "@/lib/errors"
+import { LoadError, useAccountFetch } from "./shared"
 
 /* Aide & support — the customer's side of the ticket queue the admin already
    had. The model and the service always carried a `client` requester; only the
@@ -47,7 +50,6 @@ const input = {
 }
 
 export function Support() {
-  const [tickets, setTickets] = useState(null)
   const [open, setOpen] = useState(null)
   const [composing, setComposing] = useState(false)
   const [form, setForm] = useState({ subject: "", category: "reservation", message: "" })
@@ -55,14 +57,9 @@ export function Support() {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState("")
 
-  const load = useCallback(() => {
-    fetch("/api/account/support/tickets")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((d) => setTickets(Array.isArray(d) ? d : []))
-      .catch(() => setTickets([]))
-  }, [])
-
-  useEffect(load, [load])
+  // An outage is said as such — it used to read as "no request yet".
+  const { data, error: loadErr, reload: load } = useAccountFetch("support/tickets")
+  const tickets = loadErr ? null : Array.isArray(data) ? data : data ? [] : null
 
   const openThread = async (id) => {
     setErr("")
@@ -85,14 +82,14 @@ export function Support() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify(form),
       })
-      const d = await r.json()
+      const d = await r.json().catch(() => null)
       if (!r.ok) throw new Error(d?.message || "Envoi impossible.")
       setForm({ subject: "", category: "reservation", message: "" })
       setComposing(false)
       setOpen(d)
       load()
     } catch (e2) {
-      setErr(e2.message || "Envoi impossible.")
+      setErr(errorText(e2, "Envoi impossible."))
     } finally {
       setBusy(false)
     }
@@ -109,13 +106,13 @@ export function Support() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ body: reply }),
       })
-      const d = await r.json()
+      const d = await r.json().catch(() => null)
       if (!r.ok) throw new Error(d?.message || "Envoi impossible.")
       setReply("")
       setOpen(d)
       load()
     } catch (e2) {
-      setErr(e2.message || "Envoi impossible.")
+      setErr(errorText(e2, "Envoi impossible."))
     } finally {
       setBusy(false)
     }
@@ -288,7 +285,8 @@ export function Support() {
         </form>
       )}
 
-      {tickets === null && <div style={{ ...card, textAlign: "center", color: "var(--muted)", fontSize: 13 }}>Chargement…</div>}
+      {loadErr && <LoadError error={loadErr} reload={load} />}
+      {tickets === null && !loadErr && <div style={{ ...card, textAlign: "center", color: "var(--muted)", fontSize: 13 }}>Chargement…</div>}
 
       {tickets?.length === 0 && !composing && (
         <div style={{ ...card, textAlign: "center", padding: "38px 20px" }}>
@@ -297,7 +295,7 @@ export function Support() {
             Notre équipe répond généralement sous 24 h ouvrées.
             <br />
             Beaucoup de réponses se trouvent déjà au{" "}
-            <a href="/centre-aide" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>centre d’aide</a>.
+            <Link href="/centre-aide" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>centre d’aide</Link>.
           </div>
         </div>
       )}

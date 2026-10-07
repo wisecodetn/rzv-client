@@ -1,4 +1,4 @@
-import { Fidelite } from "@/components/account/sections"
+import { Fidelite } from "@/components/account/Fidelite"
 
 export const metadata = {
   title: "Carnets & fidélité",

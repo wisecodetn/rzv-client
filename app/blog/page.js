@@ -3,13 +3,13 @@ import Photo from "@/components/Photo"
 import { SITE } from "@/lib/site"
 import { getPosts, catLabel, formatDate } from "@/lib/blog"
 import PostCover from "@/components/blog/PostCover"
+import { pageMeta } from "@/lib/meta"
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Le blog beauté",
   description: "Conseils coiffure, barbier, onglerie et spa : guides pratiques, tendances et astuces de nos expert·e·s partenaires en Tunisie.",
-  alternates: { canonical: "/blog" },
-  openGraph: { title: `Le blog beauté · ${SITE.name}`, description: "Conseils coiffure, barbier, onglerie et spa en Tunisie.", url: `${SITE.url}/blog` },
-}
+  path: "/blog",
+})
 
 const chip = { fontSize: 11, fontWeight: 800, color: "var(--gold-dark)", background: "var(--accent-soft)", borderRadius: 999, padding: "4px 10px", letterSpacing: "0.03em", textTransform: "uppercase" }
 
@@ -19,7 +19,7 @@ export default async function BlogPage() {
 
   return (
     <div className="wrap" style={{ padding: "30px 24px 60px" }}>
-      <nav style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center" }}>
+      <nav aria-label="Fil d’Ariane" style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center" }}>
         <Link href="/" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Accueil</Link>
         <span>/</span>
         <span style={{ fontWeight: 700, color: "var(--ink)" }}>Blog</span>

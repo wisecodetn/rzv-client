@@ -5,6 +5,8 @@ import { useCatalog } from "./CatalogProvider"
 
 const EMPTY = { cats: [], subs: [], estabs: [] }
 
+const optId = (list, key) => `sb-${list}-${key}`
+
 export default function SearchBar() {
   const router = useRouter()
   const { categories, cities } = useCatalog()
@@ -76,8 +78,6 @@ export default function SearchBar() {
     if (ville.trim()) p.set("ville", ville.trim())
     router.push("/recherche" + (p.toString() ? `?${p}` : ""))
   }
-  const onKey = (e) => e.key === "Enter" && go()
-
   const clearQ = () => { setQ(""); setSelectedCat(null) }
   const clearVille = () => { setVille(""); setSelectedCity(null) }
 
@@ -105,56 +105,119 @@ export default function SearchBar() {
       {t === "city" && <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />}
     </svg>
   )
-  const Row = ({ t, label: l, sub, onClick }) => (
-    <div onClick={onClick} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", cursor: "pointer" }}>
-      <span style={{ width: 26, height: 26, borderRadius: 7, background: "var(--accent-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}><Ico t={t} /></span>
+  /* Both fields are WAI-ARIA comboboxes: ↑/↓ move through the suggestions,
+     Enter picks the highlighted one (or searches), Escape closes. The options
+     are one flat list, rendered under their group headings. */
+  const { cats, subs, estabs } = searchResults
+  const qGroups = !q.trim()
+    ? [["Catégories", categories.map((c) => ({ key: `c-${c.slug}`, t: "cat", label: c.name, sub: "Catégorie", pick: () => pickCategory(c) }))]]
+    : [
+        ["Catégories", cats.map((c) => ({ key: `c-${c.slug}`, t: "cat", label: c.name, sub: "Catégorie", pick: () => pickCategory(c) }))],
+        ["Prestations", subs.map((n) => ({ key: `s-${n.slug}`, t: "sub", label: n.name, sub: n.topName, pick: () => pickCategory(n) }))],
+        ["Établissements", estabs.map((e) => ({ key: `e-${e.slug}`, t: "est", label: e.name, sub: e.sub || "Salon", pick: () => pickEstab(e.slug) }))],
+      ].filter(([, rows]) => rows.length)
+  const qOptions = qGroups.flatMap(([, rows]) => rows)
+  const villeOptions = cityOpts.map((c) => ({ key: `v-${c.slug}`, t: "city", label: c.name, sub: c.total ? `${c.total} salon${c.total > 1 ? "s" : ""}` : undefined, pick: () => pickCity(c) }))
+
+  const [qActive, setQActive] = useState(-1)
+  const [villeActive, setVilleActive] = useState(-1)
+  useEffect(() => setQActive(-1), [q, qOpen, searchResults])
+  useEffect(() => setVilleActive(-1), [ville, villeOpen])
+  // The option chosen with the arrows stays in view in a scrolling list.
+  useEffect(() => {
+    const o = qOpen && qActive >= 0 ? qOptions[qActive] : null
+    if (o) document.getElementById(optId("q", o.key))?.scrollIntoView({ block: "nearest" })
+  }, [qActive, qOpen, qOptions])
+  useEffect(() => {
+    const o = villeOpen && villeActive >= 0 ? villeOptions[villeActive] : null
+    if (o) document.getElementById(optId("v", o.key))?.scrollIntoView({ block: "nearest" })
+  }, [villeActive, villeOpen, villeOptions])
+
+  const keyNav = (open, setOpen, options, active, setActive) => (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      if (!open) setOpen(true)
+      if (options.length) setActive((i) => (i + 1) % options.length)
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      if (options.length) setActive((i) => (i <= 0 ? options.length - 1 : i - 1))
+    } else if (e.key === "Escape") {
+      if (open) { e.preventDefault(); setOpen(false) }
+    } else if (e.key === "Tab") {
+      // Leaving the field closes its list — open, it covered the next field
+      // and the button the keyboard was heading to.
+      setOpen(false)
+    } else if (e.key === "Enter") {
+      e.preventDefault()
+      if (open && active >= 0 && options[active]) options[active].pick()
+      else go()
+    }
+  }
+
+  const Row = ({ o, list, active }) => (
+    <div
+      id={optId(list, o.key)}
+      role="option"
+      aria-selected={active}
+      // mousedown, not click: picking must happen before the input's blur.
+      onMouseDown={(e) => { e.preventDefault(); o.pick() }}
+      className="row-hover"
+      style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", cursor: "pointer", background: active ? "var(--accent-soft)" : undefined }}
+    >
+      <span aria-hidden="true" style={{ width: 26, height: 26, borderRadius: 7, background: "var(--accent-soft)", display: "inline-flex", alignItems: "center", justifyContent: "center", flex: "none" }}><Ico t={o.t} /></span>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l}</div>
-        {sub && <div style={{ fontSize: 11, color: "var(--muted)" }}>{sub}</div>}
+        <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.label}</div>
+        {o.sub && <div style={{ fontSize: 11, color: "var(--muted)" }}>{o.sub}</div>}
       </div>
     </div>
   )
+  const clearBtn = { background: "transparent", border: "none", padding: 0, cursor: "pointer", color: "var(--muted)", fontSize: 15, lineHeight: 1 }
 
-  const { cats, subs, estabs } = searchResults
-  const qHasResults = cats.length || subs.length || estabs.length
-
+  let qIndex = 0
   return (
     <div style={{ display: "flex", gap: 10, marginTop: 26, flexWrap: "wrap", maxWidth: 680, pointerEvents: "auto" }}>
       {/* ---- Que cherchez-vous ? ---- */}
       <div className="sb-q" style={{ position: "relative", flex: 2, minWidth: 200 }}>
-        <div style={label}>Que cherchez-vous ?</div>
+        <label htmlFor="sb-q-input" style={label}>Que cherchez-vous ?</label>
         <div style={box(qOpen)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round">
             <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3" />
           </svg>
           <input
+            id="sb-q-input"
+            className="shell-input"
+            role="combobox"
+            aria-expanded={qOpen}
+            aria-controls="sb-q-list"
+            aria-autocomplete="list"
+            aria-activedescendant={qOpen && qActive >= 0 && qOptions[qActive] ? optId("q", qOptions[qActive].key) : undefined}
+            autoComplete="off"
             value={q}
             onChange={(e) => { setQ(e.target.value); setSelectedCat(null); setQOpen(true) }}
             onFocus={(e) => { setQOpen(true); setVilleOpen(false); e.target.select() }}
-            onKeyDown={onKey}
+            onKeyDown={keyNav(qOpen, setQOpen, qOptions, qActive, setQActive)}
             placeholder="Ex. balayage, coupe homme…"
             style={inp}
           />
-          {q ? <span onClick={clearQ} style={{ cursor: "pointer", color: "var(--muted)", fontSize: 15, lineHeight: 1 }}>×</span> : null}
+          {q ? <button type="button" aria-label="Effacer la recherche" onClick={clearQ} style={clearBtn}>×</button> : null}
         </div>
         {qOpen && (
           <>
             <div onClick={() => setQOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
-            <div className="autocomplete-scroll" style={dropdown}>
-              {!q.trim() ? (
-                // On focus, before typing: the categories (already loaded with the site).
-                <>
-                  <div style={secLabel}>Catégories</div>
-                  {categories.map((c) => <Row key={c.slug} t="cat" label={c.name} sub="Catégorie" onClick={() => pickCategory(c)} />)}
-                </>
-              ) : !qHasResults ? (
-                <div style={{ padding: "14px", fontSize: 12.5, color: "var(--muted)" }}>Aucun résultat pour « {q.trim()} ».</div>
+            {/* tabIndex -1: a scrolling list is a Tab stop in Chrome; focus stays in the field. */}
+            <div id="sb-q-list" role="listbox" aria-label="Suggestions" tabIndex={-1} className="autocomplete-scroll" style={dropdown}>
+              {q.trim() && !qOptions.length ? (
+                <div role="status" style={{ padding: "14px", fontSize: 12.5, color: "var(--muted)" }}>Aucun résultat pour « {q.trim()} ».</div>
               ) : (
-                <>
-                  {cats.length > 0 && <><div style={secLabel}>Catégories</div>{cats.map((c) => <Row key={c.slug} t="cat" label={c.name} sub="Catégorie" onClick={() => pickCategory(c)} />)}</>}
-                  {subs.length > 0 && <><div style={secLabel}>Prestations</div>{subs.map((n) => <Row key={n.slug} t="sub" label={n.name} sub={n.topName} onClick={() => pickCategory(n)} />)}</>}
-                  {estabs.length > 0 && <><div style={secLabel}>Établissements</div>{estabs.map((s) => <Row key={s.slug} t="est" label={s.name} sub={s.sub || "Salon"} onClick={() => pickEstab(s.slug)} />)}</>}
-                </>
+                qGroups.map(([title, rows]) => (
+                  <div key={title} role="group" aria-label={title}>
+                    <div aria-hidden="true" style={secLabel}>{title}</div>
+                    {rows.map((o) => {
+                      const i = qIndex++
+                      return <Row key={o.key} o={o} list="q" active={i === qActive} />
+                    })}
+                  </div>
+                ))
               )}
             </div>
           </>
@@ -163,29 +226,37 @@ export default function SearchBar() {
 
       {/* ---- Où ? ---- */}
       <div style={{ position: "relative", flex: 1, minWidth: 150 }}>
-        <div style={label}>Où ?</div>
+        <label htmlFor="sb-ville-input" style={label}>Où ?</label>
         <div style={box(villeOpen)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z M12 13a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" />
           </svg>
           <input
+            id="sb-ville-input"
+            className="shell-input"
+            role="combobox"
+            aria-expanded={villeOpen}
+            aria-controls="sb-ville-list"
+            aria-autocomplete="list"
+            aria-activedescendant={villeOpen && villeActive >= 0 && villeOptions[villeActive] ? optId("v", villeOptions[villeActive].key) : undefined}
+            autoComplete="off"
             value={ville}
             onChange={(e) => { setVille(e.target.value); setSelectedCity(null); setVilleOpen(true) }}
             onFocus={(e) => { setVilleOpen(true); setQOpen(false); e.target.select() }}
-            onKeyDown={onKey}
+            onKeyDown={keyNav(villeOpen, setVilleOpen, villeOptions, villeActive, setVilleActive)}
             placeholder="Ex. La Marsa"
             style={inp}
           />
-          {ville ? <span onClick={clearVille} style={{ cursor: "pointer", color: "var(--muted)", fontSize: 15, lineHeight: 1 }}>×</span> : null}
+          {ville ? <button type="button" aria-label="Effacer la ville" onClick={clearVille} style={clearBtn}>×</button> : null}
         </div>
         {villeOpen && (
           <>
             <div onClick={() => setVilleOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 19 }} />
-            <div className="autocomplete-scroll" style={{ ...dropdown, maxHeight: 280 }}>
-              {cityOpts.length === 0 ? (
-                <div style={{ padding: "14px", fontSize: 12.5, color: "var(--muted)" }}>Aucune ville trouvée.</div>
+            <div id="sb-ville-list" role="listbox" aria-label="Villes" tabIndex={-1} className="autocomplete-scroll" style={{ ...dropdown, maxHeight: 280 }}>
+              {villeOptions.length === 0 ? (
+                <div role="status" style={{ padding: "14px", fontSize: 12.5, color: "var(--muted)" }}>Aucune ville trouvée.</div>
               ) : (
-                cityOpts.map((c) => <Row key={c.slug} t="city" label={c.name} sub={c.total ? `${c.total} salons` : undefined} onClick={() => pickCity(c)} />)
+                villeOptions.map((o, i) => <Row key={o.key} o={o} list="v" active={i === villeActive} />)
               )}
             </div>
           </>
@@ -193,6 +264,7 @@ export default function SearchBar() {
       </div>
 
       <button
+        type="button"
         onClick={go}
         className="btn-gold"
         // minHeight: on its own line the button has no row to stretch against.

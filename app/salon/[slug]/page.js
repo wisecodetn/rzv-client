@@ -10,8 +10,9 @@ import { socialLinks, socialHandle } from "@/lib/social"
 import SalonContent from "@/components/salon/SalonContent"
 import SalonReviews from "@/components/salon/SalonReviews"
 import { salonLd, breadcrumbLd } from "@/lib/jsonld"
-import { salonSlugs, getSalon, getCategory } from "@/lib/data"
-import { SITE } from "@/lib/site"
+import { salonSlugs, getSalon, getCategory, pairOf } from "@/lib/data"
+import { SITE, PAY_RULE, CANCEL_RULE } from "@/lib/site"
+import { pageMeta } from "@/lib/meta"
 
 export async function generateStaticParams() {
   return (await salonSlugs()).map((slug) => ({ slug }))
@@ -21,14 +22,17 @@ export async function generateMetadata({ params }) {
   const { slug } = await params
   const s = await getSalon(slug)
   if (!s) return {}
-  const title = `${s.name} à ${s.city} — réserver en ligne`
-  const description = `${s.name} ★ ${s.rate} (${s.rev} avis). Réservez ${s.kind.toLowerCase()} en ligne, dès ${s.from} TND. ${s.city}.`
-  return {
-    title,
-    description,
-    alternates: { canonical: `/salon/${s.slug}` },
-    openGraph: { type: "website", title: `${title} · ${SITE.name}`, description, url: `${SITE.url}/salon/${s.slug}` },
-  }
+  const title = s.city ? `${s.name} à ${s.city} — réserver en ligne` : `${s.name} — réserver en ligne`
+  // Each part only when the salon has it: a new salon used to read
+  // "★ null (0 avis)… dès null TND" in search results.
+  const count = s.ratings?.count ?? s.rev ?? 0
+  const rating = s.ratings?.overall ?? s.rateNum
+  const description = [
+    count > 0 && rating ? `${s.name} ★ ${rating.toFixed(1).replace(".", ",")} (${count} avis).` : `${s.name}.`,
+    `Réservez ${s.kind ? s.kind.toLowerCase() : "votre prestation"} en ligne${s.from != null ? `, dès ${s.from} TND` : ""}.`,
+    s.city ? `${s.city}.` : "",
+  ].filter(Boolean).join(" ")
+  return pageMeta({ title, description, path: `/salon/${s.slug}`, ownImage: true })
 }
 
 const SideCard = ({ children }) => (
@@ -67,30 +71,44 @@ export default async function SalonPage({ params }) {
   const s = await getSalon(slug)
   if (!s) notFound()
   const cat = await getCategory(s.primary)
+  // The city crumb leads to a listing that really shows salons: the salon's
+  // filed category in its city when that pair has salons, else the city page.
+  const pair = cat && s.citySlug ? await pairOf(cat.slug, s.citySlug) : null
   const packages = s.packages ?? []
   const reviews = s.reviews ?? []
   const gallery = s.gallery ?? []
   /** "Sousse Jaouhara, Sousse" — omitting whichever part the salon left blank. */
   const where = [s.address, s.city].filter(Boolean).join(", ")
   const social = socialLinks(s)
+  // One trail for the visible breadcrumb and the JSON-LD — they can't disagree.
+  // A salon can be published before it is filed under a category: the trail
+  // just skips those crumbs rather than breaking the page.
+  const crumbs = [
+    { name: "Accueil", url: "/" },
+    ...(cat ? [{ name: cat.name, url: `/${cat.slug}` }] : []),
+    ...(s.citySlug ? [{ name: s.city, url: pair ? `/${cat.slug}/${s.citySlug}` : `/recherche/${s.citySlug}` }] : []),
+    { name: s.name, url: `/salon/${s.slug}` },
+  ]
 
   return (
     <>
-      <JsonLd
-        data={[
-          salonLd(s, cat),
-          // A salon can be published before it is filed under a category —
-          // the trail just skips those crumbs rather than breaking the page.
-          breadcrumbLd([
-            { name: "Accueil", url: "/" },
-            ...(cat ? [{ name: cat.name, url: `/${cat.slug}` }] : []),
-            ...(cat && s.citySlug ? [{ name: s.city, url: `/${cat.slug}/${s.citySlug}` }] : []),
-            { name: s.name, url: `/salon/${s.slug}` },
-          ]),
-        ]}
-      />
+      <JsonLd data={[salonLd(s, cat), breadcrumbLd(crumbs)]} />
 
       <div className="wrap" style={{ margin: "0 auto", padding: "22px 24px 60px" }}>
+        {/* Visible trail back to the category and city listings — real links
+            for visitors and crawlers, not only JSON-LD. */}
+        <nav aria-label="Fil d'Ariane" style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginBottom: 14 }}>
+          {crumbs.map((c, i) =>
+            i < crumbs.length - 1 ? (
+              <span key={c.url} style={{ display: "inline-flex", gap: 6 }}>
+                <Link href={c.url} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>{c.name}</Link>
+                <span aria-hidden="true">/</span>
+              </span>
+            ) : (
+              <span key={c.url} aria-current="page" style={{ fontWeight: 700, color: "var(--ink)" }}>{c.name}</span>
+            ),
+          )}
+        </nav>
         {/* Photos, full width. No cover? the gallery carries the block alone. */}
         <SalonMedia name={s.name} cover={s.cover} gallery={gallery} />
 
@@ -146,6 +164,11 @@ export default async function SalonPage({ params }) {
           </div>
         </div>
 
+        {/* How booking works here, before the "Réserver" click. */}
+        <p style={{ fontSize: 12.5, color: "var(--muted)", margin: "10px 4px 0", lineHeight: 1.6 }}>
+          {PAY_RULE} {CANCEL_RULE}
+        </p>
+
         {s.desc && (
           <div
             style={{
@@ -156,9 +179,9 @@ export default async function SalonPage({ params }) {
               padding: "20px 22px",
             }}
           >
-            <div className="serif" style={{ fontSize: 18, marginBottom: 10 }}>
+            <h2 className="serif" style={{ fontSize: 18, margin: "0 0 10px", fontWeight: 400 }}>
               À propos
-            </div>
+            </h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {s.desc
                 .split(/\n\s*\n/) // split on blank lines → paragraphs
@@ -182,7 +205,7 @@ export default async function SalonPage({ params }) {
           {/* Left */}
           <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 22 }}>
             <div>
-              <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Choix de prestations</div>
+              <h2 className="serif" style={{ fontSize: 20, margin: "0 0 12px", fontWeight: 400 }}>Choix de prestations</h2>
               <ServiceGroups slug={s.slug} groups={s.serviceGroups} />
             </div>
 
@@ -190,7 +213,7 @@ export default async function SalonPage({ params }) {
                 straight after them — a package is just another prestation. */}
             {packages.length > 0 && (
               <div>
-                <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>Forfaits</div>
+                <h2 className="serif" style={{ fontSize: 20, margin: "0 0 12px", fontWeight: 400 }}>Forfaits</h2>
                 <ServiceGroups
                   slug={s.slug}
                   groups={[
@@ -216,7 +239,7 @@ export default async function SalonPage({ params }) {
 
             {s.team?.length > 0 && (
               <div>
-                <div className="serif" style={{ fontSize: 20, marginBottom: 12 }}>L&apos;équipe</div>
+                <h2 className="serif" style={{ fontSize: 20, margin: "0 0 12px", fontWeight: 400 }}>L&apos;équipe</h2>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 10 }}>
                   {s.team.map((tm) => (
                     <div key={tm.id} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "12px 14px", display: "flex", alignItems: "center", gap: 11, minWidth: 0 }}>
@@ -237,7 +260,7 @@ export default async function SalonPage({ params }) {
             <SalonReviews ratings={s.ratings} reviews={reviews} />
 
             <SideCard>
-              <div style={{ fontWeight: 800, fontSize: 13.5, marginBottom: 10 }}>Horaires</div>
+              <h2 style={{ fontWeight: 800, fontSize: 13.5, margin: "0 0 10px" }}>Horaires</h2>
               {s.hours.map((ho) => (
                 <div key={ho.d} style={{ display: "flex", fontSize: 12.5, padding: "5px 0" }}>
                   <div style={{ color: "var(--muted)", width: 90 }}>{ho.d}</div>
@@ -247,7 +270,7 @@ export default async function SalonPage({ params }) {
             </SideCard>
 
             <SideCard>
-              <div style={{ fontWeight: 800, fontSize: 13.5, marginBottom: 12 }}>Contact</div>
+              <h2 style={{ fontWeight: 800, fontSize: 13.5, margin: "0 0 12px" }}>Contact</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {s.phone && (
                   <a
@@ -301,7 +324,7 @@ export default async function SalonPage({ params }) {
 
             {s.geo && (
               <SideCard>
-                <div style={{ fontWeight: 800, fontSize: 13.5, marginBottom: 10 }}>Où nous trouver</div>
+                <h2 style={{ fontWeight: 800, fontSize: 13.5, margin: "0 0 10px" }}>Où nous trouver</h2>
                 <SalonMap lat={s.geo.lat} lng={s.geo.lng} name={s.name} address={[s.address, s.city].filter(Boolean).join(", ")} />
               </SideCard>
             )}

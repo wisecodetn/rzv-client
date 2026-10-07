@@ -1,0 +1,182 @@
+/* Loaded with its component (imported there), not on every page. */
+/* ── Map pins & popup (components/SalonMap.js) ──────────────────────────
+   Leaflet's stylesheet loads after this one, so popup rules carry the
+   .leaflet-popup.rzv-popup prefix to win on specificity. */
+/* Leaflet sets Helvetica/Arial on the map; keep the site's typeface in popups. */
+.leaflet-container.leaflet-container {
+  font-family: inherit;
+}
+.leaflet-marker-icon.rzv-pin-wrap {
+  background: none;
+  border: none;
+}
+.rzv-pin {
+  width: 30px;
+  height: 40px;
+  transform-origin: 50% 100%;
+  transition: transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
+  cursor: pointer;
+}
+.rzv-pin-body {
+  fill: #111111;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+.rzv-pin-dot {
+  fill: #ffffff;
+}
+.rzv-pin-wrap:hover .rzv-pin,
+.rzv-pin-wrap.is-active .rzv-pin {
+  transform: scale(1.25);
+}
+.rzv-pin-wrap.is-active .rzv-pin-body {
+  fill: #ffffff;
+  stroke: #111111;
+}
+.rzv-pin-wrap.is-active .rzv-pin-dot {
+  fill: #111111;
+}
+.leaflet-popup.rzv-popup .leaflet-popup-content-wrapper {
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 0;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.leaflet-popup.rzv-popup .leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+  font-family: inherit;
+  line-height: 1.4;
+}
+.leaflet-popup.rzv-popup .leaflet-popup-tip {
+  background: var(--card);
+  box-shadow: none;
+  border: 1px solid var(--line);
+}
+.leaflet-popup.rzv-popup a.leaflet-popup-close-button {
+  top: 8px;
+  right: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font: 700 16px/26px sans-serif;
+  text-align: center;
+  z-index: 2;
+}
+.rzv-pop-media {
+  display: block;
+  height: 110px;
+  background: var(--inset);
+}
+.rzv-pop-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.rzv-pop {
+  width: 264px;
+}
+.rzv-pop-body {
+  padding: 12px 14px 14px;
+}
+.rzv-pop-new {
+  font-weight: 800;
+  color: var(--ink);
+}
+.leaflet-popup.rzv-popup .rzv-pop-name {
+  display: block;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  text-decoration: none;
+}
+.rzv-pop-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.rzv-pop-rate {
+  font-weight: 800;
+  color: var(--ink);
+}
+.rzv-pop-addr {
+  font-size: 12px;
+  color: var(--muted-2);
+  margin-top: 4px;
+}
+.rzv-pop-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.rzv-pop-row b {
+  color: var(--ink);
+}
+.rzv-pop-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 3px 9px;
+  background: var(--accent-soft);
+  color: var(--muted-2);
+}
+.rzv-pop-badge.is-open {
+  background: var(--green-soft);
+  color: var(--green);
+}
+.rzv-pop-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.leaflet-popup.rzv-popup .rzv-pop-btn {
+  flex: 1;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 9px 10px;
+  white-space: nowrap;
+  text-decoration: none;
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  background: var(--card);
+}
+.leaflet-popup.rzv-popup .rzv-pop-btn.is-primary {
+  background: var(--gold);
+  color: var(--on-gold);
+  border-color: var(--gold);
+}
+.rzv-pop-list {
+  margin-top: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 4px 0 0;
+}
+/* The row a pin points to. */
+.salon-row {
+  scroll-margin-top: 96px;
+  transition: box-shadow 200ms, border-color 200ms;
+}
+.salon-row.is-active {
+  border-color: var(--ink) !important;
+  box-shadow: 0 0 0 2px var(--ink), 0 10px 26px var(--shadow);
+}

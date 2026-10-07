@@ -1,19 +1,23 @@
 import PageShell from "@/components/PageShell"
-import GiftCardPanel from "@/components/pages/GiftCardPanel"
+import ComingSoon from "@/components/pages/ComingSoon"
+import { pageMeta } from "@/lib/meta"
 
-export const metadata = {
-  title: "Carte cadeau",
-  description: "Offrez un moment beauté avec une carte cadeau Rezervy, valable dans tous les salons partenaires en Tunisie.",
-  alternates: { canonical: "/carte-cadeau" },
-}
+// Not built yet: no gift card can be bought or redeemed, so the page is not
+// offered to search engines either.
+export const metadata = pageMeta({
+  title: "Carte cadeau — bientôt disponible",
+  description: "La carte cadeau Rezervy n'est pas encore disponible.",
+  path: "/carte-cadeau",
+  robots: { index: false, follow: true },
+})
 
 export default function CarteCadeauPage() {
   return (
-    <PageShell
-      title="Offrez un moment beauté"
-      subtitle="La carte cadeau Rezervy s'utilise dans tous les salons partenaires — coiffure, barbier, onglerie, spa. Valable 12 mois."
-    >
-      <GiftCardPanel />
+    <PageShell title="Carte cadeau" subtitle="Offrir un moment beauté dans un salon partenaire.">
+      <ComingSoon>
+        La carte cadeau Rezervy n&apos;est pas encore disponible : il n&apos;est pas possible d&apos;en acheter ni d&apos;en
+        utiliser pour le moment. En attendant, vous pouvez réserver directement dans le salon de votre choix.
+      </ComingSoon>
     </PageShell>
   )
 }

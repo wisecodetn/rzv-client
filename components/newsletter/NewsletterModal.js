@@ -1,5 +1,5 @@
 "use client"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import NewsletterForm, { nlStore } from "./NewsletterForm"
 import { LogoMark } from "../brand/Logo"
@@ -47,6 +47,10 @@ export default function NewsletterModal() {
       // A visitor busy with another dialog — or talking to the assistant — is
       // not interrupted; try later.
       if (document.querySelector('[role="dialog"][aria-modal="true"], .rzv-assist.is-open')) return
+      // Nor is someone typing: a modal snatching focus mid-word from the
+      // search field sent keystrokes into the newsletter box.
+      const el = document.activeElement
+      if (el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName))) return
       fired = true
       cleanup()
       lastFocus.current = document.activeElement
@@ -66,6 +70,15 @@ export default function NewsletterModal() {
     }
     return cleanup
   }, [])
+
+  // Declared before the effect that uses it, and tracking `done`: the Escape
+  // handler used to keep the `close` from when the modal opened, which still
+  // saw done=false — so Escape after subscribing recorded "dismissed".
+  const close = useCallback(() => {
+    if (!done) nlStore.set({ status: "dismissed", at: Date.now() })
+    setOpen(false)
+    lastFocus.current?.focus?.()
+  }, [done])
 
   // While open: Esc closes, focus stays inside, the page does not scroll.
   useEffect(() => {
@@ -96,13 +109,7 @@ export default function NewsletterModal() {
       document.body.style.overflow = prevOverflow
       document.removeEventListener("keydown", onKey)
     }
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const close = () => {
-    if (!done) nlStore.set({ status: "dismissed", at: Date.now() })
-    setOpen(false)
-    lastFocus.current?.focus?.()
-  }
+  }, [open, close])
 
   if (!open) return null
 

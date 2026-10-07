@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "../AuthProvider"
 import { AuthLayout, Field, PasswordField, SubmitBtn, ErrorMsg, SuccessMsg, linkStyle } from "./AuthUI"
+import { errorText } from "@/lib/errors"
 
 /* One form for both flows: guest "code reçu par e-mail" reset, and logged-in
    password change (email prefilled, code requestable from here). On success we
@@ -32,7 +33,7 @@ export default function ResetForm() {
       await forgotPassword(em)
       setInfo(`Code envoyé à ${em} — valable 10 minutes.`)
     } catch (ex) {
-      setErr(ex.message || "Une erreur est survenue.")
+      setErr(errorText(ex, "Une erreur est survenue."))
     } finally {
       setSending(false)
     }
@@ -53,7 +54,7 @@ export default function ResetForm() {
       setDone(true)
       setTimeout(() => router.push("/compte"), 1400)
     } catch (ex) {
-      setErr(ex.message || "Code invalide ou expiré.")
+      setErr(errorText(ex, "Code invalide ou expiré."))
     } finally {
       setLoading(false)
     }

@@ -1,26 +1,27 @@
 import Link from "next/link"
 import PageShell from "@/components/PageShell"
 import { SITE } from "@/lib/site"
+import { getPlans, fromLabel } from "@/lib/plans"
+import { pageMeta } from "@/lib/meta"
+import { getSiteContent } from "@/lib/site-content"
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Qui sommes-nous",
   description: "Rezervy, la marketplace beauté de Tunisie : notre mission, nos valeurs et l'équipe derrière la réservation en ligne de coiffure, barbier, onglerie et spa.",
-  alternates: { canonical: "/qui-sommes-nous" },
-}
+  path: "/qui-sommes-nous",
+})
 
-const STATS = [
-  { v: "480+", l: "salons partenaires" },
-  { v: "24", l: "gouvernorats couverts" },
-  { v: "65 000", l: "rendez-vous / mois" },
-  { v: "4,8/5", l: "note moyenne clientes" },
-]
 const VALUES = [
-  { t: "Simple", d: "Réserver en 30 secondes, 24h/24 — sans appel, sans attente." },
-  { t: "Transparent", d: "Prix clairs, avis vérifiés et confirmation immédiate par SMS." },
+  { t: "Simple", d: "Réserver en ligne 24h/24 — sans appel, sans attente." },
+  { t: "Transparent", d: "Prix affichés avant de réserver, paiement au salon et confirmation par e-mail." },
   { t: "Local", d: "Nous soutenons les salons tunisiens avec des outils modernes de gestion." },
 ]
 
-export default function QuiSommesNous() {
+export default async function QuiSommesNous() {
+  // The same figures as the home page, managed in admin (Site client →
+  // Chiffres clés) with live {salons}/{villes} counts. These used to be
+  // constants: "480+ salons", "65 000 rendez-vous / mois", "4,8/5".
+  const [plans, { stats: STATS }] = await Promise.all([getPlans(), getSiteContent()])
   return (
     <PageShell
       title="Qui sommes-nous"
@@ -29,9 +30,9 @@ export default function QuiSommesNous() {
       <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "24px 26px" }}>
         <div className="serif" style={{ fontSize: 20, marginBottom: 10 }}>Notre mission</div>
         <p style={{ fontSize: 14, color: "var(--muted-2)", lineHeight: 1.8 }}>
-          Nous connectons les clientes et les meilleurs salons, barbershops et spas de Tunisie sur une seule
+          Nous connectons les clientes et les salons, barbershops et spas de Tunisie sur une seule
           plateforme. Pour vous : trouver, comparer et réserver en ligne, à toute heure. Pour les professionnels :
-          un agenda intelligent, des rappels SMS anti no-show et l'encaissement Flouci &amp; e-Dinar — pour remplir
+          un agenda intelligent, des rappels automatiques par e-mail et le suivi des encaissements — pour remplir
           leur planning et fidéliser leur clientèle.
         </p>
       </div>
@@ -45,7 +46,7 @@ export default function QuiSommesNous() {
         ))}
       </div>
 
-      <div className="serif" style={{ fontSize: 20, margin: "34px 0 12px" }}>Nos valeurs</div>
+      <h2 className="serif" style={{ fontSize: 20, margin: "34px 0 12px", fontWeight: 400 }}>Nos valeurs</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: 14 }}>
         {VALUES.map((v) => (
           <div key={v.t} style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 20 }}>
@@ -57,7 +58,7 @@ export default function QuiSommesNous() {
 
       <div style={{ background: "var(--inverse-bg)", border: "1px solid var(--inverse-line)", borderRadius: 20, padding: "30px 28px", marginTop: 34, textAlign: "center", color: "#FFFFFF" }}>
         <div className="serif" style={{ fontSize: 22 }}>Vous gérez un salon ?</div>
-        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", marginTop: 8, maxWidth: 460, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>Rejoignez Rezervy Pro et développez votre activité — dès 49 TND/mois.</div>
+        <div style={{ fontSize: 14, color: "rgba(255,255,255,0.9)", marginTop: 8, maxWidth: 460, marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>Rejoignez Rezervy Pro et développez votre activité{plans ? ` — ${fromLabel(plans)}` : ""}.</div>
         <Link href="/devenir-partenaire" className="btn-on-dark" style={{ display: "inline-block", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 13.5, marginTop: 18 }}>Devenir partenaire</Link>
       </div>
     </PageShell>

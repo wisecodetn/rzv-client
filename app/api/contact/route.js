@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { readJson, rejectCrossSite, upstreamSignal } from "@/lib/bff"
 
 /** Same-origin relay for the public contact form, so the browser never talks
  *  to the API host directly (no CORS, and the API stays off the public origin).
@@ -7,12 +8,10 @@ import { NextResponse } from "next/server"
 const BASE = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/$/, "")
 
 export async function POST(req) {
-  let body
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ message: "Requête invalide." }, { status: 400 })
-  }
+  const blocked = rejectCrossSite(req)
+  if (blocked) return blocked
+  const { json: body, error } = await readJson(req)
+  if (error) return error
 
   const fwd = req.headers.get("x-forwarded-for") || ""
   try {
@@ -21,6 +20,7 @@ export async function POST(req) {
       headers: { "content-type": "application/json", ...(fwd ? { "x-forwarded-for": fwd } : {}) },
       body: JSON.stringify(body),
       cache: "no-store",
+      signal: upstreamSignal(),
     })
     const text = await res.text()
     return new NextResponse(text || null, {

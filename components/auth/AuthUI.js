@@ -1,8 +1,9 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useId } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../AuthProvider"
 import Logo from "../brand/Logo"
+import { safeNext } from "@/lib/safe-next"
 
 export const linkStyle = { color: "var(--gold-dark)", fontWeight: 700 }
 
@@ -10,7 +11,7 @@ export const linkStyle = { color: "var(--gold-dark)", fontWeight: 700 }
 export function useGuestOnly(to = "/compte") {
   const { user, ready } = useAuth()
   const router = useRouter()
-  useEffect(() => { if (ready && user) router.replace(to) }, [ready, user, router, to])
+  useEffect(() => { if (ready && user) router.replace(safeNext(to)) }, [ready, user, router, to])
   return ready && !!user
 }
 
@@ -22,7 +23,7 @@ export function AuthLayout({ title, subtitle, children, footer }) {
           <div style={{ display: "flex", justifyContent: "center" }}>
             <Logo size={40} wordmark={false} animate />
           </div>
-          <div className="serif" style={{ fontSize: 27, marginTop: 12 }}>{title}</div>
+          <h1 className="serif" style={{ fontSize: 27, margin: "12px 0 0", fontWeight: 400 }}>{title}</h1>
           {subtitle && <div style={{ fontSize: 13.5, color: "var(--muted)", marginTop: 7, lineHeight: 1.5 }}>{subtitle}</div>}
         </div>
         <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 20, padding: "26px 24px", boxShadow: "0 18px 44px var(--shadow)" }}>
@@ -76,37 +77,44 @@ export function SuccessMsg({ children }) {
 
 const inputStyle = { width: "100%", background: "var(--bg)", border: "1px solid var(--line-2)", borderRadius: 11, padding: "12px 13px", fontSize: 14, color: "var(--ink)", outline: "none" }
 
-export function Field({ label, rightLabel, type = "text", value, onChange, ...rest }) {
+/* The label names only the field. Wrapping everything in one <label> made the
+   field's accessible name "Mot de passe Mot de passe oublié ? Afficher": the
+   side link and the eye button were read as part of it. */
+function FieldHead({ id, label, rightLabel }) {
   return (
-    <label style={{ display: "block", marginBottom: 14 }}>
-      <div style={{ display: "flex", alignItems: "baseline", marginBottom: 6 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)" }}>{label}</span>
-        <span style={{ flex: 1 }} />
-        {rightLabel}
-      </div>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} style={inputStyle} {...rest} />
-    </label>
+    <div style={{ display: "flex", alignItems: "baseline", marginBottom: 6 }}>
+      <label htmlFor={id} style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)" }}>{label}</label>
+      <span style={{ flex: 1 }} />
+      {rightLabel}
+    </div>
+  )
+}
+
+export function Field({ label, rightLabel, type = "text", value, onChange, ...rest }) {
+  const id = useId()
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <FieldHead id={id} label={label} rightLabel={rightLabel} />
+      <input id={id} type={type} value={value} onChange={(e) => onChange(e.target.value)} style={inputStyle} {...rest} />
+    </div>
   )
 }
 
 export function PasswordField({ label, rightLabel, value, onChange, ...rest }) {
   const [show, setShow] = useState(false)
+  const id = useId()
   return (
-    <label style={{ display: "block", marginBottom: 14 }}>
-      <div style={{ display: "flex", alignItems: "baseline", marginBottom: 6 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)" }}>{label}</span>
-        <span style={{ flex: 1 }} />
-        {rightLabel}
-      </div>
+    <div style={{ marginBottom: 14 }}>
+      <FieldHead id={id} label={label} rightLabel={rightLabel} />
       <div style={{ position: "relative" }}>
-        <input type={show ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)} style={{ ...inputStyle, paddingRight: 42 }} {...rest} />
-        <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? "Masquer" : "Afficher"} style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", width: 30, height: 30, borderRadius: 8, border: "none", background: "transparent", color: "var(--muted)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+        <input id={id} type={show ? "text" : "password"} value={value} onChange={(e) => onChange(e.target.value)} style={{ ...inputStyle, paddingRight: 42 }} {...rest} />
+        <button type="button" onClick={() => setShow((s) => !s)} aria-label="Afficher le mot de passe" aria-pressed={show} aria-controls={id} style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", width: 30, height: 30, borderRadius: 8, border: "none", background: "transparent", color: "var(--muted)", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
           {show
             ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z M9.9 4.2 20 20 M1 1l22 22" /></svg>
             : <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>}
         </button>
       </div>
-    </label>
+    </div>
   )
 }
 
@@ -125,6 +133,26 @@ export function Divider({ children }) {
       <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
       <span style={{ fontSize: 11.5, color: "var(--faint)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{children}</span>
       <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
+    </div>
+  )
+}
+
+/** The terms and privacy policy, opened beside the form so a half-filled signup isn't lost. */
+export function TermsLinks() {
+  return (
+    <>
+      les <a href="/conditions-generales" target="_blank" rel="noopener" style={linkStyle}>conditions d'utilisation</a> et la{" "}
+      <a href="/confidentialite" target="_blank" rel="noopener" style={linkStyle}>politique de confidentialité</a>
+    </>
+  )
+}
+
+/** A Google sign-in can create the account in one click, with no checkbox — so
+ *  the same acceptance is stated where the click happens. */
+export function GoogleConsent() {
+  return (
+    <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.5, marginTop: 8, textAlign: "center" }}>
+      En continuant avec Google, vous acceptez <TermsLinks />.
     </div>
   )
 }

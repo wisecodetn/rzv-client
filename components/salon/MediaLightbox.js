@@ -1,7 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import { useDialogFocus } from "@/lib/use-dialog-focus"
 
 /**
  * Full-size viewer for a salon's photos.
@@ -17,6 +18,8 @@ import Image from "next/image"
 export default function MediaLightbox({ shots = [], name, openAt = null, onClose }) {
   const [i, setI] = useState(openAt ?? 0)
   const open = openAt !== null
+  const boxRef = useRef(null)
+  useDialogFocus(open && shots.length > 0, boxRef)
 
   useEffect(() => { if (openAt !== null) setI(openAt) }, [openAt])
 
@@ -62,6 +65,8 @@ export default function MediaLightbox({ shots = [], name, openAt = null, onClose
 
   return (
     <div
+      ref={boxRef}
+      tabIndex={-1}
       onClick={onClose}
       role="dialog"
       aria-modal="true"

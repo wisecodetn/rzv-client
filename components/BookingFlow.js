@@ -4,21 +4,19 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "./AuthProvider"
 import { flatServices } from "@/lib/salon-utils"
+import { CANCEL_RULE } from "@/lib/site"
+import { savePending, clearPending, loadPending } from "@/lib/pending-booking"
 import WaitlistJoin from "./salon/WaitlistJoin"
 import AboChooser from "./salon/AboChooser"
+import { errorText } from "@/lib/errors"
+import { scrollBehavior } from "@/lib/motion"
 
-const DEPOSIT_PCT = 30
 const fmtD = (m) => (m >= 60 ? Math.floor(m / 60) + "h" + (m % 60 ? String(m % 60).padStart(2, "0") : "") : m + " min")
 const T = (m) => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0")
 const sel = (on) => (on ? ["var(--ink)", "var(--line-soft)"] : ["var(--line-2)", "var(--card)"])
 // Slots come from the API — the salon's own hours, its agenda and the chosen
 // service's duration. A fixed 9h–17h30 grid was wrong for every salon that
 // closes at another hour.
-const PAY = [
-  ["Carte bancaire", "Acompte sécurisé (Stripe)"],
-  ["Sur place", "Au salon"],
-]
-const PAY_ONSITE = 1
 const lbl = { fontSize: 11, color: "var(--muted)", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em" }
 
 /** A numbered step: filled and ticked once done, with an optional action ("Modifier"). */
@@ -59,20 +57,6 @@ const PERIODS = [
 const dayKey = (dt) => {
   const p = (n) => String(n).padStart(2, "0")
   return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`
-}
-
-/* Pending booking, persisted across the login/signup redirect so a guest's
-   selections are never lost. One pending booking at a time; 1h TTL. */
-const PENDING_KEY = "rzv_pending_booking"
-const savePending = (data) => { try { localStorage.setItem(PENDING_KEY, JSON.stringify({ ...data, savedAt: Date.now() })) } catch {} }
-const clearPending = () => { try { localStorage.removeItem(PENDING_KEY) } catch {} }
-const loadPending = (salonSlug) => {
-  try {
-    const p = JSON.parse(localStorage.getItem(PENDING_KEY) || "null")
-    if (!p || p.salonSlug !== salonSlug) return null
-    if (Date.now() - (p.savedAt || 0) > 60 * 60 * 1000) { clearPending(); return null }
-    return p
-  } catch { return null }
 }
 
 /* One-page booking (single prestation — matches the Rezervy reservation UI):
@@ -121,7 +105,6 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
   const [ym, setYm] = useState({ y: today.getFullYear(), m: today.getMonth() })
   const [date, setDate] = useState(null)
   const [time, setTime] = useState(null)
-  const [payI, setPayI] = useState(0)
   const [view, setView] = useState("pick") // "pick" → "recap" (résumé) → booked
   const [booked, setBooked] = useState(null) // the server-confirmed booking
   const [submitting, setSubmitting] = useState(false)
@@ -183,6 +166,8 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           startAt: startAt.toISOString(),
+          // The id decides who is booked; the first name only labels it "(avec X)".
+          staffId: staffId === "any" ? "any" : staffId,
           staffName: staffId === "any" ? "any" : staff.find((p) => p.id === staffId)?.n.split(" ")[0],
         }),
       })
@@ -197,7 +182,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       }
       setBooked({ ...data, rescheduled: true })
     } catch (ex) {
-      setSubmitErr(ex.message)
+      setSubmitErr(errorText(ex))
     } finally {
       setSubmitting(false)
     }
@@ -240,7 +225,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
         clearPending()
         setBooked(data)
       } catch (ex) {
-        setSubmitErr(ex.message)
+        setSubmitErr(errorText(ex))
       } finally {
         setSubmitting(false)
       }
@@ -251,6 +236,11 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
   // tab) once auth state is known. Every restored field is re-validated; if we
   // arrived via ?confirm=1 and everything still holds, jump straight to the
   // résumé — the user never re-picks anything.
+  // Carnet (subscription credit) choice — declared before the pending-booking
+  // restore below, which sets it.
+  const [memberships, setMemberships] = useState([])
+  const [aboChoice, setAboChoice] = useState(aboId)
+  const [useAbo, setUseAbo] = useState(!!aboId)
   useEffect(() => {
     if (!authReady || restoredRef.current || reschedId) return
     restoredRef.current = true
@@ -262,7 +252,6 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     setSvcI(i)
     setStaffId(stf)
     if (p.aboId) { setAboChoice(p.aboId); setUseAbo(true) }
-    if (typeof p.payI === "number" && p.payI >= 0 && p.payI < PAY.length) setPayI(p.payI)
     // The saved selection is restored as-is; availability is fetched right
     // after and drops the slot if the salon no longer offers it. Re-deriving it
     // here would mean a second, divergent copy of the availability rules.
@@ -286,9 +275,6 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
 
   /* The customer's subscriptions (given by salons). One that includes this
      service here, with a credit left, can cover the visit: nothing to pay. */
-  const [memberships, setMemberships] = useState([])
-  const [aboChoice, setAboChoice] = useState(aboId)
-  const [useAbo, setUseAbo] = useState(!!aboId)
   useEffect(() => {
     if (!user || reschedId) { setMemberships([]); return }
     let alive = true
@@ -320,7 +306,6 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
   const discount = covered ? 0 : promo ? Math.min(promo.discountTnd, subtotal) : 0
   const total = covered ? 0 : Math.max(0, subtotal - discount)
   const totalM = svc ? svc.m : 0
-  const deposit = total > 0 ? Math.max(1, Math.round((total * DEPOSIT_PCT) / 100)) : 0
   const durB = Math.max(totalM, 30)
   const elig = svc ? staff.filter((p) => svc.who.includes(p.id)) : staff
 
@@ -370,7 +355,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     setAvailErr("")
     ask(new URLSearchParams({ ...target(item), date: dayKey(from), days: String(daysIn + 1) }))
       .then((d) => alive && setMonthAvail(d))
-      .catch((e) => { if (alive) { setMonthAvail(null); setAvailErr(e.message) } })
+      .catch((e) => { if (alive) { setMonthAvail(null); setAvailErr(errorText(e)) } })
       .finally(() => alive && setMonthLoading(false))
     return () => { alive = false }
   }, [salon.slug, item, ym.y, ym.m])
@@ -383,7 +368,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     setAvailErr("")
     ask(new URLSearchParams({ ...target(item), date: dayKey(date), days: "1" }))
       .then((d) => alive && setDayAvail(d))
-      .catch((e) => { if (alive) { setDayAvail(null); setAvailErr(e.message) } })
+      .catch((e) => { if (alive) { setDayAvail(null); setAvailErr(errorText(e)) } })
       .finally(() => alive && setAvailLoading(false))
     return () => { alive = false }
   }, [salon.slug, item, date])
@@ -436,7 +421,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     setDate(dt)
     setTime(null)
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 940px)").matches) {
-      setTimeout(() => slotsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 60)
+      setTimeout(() => slotsRef.current?.scrollIntoView({ behavior: scrollBehavior(), block: "start" }), 60)
     }
   }
 
@@ -465,7 +450,6 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       staffId,
       dateISO: date.toISOString(),
       time,
-      payI,
       aboId: covered ? abo.id : null,
     })
     if (authReady && !user) {
@@ -490,6 +474,8 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
         body: JSON.stringify({
           salonSlug: salon.slug,
           ...(svc.isPack ? { packageId: svc.packId } : { services: [svc.n] }),
+          // The id decides who is booked; the first name only labels it "(avec X)".
+          staffId: staffId === "any" ? "any" : staffId,
           staffName: staffId === "any" ? "any" : staff.find((p) => p.id === staffId)?.n.split(" ")[0],
           startAt: startAt.toISOString(),
           // Online payment is not offered yet, so the booking is always
@@ -524,7 +510,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       clearPending()
       setBooked(data)
     } catch (ex) {
-      setSubmitErr(ex.message)
+      setSubmitErr(errorText(ex))
     } finally {
       setSubmitting(false)
     }
@@ -547,7 +533,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
       setPromo(data)
     } catch (ex) {
       setPromo(null)
-      setPromoErr(ex.message)
+      setPromoErr(errorText(ex))
     } finally {
       setPromoBusy(false)
     }
@@ -566,13 +552,25 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
         <div style={{ width: 58, height: 58, borderRadius: "50%", background: "var(--green-soft)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto" }}>
           <span style={{ color: "var(--green)", fontSize: 26, fontWeight: 800 }}>✓</span>
         </div>
-        <div className="serif" style={{ fontSize: 24, marginTop: 16 }}>{booked.rescheduled ? "Rendez-vous reprogrammé" : "Réservation confirmée"}</div>
+        {/* Not "confirmée": the salon confirms it afterwards — the screen used to
+            say both. Focus moves here, the button that was pressed is gone. */}
+        <h2 ref={(el) => el?.focus()} tabIndex={-1} className="serif" style={{ fontSize: 24, margin: "16px 0 0", fontWeight: 400, outline: "none" }}>
+          {booked.rescheduled ? "Demande de changement envoyée" : "Demande de réservation envoyée"}
+        </h2>
         <div style={{ fontSize: 13, color: "var(--muted)", marginTop: 8, lineHeight: 1.7 }}>
           {booked.service}{time != null ? <> · {booked.rescheduled ? "nouveau créneau : " : ""}{dateLabel} à {T(time)}</> : null}<br />
-          Référence <span style={{ fontWeight: 800, color: "var(--ink)" }}>{ref}</span> · en attente de confirmation du salon<br />
+          Référence <span style={{ fontWeight: 800, color: "var(--ink)" }}>{ref}</span><br />
+          <b style={{ color: "var(--ink)" }}>Le salon va confirmer votre rendez-vous</b> : vous recevrez un e-mail, et le statut
+          s’affiche dans « Mes rendez-vous ».<br />
           {booked.payment === "deposit"
             ? <span style={{ color: "var(--green)", fontWeight: 700 }}>✓ Acompte payé par carte — {booked.rescheduled ? "il reste valable pour le nouveau créneau" : "solde à régler au salon"}</span>
             : <span>Paiement sur place — total de {booked.amountTnd} TND à régler au salon</span>}
+          <br />{CANCEL_RULE}
+          {salon.phone && (
+            <>
+              <br />Une question ? <a href={`tel:${salon.phone.replace(/\s/g, "")}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Appeler le salon ({salon.phone})</a>
+            </>
+          )}
         </div>
         <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 22, flexWrap: "wrap" }}>
           <Link href={`/salon/${salon.slug}`} style={{ background: "transparent", border: "1px solid var(--line-strong)", color: "var(--muted-2)", borderRadius: 11, padding: "11px 18px", fontWeight: 700, fontSize: 12.5 }}>Retour au salon</Link>
@@ -619,7 +617,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           </div>
 
           <div style={row}><span style={k}>Prestation</span><span style={{ fontWeight: 800, flex: 1 }}>{svc.n}</span><span style={{ color: "var(--muted)", fontSize: 12.5 }}>{svc.d}</span><span style={{ fontWeight: 800 }}>{svc.p} TND</span></div>
-          <div style={row}><span style={k}>Praticien·ne</span><span style={{ fontWeight: 700 }}>{staffLabel}</span></div>
+          <div style={row}><span style={k}>Avec</span><span style={{ fontWeight: 700 }}>{staffLabel}</span></div>
           <div style={row}><span style={k}>Date & heure</span><span style={{ fontWeight: 700, textTransform: "capitalize" }}>{longDate} à {T(time)}</span></div>
           {covered && (
             <div style={row}>
@@ -647,7 +645,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           {/* Promo code — the discount is computed and re-checked server-side.
               Not with a subscription credit: the visit is already covered. */}
           {!covered && <>
-          <div style={{ ...lbl, marginTop: 16 }}>Code promo</div>
+          <label htmlFor="promo-code" style={{ ...lbl, display: "block", marginTop: 16 }}>Code promo</label>
           {promo ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, background: "var(--green-soft)", border: "1px solid var(--green-soft)", borderRadius: 10, padding: "9px 12px" }}>
               <span style={{ fontWeight: 800, fontSize: 12.5, color: "var(--green)" }}>{promo.code}</span>
@@ -660,6 +658,9 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           ) : (
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               <input
+                id="promo-code"
+                autoComplete="off"
+                aria-invalid={promoErr ? true : undefined}
                 value={promoInput}
                 onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoErr("") }}
                 onKeyDown={(e) => e.key === "Enter" && applyPromo()}
@@ -671,17 +672,23 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
               </button>
             </div>
           )}
-          {promoErr && <div style={{ fontSize: 12, color: "var(--red)", fontWeight: 600, marginTop: 6 }}>{promoErr}</div>}
+          {promoErr && <div role="alert" style={{ fontSize: 12, color: "var(--red)", fontWeight: 600, marginTop: 6 }}>{promoErr}</div>}
           </>}
 
-          <button onClick={createBooking} disabled={submitting} className="btn-gold" style={{ width: "100%", marginTop: 16, background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "14px 16px", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: submitting ? 0.7 : 1 }}>
-            {submitting ? "Envoi…" : "Confirmer la réservation"}
-          </button>
-          {submitErr && <div style={{ fontSize: 12.5, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 10 }}>{submitErr}</div>}
+          {/* The terms come BEFORE the button — read, then commit — and the
+              button says what it does: it sends a request the salon confirms. */}
+          <div style={{ fontSize: 12, color: "var(--muted-2)", lineHeight: 1.6, marginTop: 16, borderTop: "1px solid var(--line-soft)", paddingTop: 12 }}>
+            {covered ? "Couvert par votre carnet — rien à régler au salon." : `Total de ${total} TND, à régler au salon — rien n’est payé en ligne.`}
+            <br />{CANCEL_RULE}
+            <br />Le salon confirme votre rendez-vous : vous recevez un e-mail{user ? <> à <b style={{ color: "var(--ink)" }}>{user.email}</b></> : null}, puis un rappel avant le rendez-vous.
+          </div>
 
-          <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 12, borderTop: "1px solid var(--line-soft)", paddingTop: 10 }}>
-            {covered ? "Couvert par votre carnet — rien à régler au salon." : `Total de ${total} TND, à régler au salon.`}
-            <br />✓ Confirmation & rappel par SMS{user ? <> · connecté·e en tant que <b style={{ color: "var(--ink)" }}>{user.email}</b></> : null}
+          <button onClick={createBooking} disabled={submitting} className="btn-gold" style={{ width: "100%", marginTop: 14, background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "14px 16px", fontWeight: 800, fontSize: 14, cursor: "pointer", opacity: submitting ? 0.7 : 1 }}>
+            {submitting ? "Envoi…" : "Envoyer la demande"}
+          </button>
+          {submitErr && <div role="alert" style={{ fontSize: 12.5, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 10 }}>{submitErr}</div>}
+          <div style={{ fontSize: 11, color: "var(--muted)", textAlign: "center", marginTop: 10 }}>
+            En envoyant la demande, vous acceptez les <Link href="/conditions-generales" prefetch={false} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>conditions générales</Link>.
           </div>
         </div>
       </div>
@@ -707,9 +714,9 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
     return (
       <div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => nav(-1)} disabled={!canPrev} style={{ ...navBtn, opacity: canPrev ? 1 : 0.35 }}>‹</button>
+          <button type="button" aria-label="Mois précédent" onClick={() => nav(-1)} disabled={!canPrev} style={{ ...navBtn, opacity: canPrev ? 1 : 0.35 }}>‹</button>
           <div style={{ flex: 1, textAlign: "center", fontSize: 14.5, fontWeight: 800, textTransform: "capitalize" }}>{label}</div>
-          <button onClick={() => nav(1)} disabled={!canNext} style={{ ...navBtn, opacity: canNext ? 1 : 0.35 }}>›</button>
+          <button type="button" aria-label="Mois suivant" onClick={() => nav(1)} disabled={!canNext} style={{ ...navBtn, opacity: canNext ? 1 : 0.35 }}>›</button>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, fontSize: 11, color: "var(--faint)", fontWeight: 800, textAlign: "center", margin: "12px 0 4px" }}>
           {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d, i) => <div key={i}>{d}</div>)}
@@ -810,7 +817,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
               <div style={stepBox}>
                 <StepHead n={2} title="Avec qui ?" done sub={staffId === "any" ? "Sans préférence — le premier disponible" : `Avec ${staffLabel}`} />
                 <div className="booking-scroll" style={{ display: "flex", gap: 9, marginTop: 14, overflowX: "auto", paddingBottom: 4 }}>
-                  {[{ id: "any", n: "Sans préférence", r: "1er·ère dispo", c: null, ini: "✦" }, ...elig].map((pp) => {
+                  {[{ id: "any", n: "Sans préférence", r: "Premier disponible", c: null, ini: "✦" }, ...elig].map((pp) => {
                     const on = staffId === pp.id
                     return (
                       <button key={pp.id} onClick={() => pickStaff(pp.id)} aria-pressed={on} style={{ flex: "none", width: 92, border: `1.5px solid ${on ? "var(--ink)" : "var(--line-2)"}`, background: on ? "var(--line-soft)" : "var(--card)", borderRadius: 14, padding: "12px 6px 10px", textAlign: "center", cursor: "pointer", color: "var(--ink)" }}>
@@ -884,7 +891,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                 {!dateFull && (
                   <div style={{ marginTop: 14 }}>
                     {availLoading && !slots.length && <div style={{ fontSize: 13, color: "var(--muted)" }}>Recherche des créneaux…</div>}
-                    {availErr && <div style={{ fontSize: 13, color: "var(--red)", fontWeight: 600 }}>{availErr}</div>}
+                    {availErr && <div role="alert" style={{ fontSize: 13, color: "var(--red)", fontWeight: 600 }}>{availErr}</div>}
                     {!availLoading && !availErr && !slots.length && <div style={{ fontSize: 13, color: "var(--muted)" }}>Aucun créneau ce jour — essayez une autre date.</div>}
                     {PERIODS.map(([label, inPeriod]) => {
                       const all = slots.filter(inPeriod)
@@ -978,7 +985,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                 : authReady && !user ? "Se connecter et réserver" : "Vérifier et confirmer"}
             </button>
             {hint && <div style={{ fontSize: 11.5, color: "var(--faint)", textAlign: "center", marginTop: 8 }}>{hint}</div>}
-            {submitErr && <div style={{ fontSize: 12, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 8 }}>{submitErr}</div>}
+            {submitErr && <div role="alert" style={{ fontSize: 12, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 8 }}>{submitErr}</div>}
 
             <div style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.6, marginTop: 12, borderTop: "1px solid var(--line-soft)", paddingTop: 10 }}>
               {reschedId
@@ -988,7 +995,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                 : covered
                   ? "Couvert par votre carnet — rien à régler au salon."
                   : `Total de ${total} TND, à régler au salon.`}
-              <br />✓ Confirmation & rappel par SMS
+              <br />✓ Confirmation & rappel par e-mail
             </div>
           </div>
         </aside>
@@ -998,7 +1005,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           where the thumb is — never a scroll away from the slot just picked. */}
       <div className="booking-bar-spacer" aria-hidden="true" />
       <div className="booking-bar" role="region" aria-label="Votre rendez-vous">
-        {submitErr && <div style={{ fontSize: 12, color: "var(--red)", fontWeight: 700, marginBottom: 6 }}>{submitErr}</div>}
+        {submitErr && <div role="alert" style={{ fontSize: 12, color: "var(--red)", fontWeight: 700, marginBottom: 6 }}>{submitErr}</div>}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 13, fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>

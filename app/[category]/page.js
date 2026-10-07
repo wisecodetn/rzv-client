@@ -7,10 +7,15 @@ import { breadcrumbLd } from "@/lib/jsonld"
 import { getIndexedCategories, getCategory, categoryParent, categoryCities } from "@/lib/data"
 import { mediaPath } from "@/lib/api"
 import { SITE } from "@/lib/site"
+import { de } from "@/lib/fr"
+import { pageMeta } from "@/lib/meta"
 
 export async function generateStaticParams() {
   return (await getIndexedCategories()).map((c) => ({ category: c.slug }))
 }
+
+/** "3 établissements dans 2 villes" — singular when it is one. */
+const countLine = (n, cities) => `${n} établissement${n > 1 ? "s" : ""} dans ${cities} ville${cities > 1 ? "s" : ""}`
 
 export async function generateMetadata({ params }) {
   const { category } = await params
@@ -18,16 +23,29 @@ export async function generateMetadata({ params }) {
   if (!cat) return {}
   const cities = await categoryCities(cat.slug)
   const total = cities.reduce((t, c) => t + c.count, 0)
-  const title = `${cat.name} en Tunisie — ${total} ${total > 1 ? "salons" : "salon"} à réserver en ligne`
-  const description = `Trouvez les meilleurs salons de ${cat.lower} en Tunisie : comparez prix et avis vérifiés, et réservez en ligne en 30 secondes. ${total} établissements dans ${cities.length} villes.`
-  return {
+  // No salon sells this yet: a real page for the visitor, nothing to rank.
+  if (!total) {
+    return pageMeta({
+      ownImage: true, // this route has its own opengraph-image
+      title: `${cat.name} en Tunisie`,
+      description: `Aucun salon ${de(cat.lower)} n'est encore référencé sur Rezervy.`,
+      path: `/${cat.slug}`,
+      robots: { index: false, follow: true },
+    })
+  }
+  const title = `${cat.name} en Tunisie — ${total} ${total > 1 ? "salons" : "salon"}`
+  const description = `Salons ${de(cat.lower)} en Tunisie : comparez les prix et les avis, et réservez en ligne en quelques clics. ${countLine(total, cities.length)}.`
+  return pageMeta({
+    ownImage: true, // this route has its own opengraph-image
     title,
     description,
-    alternates: { canonical: `/${cat.slug}` },
+    path: `/${cat.slug}`,
+    // Third-level prestations (Coupe homme under Coiffure homme) are browsing
+    // aids: thin, close to their parent, kept out of the sitemap — and so out
+    // of the index too, or they compete with the parent page.
+    ...(cat.depth > 1 ? { robots: { index: false, follow: true } } : {}),
     keywords: [`${cat.lower} Tunisie`, `salon ${cat.lower}`, ...cities.slice(0, 4).map((c) => `${cat.lower} ${c.name}`), "réservation en ligne"],
-    openGraph: { type: "website", locale: SITE.locale, siteName: SITE.name, title: `${title} · ${SITE.name}`, description, url: `${SITE.url}/${cat.slug}` },
-    twitter: { card: "summary_large_image", title: `${title} · ${SITE.name}`, description },
-  }
+  })
 }
 
 export default async function CategoryPage({ params }) {
@@ -51,7 +69,7 @@ export default async function CategoryPage({ params }) {
             "@type": "CollectionPage",
             name: `${cat.name} en Tunisie`,
             url: `${SITE.url}/${cat.slug}`,
-            description: `${total} salons de ${cat.lower} dans ${cities.length} villes en Tunisie — prix, avis vérifiés et réservation en ligne.`,
+            description: `Salons ${de(cat.lower)} en Tunisie : ${countLine(total, cities.length)} — prix, avis et réservation en ligne.`,
             about: { "@type": "Service", name: cat.name },
             ...(cities.find((c) => c.image) ? { image: cities.find((c) => c.image).image, primaryImageOfPage: { "@type": "ImageObject", contentUrl: cities.find((c) => c.image).image } } : {}),
             mainEntity: {
@@ -68,7 +86,7 @@ export default async function CategoryPage({ params }) {
         ]}
       />
 
-      <nav style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+      <nav aria-label="Fil d’Ariane" style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
         <Link href="/" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Accueil</Link>
         <span>/</span>
         {parent && (<><Link href={`/${parent.slug}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>{parent.name}</Link><span>/</span></>)}
@@ -77,8 +95,14 @@ export default async function CategoryPage({ params }) {
 
       <h1 className="serif" style={{ fontSize: 30, marginTop: 12, marginBottom: 0, fontWeight: 400 }}>{cat.name} en Tunisie</h1>
       <p style={{ color: "var(--muted)", fontSize: 13.5, marginTop: 6, maxWidth: 640, lineHeight: 1.65 }}>
-        Trouvez les meilleurs salons de {cat.lower} près de chez vous : comparez les prix, lisez les avis vérifiés et réservez
-        en ligne en 30 secondes. {total} établissements dans {cities.length} villes.
+        {total > 0 ? (
+          <>
+            Trouvez un salon {de(cat.lower)} près de chez vous : comparez les prix, lisez les avis et réservez en ligne en
+            quelques clics. {countLine(total, cities.length)}.
+          </>
+        ) : (
+          <>Aucun salon {de(cat.lower)} n&apos;est encore référencé sur Rezervy. Explorez les autres catégories depuis l&apos;accueil.</>
+        )}
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 16, marginTop: 24 }}>
@@ -103,8 +127,10 @@ export default async function CategoryPage({ params }) {
             </div>
             <div style={{ padding: "13px 16px", display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 12.5, fontWeight: 700 }}>{c.count} salon{c.count > 1 ? "s" : ""} de {cat.lower}</div>
-                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>dès {c.from} TND · note moyenne ★ {c.rate}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 700 }}>{c.count} salon{c.count > 1 ? "s" : ""} {de(cat.lower)}</div>
+                <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
+                  {[c.from != null ? `dès ${String(c.from).replace(".", ",")} TND` : null, c.rate ? `note moyenne ${c.rate}/5` : null].filter(Boolean).join(" · ")}
+                </div>
               </div>
               <div style={{ color: "var(--gold)", fontWeight: 800 }}>→</div>
             </div>

@@ -3,13 +3,15 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "../AuthProvider"
-import { AuthLayout, Field, PasswordField, SubmitBtn, Divider, GoogleButton, ErrorMsg, linkStyle, useGuestOnly } from "./AuthUI"
+import { AuthLayout, Field, PasswordField, SubmitBtn, Divider, GoogleButton, GoogleConsent, ErrorMsg, linkStyle, useGuestOnly } from "./AuthUI"
+import { safeNext } from "@/lib/safe-next"
+import { errorText } from "@/lib/errors"
 
 export default function LoginForm() {
   const { login, googleAuth } = useAuth()
   const router = useRouter()
   const params = useSearchParams()
-  const next = params.get("next") || "/compte"
+  const next = safeNext(params.get("next"))
   const redirecting = useGuestOnly(next)
   const [email, setEmail] = useState("")
   const [pw, setPw] = useState("")
@@ -26,7 +28,7 @@ export default function LoginForm() {
     } catch (e) {
       // Correct credentials, e-mail not yet confirmed → the API re-sent a code.
       if (e.code === "auth/unverified") { router.push(`/verifier-email?email=${encodeURIComponent(email.trim().toLowerCase())}&next=${encodeURIComponent(next)}`); return }
-      setErr(e.message); setLoading(false)
+      setErr(errorText(e)); setLoading(false)
     }
   }
   const submit = (e) => { e.preventDefault(); run(() => login({ email, password: pw })) }
@@ -34,11 +36,12 @@ export default function LoginForm() {
 
   return (
     <AuthLayout
-      title="Bon retour"
+      title="Content de vous revoir"
       subtitle="Connectez-vous pour gérer vos rendez-vous et votre fidélité."
       footer={<>Pas encore de compte ? <Link href={next !== "/compte" ? `/inscription?next=${encodeURIComponent(next)}` : "/inscription"} style={linkStyle}>Créer un compte</Link></>}
     >
       <GoogleButton onClick={() => run(googleAuth)} loading={loading} />
+      <GoogleConsent />
       <Divider>ou</Divider>
       <form onSubmit={submit}>
         <ErrorMsg>{err}</ErrorMsg>

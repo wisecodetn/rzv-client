@@ -1,0 +1,315 @@
+/* Loaded with its component (imported there), not on every page. */
+/* ── /assistant — the assistant's own page ───────────────────────────────── */
+.ai-hero {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 34px;
+  align-items: center;
+  padding: 34px 36px;
+  border-radius: 24px;
+  background: var(--inverse-bg);
+  border: 1px solid var(--inverse-line);
+  color: #ffffff;
+  overflow: hidden;
+}
+.ai-hero-face {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-hero-face .rzv-assist-face {
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.08), 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+/* The same slow pulse as the launcher button, but it keeps breathing. */
+.ai-hero-ring {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  animation: ai-breathe 3.2s ease-in-out infinite;
+}
+@keyframes ai-breathe {
+  0%, 100% { transform: scale(0.94); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 0.25; }
+}
+.ai-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+.ai-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+}
+.ai-status.is-on::before {
+  background: #7fce8b;
+  box-shadow: 0 0 0 3px rgba(127, 206, 139, 0.2);
+}
+.ai-hero-title {
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 14px 0 0;
+}
+.ai-hero-sub {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 12px 0 0;
+  max-width: 600px;
+}
+.ai-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  margin-top: 22px;
+}
+.ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 22px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.ai-hero-fine {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.62);
+}
+.ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.ai-card,
+.ai-limit,
+.ai-step,
+.ai-data {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+}
+.ai-card-icon {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-soft);
+  color: var(--gold-dark);
+}
+.ai-card-title {
+  font-weight: 800;
+  font-size: 14.5px;
+  color: var(--ink);
+}
+.ai-card .ai-card-title {
+  margin-top: 12px;
+}
+.ai-card-text {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.ai-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ai-example {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.ai-example:hover {
+  border-color: var(--accent-line);
+  transform: translateY(-1px);
+}
+.ai-example-mark {
+  color: var(--gold-dark);
+  font-size: 16px;
+  line-height: 0;
+}
+.ai-limits {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+.ai-limit {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 20px;
+}
+.ai-limit-icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--red-soft);
+  color: var(--red);
+}
+.ai-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  counter-reset: none;
+}
+.ai-step-n {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-weight: 800;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+.ai-data {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.ai-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-faq-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.ai-faq-item summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 18px;
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+.ai-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+.ai-faq-item summary::after {
+  content: "+";
+  margin-left: auto;
+  color: var(--gold);
+  font-size: 16px;
+}
+.ai-faq-item[open] summary::after {
+  content: "−";
+}
+.ai-faq-item p {
+  margin: 0;
+  padding: 0 18px 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted-2);
+}
+.ai-credit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 30px;
+  margin-top: 48px;
+  padding: 28px 30px;
+  border-radius: 20px;
+  background: var(--inverse-bg);
+  border: 1px solid var(--inverse-line);
+  color: #ffffff;
+}
+.ai-credit-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+.ai-credit-name {
+  font-size: 28px;
+  margin-top: 4px;
+}
+.ai-credit-text {
+  margin: 8px 0 0;
+  max-width: 560px;
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.8);
+}
+@media (max-width: 720px) {
+  .ai-hero {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    padding: 28px 20px;
+    gap: 18px;
+  }
+  .ai-hero-cta {
+    justify-content: center;
+  }
+  .ai-hero-title {
+    font-size: 25px;
+  }
+  .ai-limits {
+    grid-template-columns: 1fr;
+  }
+  .ai-credit {
+    padding: 24px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-hero-ring,
+  .ai-hero-face .rzv-assist-bob {
+    animation: none;
+  }
+}
+
+/* Visually hidden, still read by screen readers. */

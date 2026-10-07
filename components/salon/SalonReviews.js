@@ -20,27 +20,31 @@ export default function SalonReviews({ ratings, reviews = [] }) {
 
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, padding: 18 }}>
-      <div style={{ display: "flex", gap: 18, borderBottom: "1px solid var(--line-soft)", marginBottom: 14 }}>
-        <Tab active={tab === "note"} onClick={() => setTab("note")}>
+      <div role="tablist" aria-label="Avis des clientes" style={{ display: "flex", gap: 18, borderBottom: "1px solid var(--line-soft)", marginBottom: 14 }}>
+        <Tab id="note" active={tab === "note"} onClick={() => setTab("note")}>
           Note globale
         </Tab>
-        <Tab active={tab === "avis"} onClick={() => setTab("avis")}>
+        <Tab id="avis" active={tab === "avis"} onClick={() => setTab("avis")}>
           Avis ({count})
         </Tab>
       </div>
 
+      {/* Both panels are always in the HTML (the inactive one is just hidden):
+          the review texts used to exist only after a click, so search engines
+          never saw what clients wrote. */}
       {count === 0 ? (
         <Empty>Aucun avis pour le moment.</Empty>
-      ) : tab === "note" ? (
-        <div>
+      ) : (
+        <>
+        <div role="tabpanel" id="panel-note" aria-labelledby="tab-note" hidden={tab !== "note"}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 14 }}>
             <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1 }}>{fr(ratings.overall)}</div>
             <div>
-              <div style={{ color: "var(--amber)", fontSize: 13, letterSpacing: 2 }}>
+              <div role="img" aria-label={`${fr(ratings.overall)} sur 5`} style={{ color: "var(--amber)", fontSize: 13, letterSpacing: 2 }}>
                 {stars(Math.round(ratings.overall ?? 0))}
               </div>
               <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
-                {count} avis vérifié{count > 1 ? "s" : ""}
+                {count} avis
               </div>
             </div>
           </div>
@@ -62,13 +66,12 @@ export default function SalonReviews({ ratings, reviews = [] }) {
             <div style={{ fontSize: 12, color: "var(--muted)" }}>Détail par critère indisponible sur ces avis.</div>
           )}
         </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 330, overflowY: "auto" }}>
+        <div role="tabpanel" id="panel-avis" aria-labelledby="tab-avis" hidden={tab !== "avis"} style={{ flexDirection: "column", gap: 10, maxHeight: 330, overflowY: "auto", display: tab === "avis" ? "flex" : "none" }}>
           {reviews.map((rv, i) => (
             <div key={rv.id ?? i} style={{ borderBottom: i < reviews.length - 1 ? "1px solid var(--line-soft)" : "none", paddingBottom: 10 }}>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                 <div style={{ fontWeight: 800, fontSize: 12.5 }}>{rv.n}</div>
-                <div style={{ fontSize: 11, color: "var(--amber)", letterSpacing: 1.5 }}>{stars(rv.starsNum)}</div>
+                <div role="img" aria-label={`${rv.starsNum} sur 5`} style={{ fontSize: 11, color: "var(--amber)", letterSpacing: 1.5 }}>{stars(rv.starsNum)}</div>
                 <div style={{ flex: 1 }} />
                 <div style={{ fontSize: 11, color: "var(--muted)" }}>{rv.date}</div>
               </div>
@@ -76,15 +79,20 @@ export default function SalonReviews({ ratings, reviews = [] }) {
             </div>
           ))}
         </div>
+        </>
       )}
     </div>
   )
 }
 
-function Tab({ active, onClick, children }) {
+function Tab({ id, active, onClick, children }) {
   return (
     <button
       type="button"
+      role="tab"
+      id={`tab-${id}`}
+      aria-selected={active}
+      aria-controls={`panel-${id}`}
       onClick={onClick}
       style={{
         background: "transparent",

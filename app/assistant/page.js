@@ -1,17 +1,18 @@
 import Link from "next/link"
 import PageShell from "@/components/PageShell"
 import JsonLd from "@/components/JsonLd"
-import { AssistantAvatar } from "@/components/assistant/AssistantBubble"
+import AssistantAvatar from "@/components/assistant/AssistantAvatar"
 import AskAssistant from "@/components/assistant/AskAssistant"
 import { getAssistantStatus } from "@/lib/assistant"
 import { faqLd } from "@/lib/jsonld"
+import { pageMeta } from "@/lib/meta"
+import "./assistant-page.css"
 
-export const metadata = {
+export const metadata = pageMeta({
   title: "Assistant IA — votre assistant beauté",
-  description:
-    "L’assistant Rezervy répond à vos questions 24h/24 : trouver un salon, connaître les prix, les horaires et les créneaux libres. Ce qu’il sait faire, ses limites et vos données.",
-  alternates: { canonical: "/assistant" },
-}
+  description: "L’assistant Rezervy répond à vos questions 24h/24 : trouver un salon, connaître les prix, les horaires et les créneaux libres. Ce qu’il sait faire, ses limites et vos données.",
+  path: "/assistant",
+})
 
 /* Every claim on this page matches what the assistant actually does
    (server/src/assistant): read-only tools over the public salon data and the

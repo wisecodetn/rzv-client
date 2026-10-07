@@ -4,6 +4,8 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "../AuthProvider"
 import { AuthLayout, Field, SubmitBtn, ErrorMsg, SuccessMsg, linkStyle } from "./AuthUI"
+import { safeNext } from "@/lib/safe-next"
+import { errorText } from "@/lib/errors"
 
 /** Registration confirmation: enter the 6-digit code emailed at signup. On
  *  success the session starts and we land on /compte. */
@@ -27,7 +29,7 @@ export default function VerifyEmailForm() {
       await resendVerification(em)
       setInfo(`Nouveau code envoyé à ${em} — valable 10 minutes.`)
     } catch (ex) {
-      setErr(ex.message || "Une erreur est survenue.")
+      setErr(errorText(ex, "Une erreur est survenue."))
     } finally {
       setSending(false)
     }
@@ -42,12 +44,12 @@ export default function VerifyEmailForm() {
     setLoading(true)
     try {
       const u = await verifyEmail({ email: em, code: code.trim() })
-      const dest = sp.get("next") || "/compte"
+      const dest = safeNext(sp.get("next"))
       // Registration now always collects a number, but an account created
       // before that rule can still be verifying today.
       router.push(u?.needsPhone ? `/telephone?next=${encodeURIComponent(dest)}` : dest)
     } catch (ex) {
-      setErr(ex.message || "Code invalide ou expiré.")
+      setErr(errorText(ex, "Code invalide ou expiré."))
     } finally {
       setLoading(false)
     }

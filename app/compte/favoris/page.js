@@ -1,4 +1,4 @@
-import { Favoris } from "@/components/account/sections"
+import { Favoris } from "@/components/account/Favoris"
 
 export const metadata = {
   title: "Mes favoris",

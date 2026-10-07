@@ -1,28 +1,54 @@
 import { notFound } from "next/navigation"
 import CityScreen from "@/components/CityScreen"
-import { getIndexedCategories, getCities, getCategory, getCity, salonsFor } from "@/lib/data"
+import { getIndexedCategories, getCategory, getCity, getCoverage, pairOf } from "@/lib/data"
 import { SITE } from "@/lib/site"
+import { de } from "@/lib/fr"
+import { pageMeta } from "@/lib/meta"
 
+// Only (category, city) pairs that have salons are built ahead. Any other valid
+// pair still renders on demand (and says so), but is kept out of the index.
 export async function generateStaticParams() {
-  const [cats, cities] = await Promise.all([getIndexedCategories(), getCities()])
-  return cats.flatMap((c) => cities.map((city) => ({ category: c.slug, city: city.slug })))
+  const [cats, { pairs }] = await Promise.all([getIndexedCategories(), getCoverage()])
+  const indexed = new Set(cats.map((c) => c.slug))
+  return pairs.filter((p) => indexed.has(p.category)).map((p) => ({ category: p.category, city: p.city }))
 }
 
 export async function generateMetadata({ params }) {
   const { category, city } = await params
   const [cat, ct] = await Promise.all([getCategory(category), getCity(city)])
   if (!cat || !ct) return {}
-  const n = (await salonsFor(cat.slug, ct.slug)).length
-  const title = `${cat.name} à ${ct.name} — ${n || "les meilleurs"} salons, prix & avis`
-  const description = `Réservez un salon de ${cat.lower} à ${ct.name} : comparez ${n || "plusieurs"} établissements, prix moyens, avis vérifiés et créneaux disponibles. Confirmation par SMS, annulation gratuite 24h avant.`
-  return {
+  const pair = await pairOf(cat.slug, ct.slug)
+  const n = pair?.count ?? 0
+  const salons = `${n} salon${n > 1 ? "s" : ""}`
+  const canonical = `/${cat.slug}/${ct.slug}`
+
+  // No salon here (yet): a real page for the visitor, but nothing to rank.
+  if (!n) {
+    return pageMeta({
+      ownImage: true, // this route has its own opengraph-image
+      title: `${cat.name} à ${ct.name}`,
+      description: `Aucun salon ${de(cat.lower)} n'est encore référencé à ${ct.name} sur Rezervy.`,
+      path: canonical,
+      robots: { index: false, follow: true },
+    })
+  }
+
+  const title = `${cat.name} à ${ct.name} — ${salons}, prix & avis`
+  const description = [
+    `Réservez un salon ${de(cat.lower)} à ${ct.name} : ${n > 1 ? `comparez ${salons}` : "1 salon disponible"}`,
+    pair.from != null ? `, prestations dès ${String(pair.from).replace(".", ",")} TND` : "",
+    pair.rating != null && pair.reviews ? `, note moyenne ${pair.rating.toFixed(1).replace(".", ",")}/5` : "",
+    ". Confirmation par e-mail, annulation gratuite jusqu'au début du rendez-vous.",
+  ].join("")
+  return pageMeta({
+    ownImage: true, // this route has its own opengraph-image
     title,
     description,
-    alternates: { canonical: `/${cat.slug}/${ct.slug}` },
+    path: canonical,
+    // Same rule as /[category]: third-level prestations are not indexed.
+    ...(cat.depth > 1 ? { robots: { index: false, follow: true } } : {}),
     keywords: [`${cat.lower} ${ct.name}`, `salon ${cat.lower} ${ct.name}`, `réserver ${cat.lower} ${ct.name}`, "réservation en ligne"],
-    openGraph: { type: "website", locale: SITE.locale, siteName: SITE.name, title: `${title} · ${SITE.name}`, description, url: `${SITE.url}/${cat.slug}/${ct.slug}` },
-    twitter: { card: "summary_large_image", title: `${title} · ${SITE.name}`, description },
-  }
+  })
 }
 
 export default async function CityPage({ params }) {

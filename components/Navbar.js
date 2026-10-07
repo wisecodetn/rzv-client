@@ -57,7 +57,7 @@ export default function Navbar() {
     <header ref={ref} style={{ background: "var(--header-bg)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", borderBottom: "1px solid var(--line)", position: "sticky", top: 0, zIndex: 60 }}>
       <div className="wrap" style={{ padding: "13px 24px", display: "flex", alignItems: "center", gap: 18 }}>
         {/* Mobile menu — icon only, to the left of the logo */}
-        <button className="nav-menu-btn" onClick={() => { setAcctOpen(false); setMenu((m) => !m) }} aria-label="Catégories" style={{ alignItems: "center", justifyContent: "center", background: menu ? "rgba(0,0,0,0.1)" : "transparent", border: "1px solid var(--line-2)", borderRadius: 10, width: 38, height: 38, color: menu ? "var(--gold-dark)" : "var(--ink)", flex: "none", padding: 0 }}>
+        <button className="nav-menu-btn" onClick={() => { setAcctOpen(false); setMenu((m) => !m) }} aria-label="Catégories" aria-expanded={menu} aria-controls="nav-mega" style={{ alignItems: "center", justifyContent: "center", background: menu ? "rgba(0,0,0,0.1)" : "transparent", border: "1px solid var(--line-2)", borderRadius: 10, width: 38, height: 38, color: menu ? "var(--gold-dark)" : "var(--ink)", flex: "none", padding: 0 }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16 M4 12h16 M4 18h16" /></svg>
         </button>
 
@@ -66,12 +66,12 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop category nav */}
-        <nav className="nav-cats" style={{ display: "flex", alignItems: "center", gap: 20, marginLeft: 8 }}>
+        <nav aria-label="Catégories" className="nav-cats" style={{ display: "flex", alignItems: "center", gap: 20, marginLeft: 8 }}>
           {PRIMARY.map((c) => (
-            <Link key={c.slug} href={`/${c.slug}`} title={`${c.name} en Tunisie`} className="nav-underline" style={catLink(active(c.slug))}>{c.name}</Link>
+            <Link key={c.slug} href={`/${c.slug}`} title={`${c.name} en Tunisie`} aria-current={path === `/${c.slug}` ? "page" : undefined} className="nav-underline" style={catLink(active(c.slug))}>{c.name}</Link>
           ))}
-          <button onClick={() => { setAcctOpen(false); setMenu((m) => !m) }} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", fontSize: 13.5, fontWeight: 700, color: menu ? "var(--gold-dark)" : "var(--muted)" }}>
-            Voir plus <span style={{ fontSize: 10, transform: menu ? "rotate(180deg)" : "none", transition: "transform .15s" }}>▾</span>
+          <button type="button" aria-expanded={menu} aria-controls="nav-mega" onClick={() => { setAcctOpen(false); setMenu((m) => !m) }} style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "transparent", border: "none", fontSize: 13.5, fontWeight: 700, color: menu ? "var(--gold-dark)" : "var(--muted)" }}>
+            Voir plus <span aria-hidden="true" style={{ fontSize: 10, transform: menu ? "rotate(180deg)" : "none", transition: "transform .15s" }}>▾</span>
           </button>
         </nav>
 
@@ -88,7 +88,7 @@ export default function Navbar() {
         {/* User / login */}
         <div style={{ position: "relative", flex: "none" }}>
           {user ? (
-            <button onClick={() => { setMenu(false); setAcctOpen((u) => !u) }} aria-label="Mon compte" style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gold)", color: "var(--on-gold)", border: "none", fontSize: 12.5, fontWeight: 800 }}>{user.initials}</button>
+            <button type="button" onClick={() => { setMenu(false); setAcctOpen((u) => !u) }} aria-label="Mon compte" aria-expanded={acctOpen} aria-haspopup="true" style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--gold)", color: "var(--on-gold)", border: "none", fontSize: 12.5, fontWeight: 800 }}>{user.initials}</button>
           ) : (
             <Link href="/connexion" className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 999, padding: "9px 18px", fontSize: 12.5, fontWeight: 800 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: "none" }} className="login-icon-mobile">
@@ -107,7 +107,7 @@ export default function Navbar() {
               {ACCT_SECTIONS.map((s) => {
                 const on = s.href === "/compte" ? path === "/compte" : path.startsWith(s.href)
                 return (
-                  <Link key={s.href} href={s.href} title={s.l} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", fontSize: 13, color: on ? "var(--gold-dark)" : "var(--ink)", fontWeight: on ? 800 : 600, background: on ? "rgba(0,0,0,0.08)" : "transparent" }}>
+                  <Link key={s.href} href={s.href} aria-current={on ? "page" : undefined} className="row-hover" style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", fontSize: 13, color: on ? "var(--gold-dark)" : "var(--ink)", fontWeight: on ? 800 : 600, background: on ? "rgba(0,0,0,0.08)" : "transparent" }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none", opacity: on ? 1 : 0.65 }}><path d={ACCT_ICON[s.icon]} /></svg>
                     {s.l}
                   </Link>
@@ -125,7 +125,7 @@ export default function Navbar() {
           <div onClick={() => setMenu(false)} style={{ position: "fixed", inset: "0 0 0 0", top: 0, background: "transparent", zIndex: 1 }} />
           {/* maxHeight + internal scroll: on mobile the menu is taller than the
               viewport — without this the bottom is unreachable (header is sticky). */}
-          <div className="autocomplete-scroll" style={{ position: "absolute", left: 0, right: 0, top: "100%", maxHeight: "calc(100dvh - 70px)", overflowY: "auto", overscrollBehavior: "contain", background: "var(--card)", borderBottom: "1px solid var(--line-2)", boxShadow: "0 22px 50px var(--shadow)", zIndex: 2 }}>
+          <div id="nav-mega" className="autocomplete-scroll" style={{ position: "absolute", left: 0, right: 0, top: "100%", maxHeight: "calc(100dvh - 70px)", overflowY: "auto", overscrollBehavior: "contain", background: "var(--card)", borderBottom: "1px solid var(--line-2)", boxShadow: "0 22px 50px var(--shadow)", zIndex: 2 }}>
             <div className="wrap" style={{ padding: "26px 24px 30px" }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(190px,1fr))", gap: 22 }}>
                 {categories.map((c) => (
@@ -145,7 +145,7 @@ export default function Navbar() {
                 ))}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--line)", flexWrap: "wrap" }}>
-                <span style={{ fontSize: 12.5, color: "var(--muted)" }}>Rezervy couvre 24 gouvernorats — Tunis, Sfax, Sousse, Nabeul, Bizerte…</span>
+                <span style={{ fontSize: 12.5, color: "var(--muted)" }}>De nouveaux salons rejoignent Rezervy chaque mois.</span>
                 <div style={{ flex: 1 }} />
                 <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 800 }}>Explorer tous les salons</Link>
               </div>

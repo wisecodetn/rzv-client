@@ -1,4 +1,4 @@
-import { Profil } from "@/components/account/sections"
+import { Profil } from "@/components/account/Profil"
 
 export const metadata = {
   title: "Mon profil",

@@ -27,7 +27,8 @@ export default function ServiceGroups({ slug, groups }) {
 function Group({ slug, group }) {
   const [open, setOpen] = useState(false)
   const hidden = group.rows.length - VISIBLE
-  const rows = open ? group.rows : group.rows.slice(0, VISIBLE)
+  // Every service is in the HTML; past the first few they are only hidden
+  // until "Voir plus" — a salon's full price list is what people search for.
 
   return (
     <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden" }}>
@@ -51,11 +52,12 @@ function Group({ slug, group }) {
       </div>
       )}
 
-      {rows.map((sv) => (
+      {group.rows.map((sv, i) => (
         <div
           key={sv.id ?? sv.n}
           className="row-hover"
-          style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 18px", borderBottom: "1px solid var(--line-soft)" }}
+          hidden={!open && i >= VISIBLE}
+          style={{ display: !open && i >= VISIBLE ? "none" : "flex", alignItems: "center", gap: 12, padding: "13px 18px", borderBottom: "1px solid var(--line-soft)" }}
         >
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 13.5, display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>

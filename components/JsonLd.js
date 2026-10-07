@@ -1,3 +1,5 @@
+import { serializeJsonLd } from "@/lib/jsonld"
+
 /** Renders one or more JSON-LD documents into the page head/body. */
 export default function JsonLd({ data }) {
   const items = Array.isArray(data) ? data : [data]
@@ -8,7 +10,7 @@ export default function JsonLd({ data }) {
           key={i}
           type="application/ld+json"
           // JSON.stringify drops the `undefined` keys the builders leave in place.
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(d) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(d) }}
         />
       ))}
     </>

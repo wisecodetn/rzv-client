@@ -14,6 +14,12 @@ export function parseSearch(sp) {
   }
 }
 
+/** ?page=N of the free search (1 when absent or nonsense). */
+export const parsePageParam = (sp) => {
+  const n = parseInt(sp?.page, 10)
+  return Number.isInteger(n) && n > 0 ? n : 1
+}
+
 function buildQs(p) {
   const s = new URLSearchParams()
   if (p.q) s.set("q", p.q)
@@ -33,8 +39,15 @@ export default async function RechercheResults({ params, page }) {
     getCategories(),
   ])
   const qs = buildQs(params)
-  const suffix = qs ? `?${qs}` : ""
-  const href = (n) => (n === 1 ? `/recherche${suffix}` : `/recherche/page-${n}${suffix}`)
+  // The free search is one dynamic page; its pages are a query parameter. A
+  // /recherche/page-N path shares a route with the pre-rendered city pages,
+  // where reading the query is not allowed — page 2 used to crash there.
+  const href = (n) => {
+    const s = new URLSearchParams(qs)
+    if (n > 1) s.set("page", String(n))
+    const out = s.toString()
+    return `/recherche${out ? `?${out}` : ""}`
+  }
 
   const catName = catNode?.name || null
   const cityName = cityObj?.name || null
@@ -49,7 +62,7 @@ export default async function RechercheResults({ params, page }) {
 
   return (
     <div className="wrap" style={{ padding: "28px 24px 60px" }}>
-      <nav style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center" }}>
+      <nav aria-label="Fil d’Ariane" style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center" }}>
         <Link href="/" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Accueil</Link>
         <span>/</span>
         <span style={{ fontWeight: 700, color: "var(--ink)" }}>Recherche</span>

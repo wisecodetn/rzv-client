@@ -3,7 +3,9 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "../AuthProvider"
-import { AuthLayout, Field, PasswordField, SubmitBtn, Divider, GoogleButton, ErrorMsg, linkStyle, useGuestOnly } from "./AuthUI"
+import { AuthLayout, Field, PasswordField, SubmitBtn, Divider, GoogleButton, GoogleConsent, TermsLinks, ErrorMsg, linkStyle, useGuestOnly } from "./AuthUI"
+import { safeNext } from "@/lib/safe-next"
+import { errorText } from "@/lib/errors"
 
 export default function RegisterForm() {
   const { register, googleAuth } = useAuth()
@@ -20,7 +22,7 @@ export default function RegisterForm() {
   // `next` survives the whole signup chain (register → e-mail verification) so a
   // flow like a pending booking isn't lost. Read via location to avoid Suspense.
   const nextParam = () => {
-    try { return new URLSearchParams(window.location.search).get("next") || "/compte" } catch { return "/compte" }
+    try { return safeNext(new URLSearchParams(window.location.search).get("next")) } catch { return "/compte" }
   }
   // A Google account arrives with no phone; the salon cannot work without one,
   // so the flow goes through /telephone before anything else.
@@ -30,7 +32,7 @@ export default function RegisterForm() {
       const u = await fn()
       const dest = nextParam()
       router.push(u?.needsPhone ? `/telephone?next=${encodeURIComponent(dest)}` : dest)
-    } catch (e) { setErr(e.message); setLoading(false) }
+    } catch (e) { setErr(errorText(e)); setLoading(false) }
   }
   const submit = async (e) => {
     e.preventDefault()
@@ -41,7 +43,7 @@ export default function RegisterForm() {
       const r = await register({ name, email, phone, password: pw })
       router.push(`/verifier-email?email=${encodeURIComponent(r?.email || email.trim().toLowerCase())}&next=${encodeURIComponent(nextParam())}`)
     } catch (ex) {
-      setErr(ex.message)
+      setErr(errorText(ex))
       setLoading(false)
     }
   }
@@ -54,6 +56,7 @@ export default function RegisterForm() {
       footer={<>Déjà inscrit·e ? <Link href="/connexion" style={linkStyle}>Se connecter</Link></>}
     >
       <GoogleButton onClick={() => run(googleAuth)} loading={loading} label="S'inscrire avec Google" />
+      <GoogleConsent />
       <Divider>ou</Divider>
       <form onSubmit={submit}>
         <ErrorMsg>{err}</ErrorMsg>
@@ -61,14 +64,16 @@ export default function RegisterForm() {
         <Field label="E-mail" type="email" value={email} onChange={setEmail} placeholder="vous@exemple.tn" autoComplete="email" required />
         {/* Required: it is how the salon reaches you about your appointment,
             and the key of your client record across salons. */}
-        <Field label="Téléphone" type="tel" value={phone} onChange={setPhone} placeholder="+216 52 118 400" autoComplete="tel" required />
+        <Field label="Téléphone" type="tel" value={phone} onChange={setPhone} placeholder="+216 …" autoComplete="tel" required />
         <div style={{ fontSize: 11.5, color: "var(--faint)", marginTop: -10, marginBottom: 12 }}>
           Le salon en a besoin pour vous joindre en cas d’imprévu.
         </div>
         <PasswordField label="Mot de passe" value={pw} onChange={setPw} placeholder="Au moins 6 caractères" autoComplete="new-password" required />
+        {/* The rule stays visible while typing (a placeholder disappears). */}
+        <div style={{ fontSize: 11.5, color: "var(--faint)", marginTop: -10, marginBottom: 12 }}>Au moins 6 caractères.</div>
         <label style={{ display: "flex", alignItems: "flex-start", gap: 9, fontSize: 12.5, color: "var(--muted-2)", lineHeight: 1.5, margin: "2px 0 16px", cursor: "pointer" }}>
           <input type="checkbox" checked={accept} onChange={(e) => setAccept(e.target.checked)} style={{ marginTop: 2, accentColor: "var(--gold)", width: 16, height: 16, flex: "none" }} />
-          <span>J'accepte les <a href="#" style={linkStyle}>conditions d'utilisation</a> et la <a href="#" style={linkStyle}>politique de confidentialité</a>.</span>
+          <span>J'accepte <TermsLinks />.</span>
         </label>
         <SubmitBtn loading={loading}>Créer mon compte</SubmitBtn>
       </form>

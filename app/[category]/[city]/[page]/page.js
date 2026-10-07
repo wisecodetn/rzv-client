@@ -1,22 +1,24 @@
 import { notFound, redirect } from "next/navigation"
 import CityScreen from "@/components/CityScreen"
-import { getIndexedCategories, getCities, getCategory, getCity, querySalons } from "@/lib/data"
+import { getIndexedCategories, getCategory, getCity, querySalons, getCoverage } from "@/lib/data"
 import { SITE } from "@/lib/site"
+import { pageMeta } from "@/lib/meta"
 
 const parsePage = (seg) => {
-  const m = /^page-(\d+)$/.exec(seg || "")
+  const m = /^page-([1-9]\d*)$/.exec(seg || "")
   return m ? parseInt(m[1], 10) : null
 }
 
-// Pre-render pages 2..N for each category/city so every salon is on a crawlable URL.
+// Pre-render pages 2..N for each category/city so every salon is on a crawlable
+// URL — from one coverage read, not one API call per (category, city) pair.
 export async function generateStaticParams() {
-  const [cats, cities] = await Promise.all([getIndexedCategories(), getCities()])
+  const [cats, { pairs, pageSize }] = await Promise.all([getIndexedCategories(), getCoverage()])
+  const indexed = new Set(cats.map((c) => c.slug))
   const out = []
-  for (const c of cats) {
-    for (const city of cities) {
-      const { totalPages } = await querySalons({ category: c.slug, city: city.slug })
-      for (let p = 2; p <= totalPages; p++) out.push({ category: c.slug, city: city.slug, page: `page-${p}` })
-    }
+  for (const p of pairs) {
+    if (!indexed.has(p.category)) continue
+    const totalPages = Math.ceil(p.count / pageSize)
+    for (let n = 2; n <= totalPages; n++) out.push({ category: p.category, city: p.city, page: `page-${n}` })
   }
   return out
 }
@@ -26,15 +28,12 @@ export async function generateMetadata({ params }) {
   const [cat, ct] = await Promise.all([getCategory(category), getCity(city)])
   const n = parsePage(page)
   if (!cat || !ct || !n || n < 2) return {}
-  const title = `${cat.name} à ${ct.name} — page ${n} sur les salons`
-  const url = `${SITE.url}/${cat.slug}/${ct.slug}/page-${n}`
-  return {
-    title,
-    description: `${cat.name} à ${ct.name} : page ${n} des salons à réserver en ligne. Prix, avis vérifiés et créneaux disponibles.`,
-    alternates: { canonical: `/${cat.slug}/${ct.slug}/page-${n}` },
-    robots: { index: true, follow: true },
-    openGraph: { title: `${title} · ${SITE.name}`, url },
-  }
+  return pageMeta({
+    ownImage: true, // this route has its own opengraph-image
+    title: `${cat.name} à ${ct.name} — page ${n}`,
+    description: `${cat.name} à ${ct.name} : page ${n} des salons à réserver en ligne — prix, avis et créneaux disponibles.`,
+    path: `/${cat.slug}/${ct.slug}/page-${n}`,
+  })
 }
 
 export default async function CityPagedPage({ params }) {

@@ -9,3 +9,6 @@ npm-debug.log
 .vscode
 .idea
 *.md
+tests
+scripts
+eslint.config.mjs

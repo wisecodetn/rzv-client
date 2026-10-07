@@ -35,12 +35,12 @@ export default function CompteLayout({ children }) {
         <div style={{ width: 54, height: 54, borderRadius: "50%", background: "var(--gold)", color: "var(--on-gold)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, fontWeight: 800, flex: "none" }}>{user.initials}</div>
         <div style={{ minWidth: 0, flex: 1 }}>
           <div className="serif" style={{ fontSize: 23 }}>{user.name}</div>
-          <div style={{ fontSize: 12.5, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis" }}>{user.email || user.phone} · cliente depuis janvier 2026</div>
+          <div style={{ fontSize: 12.5, color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis" }}>{user.email || user.phone}</div>
         </div>
       </div>
 
       <div className="account-layout" style={{ marginTop: 24 }}>
-        <nav className="account-nav">
+        <nav aria-label="Mon compte" className="account-nav">
           <div className="account-navlist">
             {SECTIONS.map((s) => {
               const on = s.href === "/compte" ? pathname === "/compte" : pathname.startsWith(s.href)

@@ -1,4 +1,4 @@
-import { Rendezvous } from "@/components/account/sections"
+import { Rendezvous } from "@/components/account/Rendezvous"
 
 export const metadata = {
   title: "Mes rendez-vous",

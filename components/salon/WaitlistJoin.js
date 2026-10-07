@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { errorText } from "@/lib/errors"
 
 /* Join the salon's waiting list instead of picking a créneau.
 
@@ -85,7 +86,7 @@ export default function WaitlistJoin({ salon, svc, staffId, date, user, authRead
       if (!res.ok) throw new Error(d?.message || "Impossible de rejoindre la liste d'attente.")
       setJoined(d)
     } catch (e) {
-      setErr(e.message)
+      setErr(errorText(e))
     } finally {
       setBusy(false)
     }
@@ -141,7 +142,7 @@ export default function WaitlistJoin({ salon, svc, staffId, date, user, authRead
       <div style={{ ...lbl, marginTop: 14 }}>Quand ?</div>
       <div style={{ display: "flex", gap: 7, marginTop: 8, flexWrap: "wrap" }}>
         {WHEN.map((w) => (
-          <button key={w.id} onClick={() => setWhen(w.id)} style={chip(when === w.id)}>
+          <button type="button" key={w.id} aria-pressed={when === w.id} onClick={() => setWhen(w.id)} style={chip(when === w.id)}>
             {w.id === "specific" && date ? <span style={{ textTransform: "capitalize" }}>{`Le ${dateLabel}`}</span> : w.label}
           </button>
         ))}
@@ -153,14 +154,15 @@ export default function WaitlistJoin({ salon, svc, staffId, date, user, authRead
       <div style={{ ...lbl, marginTop: 14 }}>À quel moment ?</div>
       <div style={{ display: "flex", gap: 7, marginTop: 8, flexWrap: "wrap" }}>
         {MOMENT.map((m) => (
-          <button key={m.id} onClick={() => setMoment(m.id)} style={chip(moment === m.id)}>{m.label}</button>
+          <button type="button" key={m.id} aria-pressed={moment === m.id} onClick={() => setMoment(m.id)} style={chip(moment === m.id)}>{m.label}</button>
         ))}
       </div>
 
-      <div style={{ ...lbl, marginTop: 14 }}>
+      <label htmlFor="wl-note" style={{ ...lbl, display: "block", marginTop: 14 }}>
         Message au salon <span style={{ textTransform: "none", fontWeight: 600, letterSpacing: 0 }}>(optionnel)</span>
-      </div>
+      </label>
       <textarea
+        id="wl-note"
         value={note}
         onChange={(e) => setNote(e.target.value.slice(0, 300))}
         rows={2}
@@ -184,10 +186,10 @@ export default function WaitlistJoin({ salon, svc, staffId, date, user, authRead
           </button>
         )}
         {!full && (
-          <span onClick={() => setOpen(false)} style={{ fontSize: 12, fontWeight: 700, color: "var(--muted)", cursor: "pointer" }}>Annuler</span>
+          <button type="button" onClick={() => setOpen(false)} style={{ background: "transparent", border: "none", padding: 0, font: "inherit", fontSize: 12, fontWeight: 700, color: "var(--muted)", cursor: "pointer" }}>Annuler</button>
         )}
       </div>
-      {err && <div style={{ fontSize: 12, color: "var(--red)", fontWeight: 700, marginTop: 8 }}>{err}</div>}
+      {err && <div role="alert" style={{ fontSize: 12, color: "var(--red)", fontWeight: 700, marginTop: 8 }}>{err}</div>}
     </div>
   )
 }

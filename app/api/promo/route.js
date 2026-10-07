@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { forwardedFor, readBody, rejectCrossSite, upstreamSignal } from "@/lib/bff"
 
 /** Promo-code check for the booking page. Same-origin so the customer session
  *  cookie reaches the API (per-client rules apply once signed in); the discount
@@ -6,14 +7,18 @@ import { NextResponse } from "next/server"
 const BASE = (process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001").replace(/\/$/, "")
 
 export async function POST(req) {
-  const body = await req.text()
+  const blocked = rejectCrossSite(req)
+  if (blocked) return blocked
+  const { text: body, error } = await readBody(req)
+  if (error) return error
   let res
   try {
     res = await fetch(`${BASE}/public/promos/validate`, {
       method: "POST",
-      headers: { "content-type": "application/json", cookie: req.headers.get("cookie") || "" },
+      headers: { "content-type": "application/json", cookie: req.headers.get("cookie") || "", ...forwardedFor(req) },
       body,
       cache: "no-store",
+      signal: upstreamSignal(),
     })
   } catch {
     return NextResponse.json({ message: "Service momentanément indisponible.", code: "promo/api-down" }, { status: 503 })

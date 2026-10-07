@@ -1,5 +1,8 @@
 "use client"
 import { useState } from "react"
+import Link from "next/link"
+import { errorText } from "@/lib/errors"
+import { OPERATOR, telHref } from "@/lib/site"
 
 const field = {
   width: "100%", background: "var(--bg)", border: "1px solid var(--line-2)", borderRadius: 10,
@@ -28,7 +31,7 @@ export default function ContactCard() {
       if (!r.ok) throw new Error(d?.message || "Envoi impossible — réessayez dans un instant.")
       setSent(d)
     } catch (e2) {
-      setErr(e2.message)
+      setErr(errorText(e2))
     } finally {
       setBusy(false)
     }
@@ -42,7 +45,7 @@ export default function ContactCard() {
         </div>
         <div>
           <div style={{ fontWeight: 800, fontSize: 15, color: "var(--ink)" }}>Une autre question ?</div>
-          <div style={{ fontSize: 12, color: "var(--muted)" }}>Notre équipe vous répond sous 24h.</div>
+          <div style={{ fontSize: 12, color: "var(--muted)" }}>Notre équipe vous répond au plus vite.</div>
         </div>
       </div>
 
@@ -62,9 +65,9 @@ export default function ContactCard() {
         </div>
       ) : (
         <form onSubmit={submit} style={{ marginTop: 16 }}>
-          <input required placeholder="Votre nom" value={form.name} onChange={set("name")} style={field} />
-          <input required type="email" placeholder="Votre e-mail" value={form.email} onChange={set("email")} style={field} />
-          <textarea required minLength={10} placeholder="Votre message…" value={form.msg} onChange={set("msg")} rows={3} style={{ ...field, resize: "vertical", minHeight: 76, fontFamily: "inherit" }} />
+          <input required aria-label="Votre nom" autoComplete="name" placeholder="Votre nom" value={form.name} onChange={set("name")} style={field} />
+          <input required type="email" aria-label="Votre e-mail" autoComplete="email" placeholder="Votre e-mail" value={form.email} onChange={set("email")} style={field} />
+          <textarea required minLength={10} aria-label="Votre message" placeholder="Votre message…" value={form.msg} onChange={set("msg")} rows={3} style={{ ...field, resize: "vertical", minHeight: 76, fontFamily: "inherit" }} />
           <input
             type="text"
             name="website"
@@ -76,22 +79,26 @@ export default function ContactCard() {
             style={{ position: "absolute", left: -9999, width: 1, height: 1, opacity: 0 }}
           />
           {err && (
-            <div style={{ marginTop: 10, background: "var(--red-soft)", border: "1px solid var(--red-line)", borderRadius: 10, padding: "9px 11px", fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)" }}>
+            <div role="alert" style={{ marginTop: 10, background: "var(--red-soft)", border: "1px solid var(--red-line)", borderRadius: 10, padding: "9px 11px", fontSize: 12.5, fontWeight: 700, color: "var(--muted-2)" }}>
               {err}
             </div>
           )}
           <button type="submit" disabled={busy} className="btn-gold" style={{ width: "100%", marginTop: 12, border: "none", borderRadius: 10, padding: "12px", fontWeight: 800, fontSize: 13.5, color: "var(--on-gold)", opacity: busy ? 0.6 : 1, cursor: busy ? "default" : "pointer" }}>{busy ? "Envoi…" : "Envoyer le message"}</button>
+          <p style={{ fontSize: 11.5, color: "var(--muted)", lineHeight: 1.55, margin: "10px 0 0" }}>
+            Votre message et votre adresse servent uniquement à vous répondre.{" "}
+            <Link href="/confidentialite#conservation" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Vos données</Link>
+          </p>
         </form>
       )}
 
       <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 10 }}>
-        <a href="mailto:contact@rezervy.io" className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", display: "flex", gap: 9, alignItems: "center" }}>
+        <a href={`mailto:${OPERATOR.email}`} className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", display: "flex", gap: 9, alignItems: "center" }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m2 7 10 6 10-6" /></svg>
-          contact@rezervy.io
+          {OPERATOR.email}
         </a>
-        <a href="tel:+21671000000" className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", display: "flex", gap: 9, alignItems: "center" }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z" /></svg>
-          +216 71 000 000
+        <a href={telHref(OPERATOR.phone)} className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", display: "flex", gap: 9, alignItems: "center" }}>
+          <svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold-dark)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2z" /></svg>
+          {OPERATOR.phone} · {OPERATOR.hours.toLowerCase()}
         </a>
       </div>
     </div>

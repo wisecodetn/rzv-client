@@ -6,15 +6,19 @@ import FaqAccordion from "@/components/FaqAccordion"
 import ContactCard from "@/components/ContactCard"
 import JsonLd from "@/components/JsonLd"
 import { faqLd } from "@/lib/jsonld"
-import { getFeaturedSalons, getCategories, getCatalog, categoryCities, getPlatformReviews, HOW_STEPS } from "@/lib/data"
+import { getFeaturedSalons, getCategories, getCatalog, categoryCities, getPlatformReviews, getCoverage, HOW_STEPS } from "@/lib/data"
 import { getSiteContent } from "@/lib/site-content"
+import { getPlans, fromLabel } from "@/lib/plans"
 import { getPosts, catLabel, formatDate } from "@/lib/blog"
 import PostCover from "@/components/blog/PostCover"
 import Image from "next/image"
 import NewsletterModal from "@/components/newsletter/NewsletterModal"
+import { pageMeta } from "@/lib/meta"
+import { SITE } from "@/lib/site"
 
 export const metadata = {
-  alternates: { canonical: "/" },
+  ...pageMeta({ absoluteTitle: `${SITE.name} — ${SITE.tagline}`, description: SITE.description, path: "/" }),
+  keywords: ["réservation coiffeur Tunisie", "salon beauté Tunis", "barbier", "onglerie", "spa", "rendez-vous en ligne"],
 }
 
 const H2 = ({ children, sub }) => (
@@ -25,19 +29,30 @@ const H2 = ({ children, sub }) => (
 )
 
 export default async function Home() {
-  const [nearby, categories, catalog] = await Promise.all([getFeaturedSalons(4), getCategories(), getCatalog()])
+  // Everything independent is fetched at once — these used to be awaited one
+  // after another, each round-trip adding to every regeneration.
+  // Platform reviews = salons' testimonials about Rezervy, published by our
+  // team; the section disappears when there are none.
+  const [nearby, categories, catalog, posts, content, reviews, plans, coverage] = await Promise.all([
+    getFeaturedSalons(4),
+    getCategories(),
+    getCatalog(),
+    getPosts(),
+    getSiteContent(),
+    getPlatformReviews(3),
+    getPlans(),
+    getCoverage(),
+  ])
   const topCats = categories.slice(0, 4)
   // Cities that actually have a salon offering each category (max 10 each).
   const catCities = await Promise.all(topCats.map((c) => categoryCities(c.slug)))
-  const latestPosts = (await getPosts()).slice(0, 3)
-  const { hero, stats: STATS, faqs: FAQS } = await getSiteContent()
-  // Salons' testimonials about Rezervy, published by our team — the section
-  // disappears when there are none.
-  const reviews = await getPlatformReviews(3)
-  // Popular prestations: real sub-categories (2 per top category), each routable
-  // at /<slug> like any category.
+  const latestPosts = posts.slice(0, 3)
+  const { hero, stats: STATS, faqs: FAQS } = content
+  // Popular prestations: real sub-categories (2 per top category) that some
+  // salon actually offers — never a link to an empty page.
+  const offered = new Set(coverage.pairs.map((p) => p.category))
   const popular = categories
-    .flatMap((c) => (catalog.nodeBySlug[c.slug]?.childrenSlugs || []).slice(0, 2).map((s) => catalog.nodeBySlug[s]))
+    .flatMap((c) => (catalog.nodeBySlug[c.slug]?.childrenSlugs || []).filter((s) => offered.has(s)).slice(0, 2).map((s) => catalog.nodeBySlug[s]))
     .filter(Boolean)
     .slice(0, 8)
   return (
@@ -75,7 +90,7 @@ export default async function Home() {
 
       {/* SALONS À PROXIMITÉ */}
       <section className="wrap" style={{ padding: "34px 24px 60px" }}>
-        <H2 sub="Tunis et environs">Salons à proximité</H2>
+        <H2 sub="Une sélection de salons à réserver en ligne">Salons sur Rezervy</H2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 18, marginTop: 18 }}>
           {nearby.map((s) => <SalonCard key={s.slug} salon={s} />)}
         </div>
@@ -115,7 +130,7 @@ export default async function Home() {
         <H2 sub="réservez directement la prestation qu'il vous faut">Prestations populaires</H2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(230px,1fr))", gap: 12, marginTop: 16 }}>
           {popular.map((s) => (
-            <Link key={s.slug} href={`/${s.slug}`} className="lift" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "15px 17px", display: "flex", alignItems: "center", gap: 12, color: "var(--ink)" }}>
+            <Link key={s.slug} href={`/${s.slug}`} prefetch={false} className="lift" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "15px 17px", display: "flex", alignItems: "center", gap: 12, color: "var(--ink)" }}>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ fontWeight: 800, fontSize: 13.5 }}>{s.name}</div>
                 <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>{catalog.nodeBySlug[s.top]?.name}</div>
@@ -128,20 +143,20 @@ export default async function Home() {
 
       {/* REZERVY DANS VOTRE VILLE */}
       <section className="wrap" style={{ padding: "40px 24px 8px" }}>
-        <H2 sub="coiffure, barbier, onglerie & spa partout en Tunisie">Rezervy dans votre ville</H2>
+        <H2 sub="coiffure, barbier, onglerie & spa près de chez vous">Rezervy dans votre ville</H2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(210px,1fr))", gap: "24px 20px", marginTop: 18 }}>
           {topCats.map((cat, i) => {
             const cityList = catCities[i].slice(0, 10)
             if (!cityList.length) return null
             return (
               <div key={cat.slug}>
-                <Link href={`/${cat.slug}`} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 14, color: "var(--ink)" }}>
+                <Link href={`/${cat.slug}`} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 9, fontWeight: 800, fontSize: 14, color: "var(--ink)" }}>
                   <span style={{ width: 26, height: 26, borderRadius: 8, background: "var(--accent-soft)", color: "var(--gold-dark)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, flex: "none" }}>{cat.name[0]}</span>
                   {cat.name}
                 </Link>
                 <div style={{ display: "flex", flexDirection: "column", gap: 2, marginTop: 11 }}>
                   {cityList.map((c) => (
-                    <Link key={c.slug} href={`/${cat.slug}/${c.slug}`} className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", padding: "3px 0" }}>
+                    <Link key={c.slug} href={`/${cat.slug}/${c.slug}`} prefetch={false} className="link-soft" style={{ fontSize: 12.5, color: "var(--muted)", padding: "3px 0" }}>
                       {cat.name} à {c.name}
                     </Link>
                   ))}
@@ -174,7 +189,7 @@ export default async function Home() {
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: 12.5 }}>{t.author}{t.role ? <span style={{ fontWeight: 600, color: "var(--muted)" }}> · {t.role}</span> : null}</div>
                     <div style={{ fontSize: 11, color: "var(--muted)" }}>
-                      {t.slug ? <Link href={`/salon/${t.slug}`} style={{ color: "var(--muted-2)", fontWeight: 700 }}>{t.salon}</Link> : <span style={{ color: "var(--muted-2)", fontWeight: 700 }}>{t.salon}</span>}
+                      {t.slug ? <Link href={`/salon/${t.slug}`} prefetch={false} style={{ color: "var(--muted-2)", fontWeight: 700 }}>{t.salon}</Link> : <span style={{ color: "var(--muted-2)", fontWeight: 700 }}>{t.salon}</span>}
                       {t.city ? `, ${t.city}` : ""}
                     </div>
                   </div>
@@ -194,7 +209,7 @@ export default async function Home() {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 18, marginTop: 16 }}>
           {latestPosts.map((p) => (
-            <Link key={p.slug} href={`/blog/${p.slug}`} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", display: "block", color: "var(--ink)" }}>
+            <Link key={p.slug} href={`/blog/${p.slug}`} prefetch={false} className="card-hover" style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 16, overflow: "hidden", display: "block", color: "var(--ink)" }}>
               <div style={{ height: 150, position: "relative" }}><PostCover post={p} sizes="(max-width: 780px) 100vw, 300px" /></div>
               <div style={{ padding: "14px 16px" }}>
                 <span style={{ fontSize: 10.5, fontWeight: 800, color: "var(--gold-dark)", textTransform: "uppercase", letterSpacing: "0.03em" }}>{catLabel(p)}</span>
@@ -223,7 +238,7 @@ export default async function Home() {
           <div style={{ minWidth: 260, flex: 1 }}>
             <h2 className="serif" style={{ fontSize: 24, color: "#FFFFFF" }}>Vous gérez un salon, un barbershop ou un spa ?</h2>
             <div style={{ fontSize: 13, color: "rgba(255,255,255,0.9)", lineHeight: 1.7, marginTop: 8, maxWidth: 520 }}>
-              Rejoignez Rezervy Pro : votre salon visible sur Rezervy, réservation en ligne 24h/24, agenda et fiches clients — offres dès 39 TND/mois.
+              Rejoignez Rezervy Pro : votre salon visible sur Rezervy, réservation en ligne 24h/24, agenda et fiches clients{plans ? ` — offres ${fromLabel(plans)}` : ""}.
             </div>
           </div>
           <Link href="/devenir-partenaire" style={{ background: "#FFFFFF", color: "#111111", border: "none", borderRadius: 12, padding: "14px 26px", fontWeight: 800, fontSize: 13.5, whiteSpace: "nowrap", flex: "none" }}>

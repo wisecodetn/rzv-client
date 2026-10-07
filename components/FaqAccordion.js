@@ -16,7 +16,7 @@ export default function FaqAccordion({ faqs }) {
               style={{ display: "flex", alignItems: "center", gap: 12, padding: "15px 18px", width: "100%", background: "transparent", border: "none", textAlign: "left" }}
             >
               <span style={{ fontWeight: 800, fontSize: 13.5, flex: 1, minWidth: 0, color: "var(--ink)" }}>{q}</span>
-              <span style={{ color: "var(--gold)", fontWeight: 800, fontSize: 16 }}>{isOpen ? "−" : "+"}</span>
+              <span aria-hidden="true" style={{ color: "var(--gold)", fontWeight: 800, fontSize: 16 }}>{isOpen ? "−" : "+"}</span>
             </button>
             {isOpen && <div style={{ padding: "0 18px 16px", fontSize: 13, color: "var(--muted-2)", lineHeight: 1.7 }}>{a}</div>}
           </div>

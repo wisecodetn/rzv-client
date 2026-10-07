@@ -48,7 +48,8 @@ export default function SalonMap({ lat, lng, name, address, zoom = 15 }) {
           scrollWheelZoom: false, // don't hijack the page scroll
           attributionControl: true,
         })
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        // One host: OpenStreetMap asks clients not to use the old a/b/c subdomains.
+        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
           attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         }).addTo(m)
@@ -58,8 +59,8 @@ export default function SalonMap({ lat, lng, name, address, zoom = 15 }) {
         const pin = L.divIcon({
           className: "",
           html:
-            '<div style="width:26px;height:26px;border-radius:50% 50% 50% 0;background:#A97C48;' +
-            'transform:rotate(-45deg);border:2px solid #FFFFFF;box-shadow:0 3px 8px rgba(0,0,0,.35)"></div>',
+            '<div style="width:26px;height:26px;border-radius:50% 50% 50% 0;background:var(--gold);' +
+            'transform:rotate(-45deg);border:2px solid var(--card);box-shadow:0 3px 8px rgba(0,0,0,.35)"></div>',
           iconSize: [26, 26],
           iconAnchor: [13, 26],
         })

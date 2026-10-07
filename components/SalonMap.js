@@ -1,31 +1,15 @@
 "use client"
-import { useEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef } from "react"
+import "./salon-map.css"
 
-const CSS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-const JS = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-
+/**
+ * Leaflet from the npm package, fetched once and shared with the salon page's
+ * map (components/salon/SalonMap.js). It used to be injected from unpkg with
+ * no integrity check — a second copy of a library already in the bundle.
+ */
+let leaflet = null
 function loadLeaflet() {
-  return new Promise((resolve) => {
-    if (window.L) return resolve(window.L)
-    if (!document.querySelector(`link[data-leaflet]`)) {
-      const link = document.createElement("link")
-      link.rel = "stylesheet"
-      link.href = CSS
-      link.setAttribute("data-leaflet", "1")
-      document.head.appendChild(link)
-    }
-    let sc = document.querySelector(`script[data-leaflet]`)
-    if (sc) {
-      if (window.L) return resolve(window.L)
-      sc.addEventListener("load", () => resolve(window.L))
-      return
-    }
-    sc = document.createElement("script")
-    sc.src = JS
-    sc.setAttribute("data-leaflet", "1")
-    sc.onload = () => resolve(window.L)
-    document.body.appendChild(sc)
-  })
+  return (leaflet ||= Promise.all([import("leaflet"), import("leaflet/dist/leaflet.css")]).then(([m]) => m.default))
 }
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]))
@@ -68,67 +52,125 @@ function popupHtml(s, withListButton) {
 export default function SalonMap({ salons = [], height = 520, onSearchArea, areaActive, onResetArea, onSelect, activeSlug, onShowInList }) {
   const ref = useRef(null)
   const mapRef = useRef(null)
+  const leafletRef = useRef(null)
   const ptsRef = useRef([])
   const markersRef = useRef(new Map())
+  const sigRef = useRef(null)
+  const salonsRef = useRef(salons)
   // Callbacks change identity on every render; read them through refs so the
   // map is not torn down and rebuilt each time.
   const cb = useRef({})
-  cb.current = { onSelect, onShowInList }
+  // Updated after commit, not during render (a render may be thrown away).
+  useLayoutEffect(() => {
+    cb.current = { onSelect, onShowInList, areaActive }
+  })
 
-  useEffect(() => {
-    let alive = true
-    const withGeo = salons.filter((s) => s.geo)
+  /**
+   * Put the current salons on the map. The map itself is built once; a new
+   * list (a filter, another page) only swaps the pins — rebuilding the whole
+   * map re-downloaded its tiles and jumped the view on every click. The view
+   * is refitted to the pins, except after "Rechercher dans cette zone": there
+   * the visitor chose the view, and it stays.
+   */
+  const syncMarkers = () => {
+    const L = leafletRef.current
+    const map = mapRef.current
+    if (!L || !map) return
+    const withGeo = salonsRef.current.filter((s) => s.geo)
+    const sig = withGeo.map((s) => s.slug).join("|")
+    if (sig === sigRef.current) return
+    sigRef.current = sig
+    markersRef.current.forEach((m) => m.remove())
+    markersRef.current = new Map()
+    const icon = L.divIcon({ className: "rzv-pin-wrap", html: PIN_HTML, iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -38] })
+    withGeo.forEach((s) => {
+      const m = L.marker([s.geo.lat, s.geo.lng], { icon, title: s.name, riseOnHover: true, keyboard: true })
+        .addTo(map)
+        .bindPopup(popupHtml(s, !!cb.current.onShowInList), { className: "rzv-popup", minWidth: 264, maxWidth: 264, autoPanPaddingTopLeft: [24, 80], autoPanPaddingBottomRight: [24, 24] })
+      m.on("click", () => cb.current.onSelect?.(s.slug))
+      markersRef.current.set(s.slug, m)
+    })
     const pts = withGeo.map((s) => [s.geo.lat, s.geo.lng])
     ptsRef.current = pts
+    if (cb.current.areaActive) return
+    if (pts.length > 1) map.fitBounds(pts, { padding: [46, 46] })
+    else if (pts.length === 1) map.setView(pts[0], 14)
+  }
+
+  // The map: built once, when it first comes on screen.
+  useEffect(() => {
+    let alive = true
     let ro = null
 
     const build = (L) => {
       if (!alive || !ref.current || mapRef.current || !L) return
       // Defer init until the container has a real size (it may start hidden on mobile).
       if (ref.current.offsetHeight === 0 || ref.current.offsetWidth === 0) return
+      const pts = salonsRef.current.filter((s) => s.geo).map((s) => [s.geo.lat, s.geo.lng])
       const center = pts.length ? [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length] : [36.845, 10.24]
       const map = L.map(ref.current, { scrollWheelZoom: false }).setView(center, 12)
       mapRef.current = map
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors" }).addTo(map)
-      const icon = L.divIcon({ className: "rzv-pin-wrap", html: PIN_HTML, iconSize: [30, 40], iconAnchor: [15, 40], popupAnchor: [0, -38] })
-      markersRef.current = new Map()
-      withGeo.forEach((s) => {
-        const m = L.marker([s.geo.lat, s.geo.lng], { icon, title: s.name, riseOnHover: true, keyboard: true })
-          .addTo(map)
-          .bindPopup(popupHtml(s, !!cb.current.onShowInList), { className: "rzv-popup", minWidth: 264, maxWidth: 264, autoPanPaddingTopLeft: [24, 80], autoPanPaddingBottomRight: [24, 24] })
-        m.on("click", () => cb.current.onSelect?.(s.slug))
-        markersRef.current.set(s.slug, m)
-      })
       // "Voir dans la liste" lives inside the popup's HTML.
       map.on("popupopen", (e) => {
         const btn = e.popup.getElement()?.querySelector("[data-list]")
         if (btn) btn.addEventListener("click", () => cb.current.onShowInList?.(btn.getAttribute("data-list")), { once: true })
       })
-      if (pts.length > 1) map.fitBounds(pts, { padding: [46, 46] })
+      sigRef.current = null
+      syncMarkers()
     }
 
-    loadLeaflet().then((L) => {
-      if (!alive || !ref.current || !L) return
-      build(L)
-      // Re-check size on resize / when the container is revealed (mobile list↔map toggle).
-      if (typeof ResizeObserver !== "undefined") {
-        ro = new ResizeObserver(() => {
-          if (!mapRef.current) build(L)
-          else mapRef.current.invalidateSize()
-        })
-        ro.observe(ref.current)
-      }
-    })
+    const start = () =>
+      loadLeaflet().then((L) => {
+        if (!alive || !ref.current || !L) return
+        leafletRef.current = L
+        build(L)
+        // Re-check size on resize / when the container is revealed (mobile list↔map toggle).
+        if (typeof ResizeObserver !== "undefined") {
+          ro = new ResizeObserver(() => {
+            if (!mapRef.current) build(L)
+            else mapRef.current.invalidateSize()
+          })
+          ro.observe(ref.current)
+        }
+      })
+
+    // Fetch Leaflet only once the map is actually on screen. On phones the side
+    // map is display:none (it never intersects) and the drawer map mounts only
+    // when opened — so a phone that never opens the map downloads nothing.
+    let io = null
+    if (typeof IntersectionObserver === "undefined") start()
+    else {
+      io = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return
+          io.disconnect()
+          io = null
+          start()
+        },
+        { rootMargin: "200px" },
+      )
+      io.observe(ref.current)
+    }
 
     return () => {
       alive = false
+      if (io) io.disconnect()
       if (ro) ro.disconnect()
       if (mapRef.current) {
         mapRef.current.remove()
         mapRef.current = null
       }
       markersRef.current = new Map()
+      sigRef.current = null
     }
+    // Built once; the pins follow `salons` in the effect below.
+  }, [])
+
+  // The pins: follow the list.
+  useEffect(() => {
+    salonsRef.current = salons
+    syncMarkers()
   }, [salons])
 
   // Highlight the active pin and bring it to the front.

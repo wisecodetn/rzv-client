@@ -12,7 +12,9 @@ const Heart = ({ filled, size = 17 }) => (
 /* Toggle a salon in favorites. variant "icon" = round overlay for card corners;
    "button" = labelled button for the salon page. Requires login (redirects to
    /connexion, returning to the current page). */
-export default function FavButton({ slug, variant = "icon", size = 40 }) {
+/** `name`: the salon's name — in a list of cards, "Ajouter aux favoris" said
+ *  nothing about WHICH salon. */
+export default function FavButton({ slug, name, variant = "icon", size = 40 }) {
   const { isFav, toggleFav } = useFavorites()
   const { user } = useAuth()
   const router = useRouter()
@@ -35,7 +37,7 @@ export default function FavButton({ slug, variant = "icon", size = 40 }) {
   }
 
   return (
-    <button onClick={handle} aria-pressed={on} aria-label={on ? "Retirer des favoris" : "Ajouter aux favoris"} title={on ? "Retirer des favoris" : "Ajouter aux favoris"} className="lift" style={{ position: "absolute", top: 10, right: 10, width: size, height: size, borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.28)", zIndex: 3 }}>
+    <button onClick={handle} aria-pressed={on} aria-label={on ? `Retirer ${name ? `${name} ` : ""}des favoris` : `Ajouter ${name ? `${name} ` : ""}aux favoris`} title={on ? "Retirer des favoris" : "Ajouter aux favoris"} className="lift" style={{ position: "absolute", top: 10, right: 10, width: size, height: size, borderRadius: "50%", background: "rgba(255,255,255,0.95)", border: "none", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.28)", zIndex: 3 }}>
       <Heart filled={on} />
     </button>
   )
