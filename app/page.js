@@ -1,17 +1,18 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import Photo from "@/components/Photo"
 import SearchBar from "@/components/SearchBar"
 import SalonCard from "@/components/SalonCard"
+import PartnersCarousel from "@/components/PartnersCarousel"
 import FaqAccordion from "@/components/FaqAccordion"
 import ContactCard from "@/components/ContactCard"
 import JsonLd from "@/components/JsonLd"
 import { faqLd } from "@/lib/jsonld"
-import { getFeaturedSalons, getCategories, getCatalog, categoryCities, getPlatformReviews, getCoverage, HOW_STEPS } from "@/lib/data"
+import { getFeaturedSalons, getPartnerSalons, getCategories, getCatalog, categoryCities, getPlatformReviews, getCoverage, HOW_STEPS } from "@/lib/data"
 import { getSiteContent } from "@/lib/site-content"
 import { getPlans, fromLabel } from "@/lib/plans"
 import { getPosts, catLabel, formatDate } from "@/lib/blog"
 import PostCover from "@/components/blog/PostCover"
-import Image from "next/image"
+import Image from "@/components/Image"
 import NewsletterModal from "@/components/newsletter/NewsletterModal"
 import { pageMeta } from "@/lib/meta"
 import { SITE } from "@/lib/site"
@@ -33,7 +34,8 @@ export default async function Home() {
   // after another, each round-trip adding to every regeneration.
   // Platform reviews = salons' testimonials about Rezervy, published by our
   // team; the section disappears when there are none.
-  const [nearby, categories, catalog, posts, content, reviews, plans, coverage] = await Promise.all([
+  const [partners, nearby, categories, catalog, posts, content, reviews, plans, coverage] = await Promise.all([
+    getPartnerSalons(),
     getFeaturedSalons(4),
     getCategories(),
     getCatalog(),
@@ -88,12 +90,22 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SALONS À PROXIMITÉ */}
+      {/* NOS PARTENAIRES — salons our team put forward (admin "Mettre en avant").
+          Until there are any, the latest salons on Rezervy hold the spot. */}
       <section className="wrap" style={{ padding: "34px 24px 60px" }}>
-        <H2 sub="Une sélection de salons à réserver en ligne">Salons sur Rezervy</H2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 18, marginTop: 18 }}>
-          {nearby.map((s) => <SalonCard key={s.slug} salon={s} />)}
-        </div>
+        {partners.length > 0 ? (
+          <>
+            <H2 sub="Des salons sélectionnés par l’équipe Rezervy">Nos salons partenaires</H2>
+            <PartnersCarousel salons={partners} />
+          </>
+        ) : (
+          <>
+            <H2 sub="Une sélection de salons à réserver en ligne">Salons sur Rezervy</H2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 18, marginTop: 18 }}>
+              {nearby.map((s) => <SalonCard key={s.slug} salon={s} />)}
+            </div>
+          </>
+        )}
       </section>
 
       {/* COMMENT ÇA MARCHE */}

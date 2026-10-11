@@ -1,5 +1,5 @@
 "use client"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { useAuth } from "../AuthProvider"
 import { H, dMo, dDd, dTime, useAccountFetch, LoadError } from "./shared"
 
@@ -41,7 +41,7 @@ export function Dashboard() {
             <div style={{ fontWeight: 800, fontSize: 15 }}>Aucun rendez-vous à venir</div>
             <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.9)", marginTop: 4 }}>Trouvez votre salon et réservez en quelques clics.</div>
           </div>
-          <Link href="/recherche" style={{ background: "#FFFFFF", color: "#000000", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Réserver</Link>
+          <Link href="/salons" style={{ background: "#FFFFFF", color: "#000000", borderRadius: 10, padding: "10px 18px", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Réserver</Link>
         </div>
       )}
 
@@ -55,7 +55,7 @@ export function Dashboard() {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
-        <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Réserver un nouveau rendez-vous</Link>
+        <Link href="/salons" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Réserver un nouveau rendez-vous</Link>
         <Link href="/compte/favoris" className="btn-outline" style={{ background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 11, padding: "12px 20px", fontWeight: 800, fontSize: 13 }}>Voir mes favoris</Link>
       </div>
     </>

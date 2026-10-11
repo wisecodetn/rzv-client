@@ -1,4 +1,4 @@
-import { demoteHeadings, sanitizeRichHtml } from "@/lib/rich-html"
+import { demoteHeadings, sanitizeRichHtml, titleLinks } from "@/lib/rich-html"
 import Expandable from "./Expandable"
 
 /**
@@ -14,7 +14,7 @@ import Expandable from "./Expandable"
  * `dangerouslySetInnerHTML`.
  */
 export default function SalonContent({ html, name }) {
-  const safe = sanitizeRichHtml(demoteHeadings(html))
+  const safe = titleLinks(sanitizeRichHtml(demoteHeadings(html)))
   if (!safe) return null
 
   return (

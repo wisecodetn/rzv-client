@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 
 /** Shared header for simple content pages: breadcrumb + serif title + subtitle. */
 export default function PageShell({ title, subtitle, crumb, children, maxWidth = 1120 }) {

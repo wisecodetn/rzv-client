@@ -76,7 +76,7 @@ export default function SearchBar() {
     const p = new URLSearchParams()
     if (q.trim()) p.set("q", q.trim())
     if (ville.trim()) p.set("ville", ville.trim())
-    router.push("/recherche" + (p.toString() ? `?${p}` : ""))
+    router.push("/salons" + (p.toString() ? `?${p}` : ""))
   }
   const clearQ = () => { setQ(""); setSelectedCat(null) }
   const clearVille = () => { setVille(""); setSelectedCity(null) }

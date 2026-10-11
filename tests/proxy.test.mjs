@@ -23,7 +23,7 @@ test("real pages pass", () => {
     "/salon/wise-code", "/salon/wise-code/reserver", "/salon/wise-code/opengraph-image",
     "/coiffure", "/coiffure/opengraph-image", "/coiffure/tunis", "/coiffure/tunis/page-2", "/coiffure/tunis/page-3",
     "/coiffure/tunis/opengraph-image", "/brushing/mahdia", // a valid pair without salons: a real (noindex) page
-    "/blog", "/blog/guide-prix", "/recherche", "/recherche/tunis", "/recherche/tunis/page-2",
+    "/blog", "/blog/guide-prix", "/salons", "/salons/tunis", "/salons/tunis/page-2",
     "/contact", "/compte/profil", "/connexion",
   ]) assert.equal(unknown(p), false, p)
 })
@@ -33,8 +33,22 @@ test("made-up URLs are refused", () => {
     "/salon/zz-nope", "/salon/zz-nope/reserver", "/salon/zz-nope/opengraph-image",
     "/nimportequoi", "/coiffure/nowhere", "/coiffure/tunis/page-4", "/coiffure/tunis/page-1",
     "/coiffure/tunis/page-0", "/coiffure/tunis/autre", "/coiffure/sousse/page-2", "/brushing/mahdia/page-2",
-    "/blog/zz-nope", "/recherche/nowhere", "/recherche/tunis/page-3", "/recherche/sousse/page-2",
+    "/blog/zz-nope", "/salons/nowhere", "/salons/tunis/page-3", "/salons/sousse/page-2",
   ]) assert.equal(unknown(p), true, p)
+})
+
+test("every route FILE at the root of app/ passes (share image, robots, sitemap, icons)", () => {
+  // /opengraph-image was refused as an unknown category on the preview: the
+  // default share image of every page returned 404. Read app/ itself.
+  const app = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "app")
+  const META = /^(opengraph-image|twitter-image|icon|apple-icon|sitemap|robots|manifest)\.\w+$/
+  const files = readdirSync(app).filter((f) => META.test(f))
+  assert.ok(files.includes("opengraph-image.js"), "fixture: the root share image exists")
+  for (const f of files) {
+    const route = f.replace(/\.(js|jsx|ts|tsx)$/, "") // a .js route is served without extension
+    assert.equal(unknown(`/${route}`), false, `/${route}`)
+  }
+  assert.equal(unknown("/opengraph-image-1a2b3c"), false, "hashed variant")
 })
 
 test("STATIC_ROOTS lists every static top-level route", () => {

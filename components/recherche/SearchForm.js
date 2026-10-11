@@ -27,9 +27,9 @@ export default function SearchForm({ initial }) {
 
   const submit = (e) => {
     e.preventDefault()
-    // City-only search → the clean, indexable path /recherche/<ville>.
+    // City-only search → the clean, indexable path /salons/<ville>.
     if (city && !q.trim() && !category && !Number(rate) && !dispo && sort === "note") {
-      router.push(`/recherche/${city}`)
+      router.push(`/salons/${city}`)
       return
     }
     const p = new URLSearchParams()
@@ -40,13 +40,13 @@ export default function SearchForm({ initial }) {
     if (dispo) p.set("dispo", dispo)
     if (sort !== "note") p.set("sort", sort)
     const qs = p.toString()
-    router.push("/recherche" + (qs ? `?${qs}` : ""))
+    router.push("/salons" + (qs ? `?${qs}` : ""))
   }
 
   const reset = (e) => {
     e.preventDefault()
     setQ(""); setCity(""); setCategory(""); setRate("0"); setDispo(""); setSort("note")
-    router.push("/recherche")
+    router.push("/salons")
   }
 
   return (

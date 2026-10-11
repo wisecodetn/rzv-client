@@ -3,11 +3,14 @@
 // Media (ville photos…) is served by the API, so its host must be allow-listed
 // for next/image. Derived from the same env the app uses to build media URLs,
 // so dev (localhost:3001) and production (the real API domain) both work.
-const MEDIA_ORIGIN =
+// Trailing slashes trimmed like lib/api.js does: "http://api/" + "/media/x"
+// would ask the API for "//media/x" and every salon photo would 404.
+const MEDIA_ORIGIN = (
   process.env.NEXT_PUBLIC_MEDIA_URL ||
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.API_URL ||
   'http://localhost:3001'
+).replace(/\/+$/, '')
 
 /**
  * Security headers on every response. The CSP holds the directives that cost
@@ -48,6 +51,16 @@ module.exports = {
       publicAsset('brand'),
       publicAsset('assistant'),
       publicAsset('main'),
+    ]
+  },
+
+  // The listing pages moved from /recherche to /salons (2026-10-08). Permanent
+  // (308) so links already shared or indexed keep working and pass their rank;
+  // the query string (?q=, ?city=…) is carried over as it is.
+  redirects() {
+    return [
+      { source: '/recherche', destination: '/salons', permanent: true },
+      { source: '/recherche/:path*', destination: '/salons/:path*', permanent: true },
     ]
   },
 

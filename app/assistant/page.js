@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import PageShell from "@/components/PageShell"
 import JsonLd from "@/components/JsonLd"
 import AssistantAvatar from "@/components/assistant/AssistantAvatar"
@@ -278,7 +278,7 @@ export default async function AssistantPage() {
             back-office — est conçu et développé par Wise Code.
           </p>
         </div>
-        <a href="https://wisecode.tn" target="_blank" rel="noopener" className="btn-on-dark ai-btn">
+        <a href="https://wisecode.tn" title="Wise Code (nouvel onglet)" target="_blank" rel="noopener" className="btn-on-dark ai-btn">
           Découvrir Wise Code ↗
         </a>
       </section>

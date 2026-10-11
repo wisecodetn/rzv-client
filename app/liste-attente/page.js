@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import PageShell from "@/components/PageShell"
 import JsonLd from "@/components/JsonLd"
 import NewsletterForm from "@/components/newsletter/NewsletterForm"
@@ -99,7 +99,7 @@ export default async function ListeAttente() {
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
                 {open.map((c) => (
-                  <Link key={c.slug} href={`/recherche/${c.slug}`} className="link-soft" style={{ fontSize: 12.5, fontWeight: 700, background: "var(--bg)", border: "1px solid var(--line-2)", borderRadius: 999, padding: "6px 13px", color: "var(--ink)" }}>
+                  <Link key={c.slug} href={`/salons/${c.slug}`} className="link-soft" style={{ fontSize: 12.5, fontWeight: 700, background: "var(--bg)", border: "1px solid var(--line-2)", borderRadius: 999, padding: "6px 13px", color: "var(--ink)" }}>
                     Salons à {c.name} ({coverage.cities[c.slug]})
                   </Link>
                 ))}

@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import PageShell from "@/components/PageShell"
 import { SITE } from "@/lib/site"
 import { getPlans, fromLabel } from "@/lib/plans"

@@ -141,8 +141,8 @@ export function Divider({ children }) {
 export function TermsLinks() {
   return (
     <>
-      les <a href="/conditions-generales" target="_blank" rel="noopener" style={linkStyle}>conditions d'utilisation</a> et la{" "}
-      <a href="/confidentialite" target="_blank" rel="noopener" style={linkStyle}>politique de confidentialité</a>
+      les <a href="/conditions-generales" title="Conditions d’utilisation (nouvel onglet)" target="_blank" rel="noopener" style={linkStyle}>conditions d'utilisation</a> et la{" "}
+      <a href="/confidentialite" title="Politique de confidentialité (nouvel onglet)" target="_blank" rel="noopener" style={linkStyle}>politique de confidentialité</a>
     </>
   )
 }

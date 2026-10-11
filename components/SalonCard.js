@@ -1,7 +1,8 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import Photo from "./Photo"
 import FavButton from "./FavButton"
-import Image from "next/image"
+import Image from "@/components/Image"
+import { VerifiedMark } from "./VerifiedBadge"
 
 /** Marketplace salon card (home + search). `first`: the card at the top of a
  *  listing, likely the largest thing on screen — its photo is preloaded. */
@@ -30,7 +31,10 @@ export default function SalonCard({ salon, first = false }) {
         </div>
       </div>
       <div style={{ padding: "14px 16px 16px" }}>
-        <div style={{ fontWeight: 800, fontSize: 14.5 }}>{salon.name}</div>
+        <div style={{ fontWeight: 800, fontSize: 14.5, display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{salon.name}</span>
+          {salon.verified && <VerifiedMark size={15} />}
+        </div>
         <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 3 }}>{salon.kind} · {salon.city}</div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 9 }}>
           {Number(salon.rev) > 0 ? (

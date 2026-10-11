@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 
 /**
  * An honest placeholder for a feature that is announced but not built. The
@@ -14,7 +14,7 @@ export default function ComingSoon({ children }) {
       </span>
       <div style={{ fontSize: 14, color: "var(--muted-2)", lineHeight: 1.7, marginTop: 12 }}>{children}</div>
       <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
-        <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "12px 22px", fontWeight: 800, fontSize: 13.5 }}>
+        <Link href="/salons" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "12px 22px", fontWeight: 800, fontSize: 13.5 }}>
           Trouver un salon
         </Link>
         <Link href="/contact" className="btn-outline" style={{ background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 12, padding: "12px 22px", fontWeight: 800, fontSize: 13.5 }}>

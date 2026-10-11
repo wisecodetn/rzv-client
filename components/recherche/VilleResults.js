@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import SalonCard from "@/components/SalonCard"
 import JsonLd from "@/components/JsonLd"
 import SearchForm from "./SearchForm"
@@ -8,7 +8,7 @@ import { SITE, abs } from "@/lib/site"
 import { querySalons, getCategories, getCoverage } from "@/lib/data"
 
 /**
- * SEO city search page — /recherche/[ville] (+ /page-N). Path-based, indexable,
+ * SEO city search page — /salons/[ville] (+ /page-N). Path-based, indexable,
  * server-rendered: crawlable salon list, per-category internal links, editorial
  * copy and BreadcrumbList + CollectionPage + ItemList JSON-LD.
  */
@@ -18,7 +18,7 @@ export default async function VilleResults({ city, page = 1 }) {
     getCategories(),
     getCoverage(),
   ])
-  const base = `/recherche/${city.slug}`
+  const base = `/salons/${city.slug}`
   const href = (n) => (n === 1 ? base : `${base}/page-${n}`)
 
   // Real content for SEO: the categories this city's salons actually sell (same
@@ -40,7 +40,7 @@ export default async function VilleResults({ city, page = 1 }) {
         data={[
           breadcrumbLd([
             { name: "Accueil", url: "/" },
-            { name: "Recherche", url: "/recherche" },
+            { name: "Salons", url: "/salons" },
             { name: `Salons à ${city.name}`, url: base },
           ]),
           {
@@ -59,7 +59,7 @@ export default async function VilleResults({ city, page = 1 }) {
       <nav aria-label="Fil d’Ariane" style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
         <Link href="/" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Accueil</Link>
         <span>/</span>
-        <Link href="/recherche" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Recherche</Link>
+        <Link href="/salons" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Salons</Link>
         <span>/</span>
         <span style={{ fontWeight: 700, color: "var(--ink)" }}>{city.name}</span>
       </nav>

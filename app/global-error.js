@@ -32,7 +32,7 @@ export default function GlobalError({ error, unstable_retry }) {
             <button type="button" onClick={() => unstable_retry()}>Réessayer</button>
             {/* A full reload, not client navigation: the app shell is what failed. */}
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/">Accueil</a>
+            <a href="/" title="Accueil">Accueil</a>
           </div>
           {error?.digest && <small>Référence : {error.digest}</small>}
         </main>

@@ -1,6 +1,6 @@
 "use client" // Error boundaries must be Client Components
 import { useEffect } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 
 /**
  * Something failed while rendering a page — most often the API being briefly

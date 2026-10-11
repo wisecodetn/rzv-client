@@ -37,7 +37,7 @@ export default function ContactPage() {
               </>
             )
             const style = { display: "flex", alignItems: "center", gap: 13, background: "var(--card)", border: "1px solid var(--line)", borderRadius: 14, padding: "14px 16px", marginBottom: 10, color: "var(--ink)" }
-            return c.href ? <a key={c.t} href={c.href} className="lift" style={style}>{inner}</a> : <div key={c.t} style={style}>{inner}</div>
+            return c.href ? <a key={c.t} href={c.href} title={c.t} className="lift" style={style}>{inner}</a> : <div key={c.t} style={style}>{inner}</div>
           })}
         </div>
         <ContactCard />

@@ -1328,3 +1328,52 @@ a:focus-visible .rzv-mark-dot {
 @media (max-width: 640px) {
   .sb-q { flex-basis: 100% !important; }
 }
+
+/* ── Home: partners carousel (components/PartnersCarousel.js) ──
+   Cards per view: 1 on a phone, 2, 3, then 4 on a laptop. Native scrolling
+   with snap, so it swipes on touch; the scrollbar is hidden. The vertical
+   padding keeps the cards' hover lift and shadow from being clipped. */
+.partners-track {
+  --pv: 1;
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 8px 2px 14px;
+  margin: -8px -2px -14px;
+}
+.partners-track::-webkit-scrollbar { display: none; }
+.partners-item {
+  flex: 0 0 calc((100% - (var(--pv) - 1) * 18px) / var(--pv));
+  min-width: 0;
+  scroll-snap-align: start;
+}
+@media (min-width: 560px) { .partners-track { --pv: 2; } }
+@media (min-width: 820px) { .partners-track { --pv: 3; } }
+@media (min-width: 1080px) { .partners-track { --pv: 4; } }
+.partners-arrow {
+  position: absolute;
+  top: 70px;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink);
+  font-size: 22px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px var(--shadow);
+  z-index: 2;
+}
+.partners-arrow[data-side="prev"] { left: -16px; }
+.partners-arrow[data-side="next"] { right: -16px; }
+.partners-arrow:disabled { opacity: 0.4; cursor: default; }
+@media (min-width: 820px) and (hover: hover) { .partners-arrow { display: inline-flex; } }
+@media (prefers-reduced-motion: reduce) { .partners-track { scroll-behavior: auto; } }

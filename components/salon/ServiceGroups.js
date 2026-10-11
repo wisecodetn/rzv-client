@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 
 /** A long menu is unreadable — show a category's first few, then unfold. */
 const VISIBLE = 6

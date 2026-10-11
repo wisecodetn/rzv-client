@@ -62,7 +62,7 @@ export default async function RootLayout({ children }) {
             visitors for up to ~1.4 s while lab tools never saw it. */}
         <script id="rzv-theme" dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         {/* First Tab on any page: jump past the navbar and its mega-menu. */}
-        <a href="#contenu" className="skip-link">Aller au contenu</a>
+        <a href="#contenu" title="Aller au contenu" className="skip-link">Aller au contenu</a>
         <JsonLd data={[organizationLd(socialUrls(social)), websiteLd()]} />
         {/* Browser-only page-to-page loader — renders nothing on the server. */}
         <NavigationLoader />

@@ -4,7 +4,7 @@ import { getCity, querySalons, getCoverage } from "@/lib/data"
 import { SITE } from "@/lib/site"
 import { pageMeta } from "@/lib/meta"
 
-/** /recherche/[ville]/page-N — crawlable pagination of the city search page. */
+/** /salons/[ville]/page-N — crawlable pagination of the city search page. */
 const parsePage = (seg) => {
   const m = /^page-([1-9]\d*)$/.exec(seg || "")
   return m ? parseInt(m[1], 10) : null
@@ -29,18 +29,18 @@ export async function generateMetadata({ params }) {
   return pageMeta({
     title: `Salons de beauté à ${city.name} — page ${num}`,
     description: `Page ${num} des salons à réserver en ligne à ${city.name} : prix, avis et créneaux disponibles.`,
-    path: `/recherche/${city.slug}/page-${num}`,
+    path: `/salons/${city.slug}/page-${num}`,
   })
 }
 
 export default async function VillePagedPage({ params }) {
   const { page: citySlug, n: seg } = await params
-  if (parsePage(citySlug) != null) notFound() // /recherche/page-2/page-3 is not a thing
+  if (parsePage(citySlug) != null) notFound() // /salons/page-2/page-3 is not a thing
   const num = parsePage(seg)
   if (!num) notFound()
   const city = await getCity(citySlug)
   if (!city) notFound()
-  if (num === 1) redirect(`/recherche/${city.slug}`)
+  if (num === 1) redirect(`/salons/${city.slug}`)
   const { totalPages } = await querySalons({ city: city.slug })
   if (num > totalPages) notFound()
   return <VilleResults city={city} page={num} />

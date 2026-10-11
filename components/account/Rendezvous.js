@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { useDialogFocus } from "@/lib/use-dialog-focus"
 import { errorText } from "@/lib/errors"
 import { Card, H, STATUS, dMo, dDd, dTime, dFull, dLong, durLabel, payInfo, useAccountFetch, LoadError, accountAction, Empty } from "./shared"
@@ -59,7 +59,7 @@ function WaitlistRequests() {
                 <div style={{ fontSize: 12.5, color: "var(--green)", fontWeight: 700, marginTop: 7, lineHeight: 1.6 }}>
                   Le salon vous propose : <span style={{ textTransform: "capitalize" }}>{dLong(w.offer.startAt)}</span> à {dTime(w.offer.startAt)} — réservé pour vous jusqu'à {dTime(w.offer.holdUntil)}.
                   {w.salon?.phone ? (
-                    <> Appelez le <a href={`tel:${w.salon.phone.replace(/\s/g, "")}`} style={{ color: "var(--green)", textDecoration: "underline" }}>{w.salon.phone}</a> pour confirmer.</>
+                    <> Appelez le <a href={`tel:${w.salon.phone.replace(/\s/g, "")}`} title={`Appeler ${w.salon.name || "le salon"}`} style={{ color: "var(--green)", textDecoration: "underline" }}>{w.salon.phone}</a> pour confirmer.</>
                   ) : (
                     " Le salon vous contactera pour confirmer."
                   )}
@@ -100,7 +100,7 @@ export function Rendezvous() {
       ) : error ? (
         <LoadError error={error} reload={reload} />
       ) : upcoming.length === 0 ? (
-        <Empty title="Aucun rendez-vous à venir" sub="Trouvez votre salon et réservez en ligne en quelques clics." cta="Réserver un rendez-vous" href="/recherche" />
+        <Empty title="Aucun rendez-vous à venir" sub="Trouvez votre salon et réservez en ligne en quelques clics." cta="Réserver un rendez-vous" href="/salons" />
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 4, minWidth: 0 }}>
           {upcoming.map((b) => {

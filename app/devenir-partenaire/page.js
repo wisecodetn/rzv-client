@@ -1,6 +1,6 @@
 import { SITE } from "@/lib/site"
 import { getPlans, fromLabel, formatPrice } from "@/lib/plans"
-import Image from "next/image"
+import Image from "@/components/Image"
 import Photo from "@/components/Photo"
 import { pageMeta } from "@/lib/meta"
 import { getCoverage } from "@/lib/data"
@@ -68,8 +68,8 @@ export default async function PartnerPage() {
             par e-mail et le suivi de vos encaissements{pl ? ` — le tout ${fromLabel(pl)}` : ""}.
           </p>
           <div style={{ display: "flex", gap: 10, marginTop: 26, flexWrap: "wrap" }}>
-            <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#000000", border: "none", borderRadius: 12, padding: "14px 26px", fontWeight: 800, fontSize: 14 }}>Devenir partenaire</a>
-            <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "rgba(255,255,255,0.1)", color: "#FFFFFF", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 12, padding: "14px 24px", fontWeight: 700, fontSize: 14 }}>Déjà partenaire ? Se connecter</a>
+            <a href={PRO_URL} title="Devenir partenaire — Rezervy Pro (nouvel onglet)" target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#000000", border: "none", borderRadius: 12, padding: "14px 26px", fontWeight: 800, fontSize: 14 }}>Devenir partenaire</a>
+            <a href={PRO_URL} title="Se connecter à Rezervy Pro (nouvel onglet)" target="_blank" rel="noopener noreferrer" style={{ background: "rgba(255,255,255,0.1)", color: "#FFFFFF", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 12, padding: "14px 24px", fontWeight: 700, fontSize: 14 }}>Déjà partenaire ? Se connecter</a>
           </div>
           <div style={{ display: "flex", gap: 34, marginTop: 40, flexWrap: "wrap" }}>
             {STATS.map((s) => (
@@ -143,7 +143,7 @@ export default async function PartnerPage() {
             {pl?.trialDays ? `Essai gratuit ${pl.trialDays} jours. ` : ""}Pas de commission sur vos rendez-vous : vos clientes vous règlent directement, vous gardez 100 % de ce qu’elles paient.
           </div>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24, flexWrap: "wrap" }}>
-            <a href={PRO_URL} target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#000000", border: "none", borderRadius: 12, padding: "14px 28px", fontWeight: 800, fontSize: 14 }}>{pl?.trialDays ? "Commencer l’essai gratuit" : "Faire une demande"}</a>
+            <a href={PRO_URL} title="Faire une demande — Rezervy Pro (nouvel onglet)" target="_blank" rel="noopener noreferrer" style={{ background: "#FFFFFF", color: "#000000", border: "none", borderRadius: 12, padding: "14px 28px", fontWeight: 800, fontSize: 14 }}>{pl?.trialDays ? "Commencer l’essai gratuit" : "Faire une demande"}</a>
           </div>
         </div>
       </section>

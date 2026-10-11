@@ -13,7 +13,7 @@ export function Favoris() {
       {!ready ? (
         <Card style={{ textAlign: "center", padding: "30px 20px", color: "var(--faint)", fontSize: 13 }}>Chargement…</Card>
       ) : salons.length === 0 ? (
-        <Empty title="Aucun favori pour le moment" sub="Ajoutez des salons à vos favoris depuis leur page." cta="Explorer les salons" href="/recherche" />
+        <Empty title="Aucun favori pour le moment" sub="Ajoutez des salons à vos favoris depuis leur page." cta="Explorer les salons" href="/salons" />
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(250px,1fr))", gap: 16, minWidth: 0 }}>
           {/* The marketplace's own card: same photo, logo, rating and price —

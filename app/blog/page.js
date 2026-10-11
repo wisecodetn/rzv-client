@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import Photo from "@/components/Photo"
 import { SITE } from "@/lib/site"
 import { getPosts, catLabel, formatDate } from "@/lib/blog"

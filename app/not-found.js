@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 
 const SUGGESTIONS = [
   { href: "/qui-sommes-nous", l: "Qui sommes-nous", d: "Notre mission", icon: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z M12 16v-4 M12 8h.01" },
@@ -20,7 +20,7 @@ export default function NotFound() {
 
       <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 24, flexWrap: "wrap" }}>
         <Link href="/" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14 }}>Retour à l'accueil</Link>
-        <Link href="/recherche" className="btn-outline" style={{ background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14 }}>Explorer les salons</Link>
+        <Link href="/salons" className="btn-outline" style={{ background: "transparent", border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14 }}>Explorer les salons</Link>
       </div>
 
       <div style={{ fontSize: 11, fontWeight: 800, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 44, marginBottom: 14 }}>Pages utiles</div>

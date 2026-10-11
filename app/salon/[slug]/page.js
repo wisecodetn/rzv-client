@@ -1,6 +1,6 @@
-import Link from "next/link"
-import Image from "next/image"
-import { notFound } from "next/navigation"
+import Link from "@/components/Link"
+import Image from "@/components/Image"
+import { notFound, permanentRedirect } from "next/navigation"
 import FavButton from "@/components/FavButton"
 import JsonLd from "@/components/JsonLd"
 import SalonMedia from "@/components/salon/SalonMedia"
@@ -9,10 +9,12 @@ import SalonMap from "@/components/salon/SalonMap"
 import { socialLinks, socialHandle } from "@/lib/social"
 import SalonContent from "@/components/salon/SalonContent"
 import SalonReviews from "@/components/salon/SalonReviews"
-import { salonLd, breadcrumbLd } from "@/lib/jsonld"
-import { salonSlugs, getSalon, getCategory, pairOf } from "@/lib/data"
+import { salonPageLd } from "@/lib/jsonld"
+import FaqAccordion from "@/components/FaqAccordion"
+import { salonSlugs, getSalon, getCategory, pairOf, getSalonRedirect } from "@/lib/data"
 import { SITE, PAY_RULE, CANCEL_RULE } from "@/lib/site"
 import { pageMeta } from "@/lib/meta"
+import { VerifiedMark, VerifiedPill } from "@/components/VerifiedBadge"
 
 export async function generateStaticParams() {
   return (await salonSlugs()).map((slug) => ({ slug }))
@@ -69,7 +71,13 @@ function SocialIcon({ name }) {
 export default async function SalonPage({ params }) {
   const { slug } = await params
   const s = await getSalon(slug)
-  if (!s) notFound()
+  if (!s) {
+    // A former address (the salon was renamed or moved to name-city): 308 to
+    // the current one, so old links and search results carry over.
+    const to = await getSalonRedirect(slug)
+    if (to) permanentRedirect(`/salon/${to}`)
+    notFound()
+  }
   const cat = await getCategory(s.primary)
   // The city crumb leads to a listing that really shows salons: the salon's
   // filed category in its city when that pair has salons, else the city page.
@@ -86,13 +94,17 @@ export default async function SalonPage({ params }) {
   const crumbs = [
     { name: "Accueil", url: "/" },
     ...(cat ? [{ name: cat.name, url: `/${cat.slug}` }] : []),
-    ...(s.citySlug ? [{ name: s.city, url: pair ? `/${cat.slug}/${s.citySlug}` : `/recherche/${s.citySlug}` }] : []),
+    ...(s.citySlug ? [{ name: s.city, url: pair ? `/${cat.slug}/${s.citySlug}` : `/salons/${s.citySlug}` }] : []),
     { name: s.name, url: `/salon/${s.slug}` },
   ]
 
+  // Questions fréquentes the salon wrote in Rezervy Pro (plain text).
+  const faqs = (s.faq ?? []).map((f) => [f.q, f.a])
+
   return (
     <>
-      <JsonLd data={[salonLd(s, cat), breadcrumbLd(crumbs)]} />
+      {/* One document: the salon, its FAQ (linked to it) and the breadcrumb. */}
+      <JsonLd data={salonPageLd(s, cat, crumbs)} />
 
       <div className="wrap" style={{ margin: "0 auto", padding: "22px 24px 60px" }}>
         {/* Visible trail back to the category and city listings — real links
@@ -137,14 +149,18 @@ export default async function SalonPage({ params }) {
           )}
 
           <div style={{ minWidth: 0, flex: 1 }}>
-            <h1 className="serif" style={{ fontSize: 26, margin: 0, fontWeight: 400 }}>{s.name}</h1>
+            <h1 className="serif" style={{ fontSize: 26, margin: 0, fontWeight: 400 }}>
+              {s.name}
+              {s.verified && <VerifiedMark size={20} style={{ marginLeft: 8, verticalAlign: "-0.12em" }} />}
+            </h1>
+            {s.verified && <VerifiedPill style={{ marginTop: 8 }} />}
             {/* Address and phone, each only when the salon has given it — a
                 slogan here told the visitor nothing they could act on. */}
             {(where || s.phone) && (
               <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 12.5, color: "var(--muted)", marginTop: 5 }}>
                 {where && <span>{where}</span>}
                 {s.phone && (
-                  <a href={`tel:${s.phone.replace(/\s/g, "")}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>
+                  <a href={`tel:${s.phone.replace(/\s/g, "")}`} title={`Appeler ${s.name}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>
                     {s.phone}
                   </a>
                 )}
@@ -275,6 +291,7 @@ export default async function SalonPage({ params }) {
                 {s.phone && (
                   <a
                     href={`tel:${s.phone.replace(/\s/g, "")}`}
+                    title={`Appeler ${s.name}`}
                     style={{ display: "flex", alignItems: "center", gap: 10, background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
                   >
                     <span aria-hidden="true">✆</span>
@@ -286,6 +303,7 @@ export default async function SalonPage({ params }) {
                 {s.email && (
                   <a
                     href={`mailto:${s.email}`}
+                    title={`Écrire à ${s.name}`}
                     style={{ display: "flex", alignItems: "center", gap: 10, border: "1px solid var(--accent-line)", color: "var(--gold-dark)", borderRadius: 12, padding: "11px 16px", fontWeight: 800, fontSize: 13 }}
                   >
                     <span aria-hidden="true">✉</span>
@@ -330,6 +348,16 @@ export default async function SalonPage({ params }) {
             )}
           </div>
         </div>
+
+        {/* The salon's own answers to what clients ask — written in Rezervy Pro. */}
+        {faqs.length > 0 && (
+          <section style={{ marginTop: 34 }} aria-labelledby="salon-faq">
+            <h2 id="salon-faq" className="serif" style={{ fontSize: 20, margin: "0 0 12px", fontWeight: 400 }}>
+              Questions fréquentes
+            </h2>
+            <FaqAccordion faqs={faqs} />
+          </section>
+        )}
 
         {/* Long-form copy, last: it serves search more than the visitor, so it
             sits below everything that leads to a booking. */}

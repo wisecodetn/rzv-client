@@ -1,6 +1,6 @@
 "use client"
 import { Fragment, useEffect, useRef, useState } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { safeNext } from "@/lib/safe-next"
 import { usePathname } from "next/navigation"
 import "./assistant-bubble.css"
@@ -30,7 +30,7 @@ const TEASER_AFTER_MS = 6000
 const MAX_CHARS = 800
 
 const LINKS = [
-  { href: "/recherche", label: "Trouver un salon", d: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z M21 21l-4.3-4.3" },
+  { href: "/salons", label: "Trouver un salon", d: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z M21 21l-4.3-4.3" },
   { href: "/gerer-rendez-vous", label: "Gérer un rendez-vous", d: "M4 5h16v16H4z M4 9.5h16 M8.5 3v4 M15.5 3v4" },
   { href: "/centre-aide", label: "Centre d’aide", d: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6 M12 17h.01" },
   { href: "/contact", label: "Contacter l’équipe", d: "M4 6h16v12H4z M4 7l8 6 8-6" },

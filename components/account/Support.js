@@ -1,5 +1,5 @@
 "use client"
-import Link from "next/link"
+import Link from "@/components/Link"
 
 import { useState } from "react"
 import { errorText } from "@/lib/errors"
@@ -165,7 +165,7 @@ export function Support() {
                 {m.attachments?.length > 0 && (
                   <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                     {m.attachments.map((a) => (
-                      <a key={a} href={a} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "var(--gold-dark)", fontWeight: 700 }}>
+                      <a key={a} href={a} title="Ouvrir la pièce jointe (nouvel onglet)" target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "var(--gold-dark)", fontWeight: 700 }}>
                         Pièce jointe
                       </a>
                     ))}

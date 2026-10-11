@@ -7,7 +7,7 @@ export default function robots() {
   if (!INDEXABLE) return { rules: [{ userAgent: "*", allow: "/" }] }
   return {
     rules: [
-      // /recherche is NOT disallowed: the city pages (/recherche/tunis) are
+      // /salons is NOT disallowed: the city pages (/salons/tunis) are
       // indexable SEO landings; the query-search variants carry their own
       // noindex meta — which crawlers can only see if the URL isn't blocked.
       { userAgent: "*", allow: "/", disallow: ["/compte", "/rdv/", "/api/", "/verifier-email", "/reinitialiser-mot-de-passe"] },

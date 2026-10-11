@@ -1,5 +1,5 @@
-import Link from "next/link"
-import { liftHeadings } from "@/lib/rich-html"
+import Link from "@/components/Link"
+import { liftHeadings, titleLinks } from "@/lib/rich-html"
 import { notFound } from "next/navigation"
 import Photo from "@/components/Photo"
 import JsonLd from "@/components/JsonLd"
@@ -99,7 +99,7 @@ export default async function BlogPost({ params }) {
         style={{ marginTop: 26, fontSize: 15.5, lineHeight: 1.8, color: "var(--ink-2, var(--ink))" }}
         // Cleaned by the API (sanitize-html, on write and on read); headings lifted
         // so the article's top level sits right under the page's h1.
-        dangerouslySetInnerHTML={{ __html: liftHeadings(p.content) }}
+        dangerouslySetInnerHTML={{ __html: titleLinks(liftHeadings(p.content)) }}
       />
 
       {/* Book CTA */}

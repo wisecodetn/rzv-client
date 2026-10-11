@@ -5,8 +5,8 @@ import { SITE } from "@/lib/site"
 import { pageMeta } from "@/lib/meta"
 
 /**
- * The SEO city page /recherche/<ville> (indexable, SSG/ISR). The free search's
- * old /recherche/page-N links are redirected to /recherche?page=N by proxy.js
+ * The SEO city page /salons/<ville> (indexable, SSG/ISR). The free search's
+ * old /salons/page-N links are redirected to /salons?page=N by proxy.js
  * before they get here.
  */
 const parsePage = (seg) => {
@@ -22,7 +22,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }) {
   const { page: seg } = await params
-  if (parsePage(seg)) return { title: "Recherche", robots: { index: false, follow: true } }
+  if (parsePage(seg)) return { title: "Trouver un salon", robots: { index: false, follow: true } }
   const city = await getCity(seg)
   if (!city) return {}
   const q = await querySalons({ city: city.slug })
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
   const what = names.length ? names.join(", ").replace(/^./, (ch) => ch.toUpperCase()) : "Salons de beauté"
   const title = `Salons de beauté à ${city.name} — ${q.total} adresse${q.total > 1 ? "s" : ""}`
   const description = `${what} à ${city.name} : ${q.total > 1 ? `comparez ${q.total} salons, leurs prix et leurs avis` : "1 salon, ses prix et ses avis"}, et réservez en ligne. Confirmation par e-mail.`
-  return pageMeta({ title, description, path: `/recherche/${city.slug}` })
+  return pageMeta({ title, description, path: `/salons/${city.slug}` })
 }
 
 export default async function RechercheSegPage({ params }) {

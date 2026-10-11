@@ -21,12 +21,12 @@ const PIN_HTML = `<div class="rzv-pin"><svg viewBox="0 0 30 40" width="30" heigh
 function popupHtml(s, withListButton) {
   const where = [s.area, s.city].filter(Boolean).join(", ")
   const logo = s.logo
-    ? `<a class="rzv-pop-media" href="/salon/${esc(s.slug)}" aria-hidden="true" tabindex="-1"><img src="${esc(s.logo)}" alt="" loading="lazy"/></a>`
+    ? `<a class="rzv-pop-media" href="/salon/${esc(s.slug)}" title="${esc(s.name)}" aria-hidden="true" tabindex="-1"><img src="${esc(s.logo)}" alt="" loading="lazy"/></a>`
     : ""
   return `<div class="rzv-pop">
     ${logo}
     <div class="rzv-pop-body">
-      <a class="rzv-pop-name" href="/salon/${esc(s.slug)}">${esc(s.name)}</a>
+      <a class="rzv-pop-name" href="/salon/${esc(s.slug)}" title="${esc(s.name)}">${esc(s.name)}</a>
       <div class="rzv-pop-meta">${Number(s.rev) > 0 ? `<span class="rzv-pop-rate">★ ${esc(s.rate)}</span> <span>(${esc(s.rev)} avis)</span>` : `<span class="rzv-pop-new">Nouveau</span>`}${where ? ` · ${esc(where)}` : ""}</div>
       ${s.address ? `<div class="rzv-pop-addr">${esc(s.address)}</div>` : ""}
       <div class="rzv-pop-row">
@@ -34,8 +34,8 @@ function popupHtml(s, withListButton) {
         <span class="rzv-pop-price">dès <b>${esc(s.from)} TND</b></span>
       </div>
       <div class="rzv-pop-actions">
-        <a class="rzv-pop-btn is-primary" href="/salon/${esc(s.slug)}/reserver">Réserver</a>
-        <a class="rzv-pop-btn" href="/salon/${esc(s.slug)}">Voir le salon</a>
+        <a class="rzv-pop-btn is-primary" href="/salon/${esc(s.slug)}/reserver" title="Réserver chez ${esc(s.name)}">Réserver</a>
+        <a class="rzv-pop-btn" href="/salon/${esc(s.slug)}" title="Voir ${esc(s.name)}">Voir le salon</a>
       </div>
       ${withListButton ? `<button type="button" class="rzv-pop-list" data-list="${esc(s.slug)}">Voir dans la liste ↓</button>` : ""}
     </div>

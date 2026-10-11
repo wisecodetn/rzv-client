@@ -51,7 +51,7 @@ export default function SalonMap({ lat, lng, name, address, zoom = 15 }) {
         // One host: OpenStreetMap asks clients not to use the old a/b/c subdomains.
         L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          attribution: '© <a href="https://www.openstreetmap.org/copyright" title="OpenStreetMap — droits d’auteur">OpenStreetMap</a>',
         }).addTo(m)
 
         // A plain div marker — Leaflet's default icon needs bundled image
@@ -104,6 +104,7 @@ export default function SalonMap({ lat, lng, name, address, zoom = 15 }) {
         <div style={{ fontSize: 12.5, color: "var(--muted-2)", flex: 1, minWidth: 0 }}>{address}</div>
         <a
           href={directions}
+          title={`Itinéraire vers ${name} (Google Maps, nouvel onglet)`}
           target="_blank"
           rel="noopener noreferrer"
           style={{

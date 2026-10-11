@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import JsonLd from "@/components/JsonLd"
 import CityView from "@/components/CityView"
 import { breadcrumbLd, itemListLd } from "@/lib/jsonld"

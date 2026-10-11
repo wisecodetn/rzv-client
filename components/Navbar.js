@@ -1,5 +1,5 @@
 "use client"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { usePathname } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { useAuth } from "./AuthProvider"
@@ -147,7 +147,7 @@ export default function Navbar() {
               <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--line)", flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12.5, color: "var(--muted)" }}>De nouveaux salons rejoignent Rezervy chaque mois.</span>
                 <div style={{ flex: 1 }} />
-                <Link href="/recherche" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 800 }}>Explorer tous les salons</Link>
+                <Link href="/salons" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 10, padding: "9px 16px", fontSize: 12.5, fontWeight: 800 }}>Explorer tous les salons</Link>
               </div>
             </div>
           </div>

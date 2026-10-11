@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import PageShell, { Section } from "@/components/PageShell"
 import { getAssistantStatus } from "@/lib/assistant"
 import { pageMeta } from "@/lib/meta"
@@ -16,7 +16,7 @@ export const metadata = pageMeta({
    assistant purges). Change the code and this page together. */
 export default async function Confidentialite() {
   const { retentionDays: days } = await getAssistantStatus()
-  const mail = <a href={`mailto:${OPERATOR.email}`}>{OPERATOR.email}</a>
+  const mail = <a href={`mailto:${OPERATOR.email}`} title={`Écrire à ${OPERATOR.email}`}>{OPERATOR.email}</a>
   return (
     <PageShell title="Politique de confidentialité" crumb="Confidentialité" maxWidth={800} subtitle="Dernière mise à jour : octobre 2026.">
       <Section h="Responsable du traitement">

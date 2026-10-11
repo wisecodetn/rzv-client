@@ -1,5 +1,5 @@
 "use client"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { Card, H, dFull, useAccountFetch, LoadError } from "./shared"
 
 /* ── Abonnements & fidélité ──────────────────────────────────────── */

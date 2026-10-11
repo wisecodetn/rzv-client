@@ -30,3 +30,18 @@ test("article headings are lifted so the first level is h2", () => {
   assert.equal(liftHeadings("<p>no heading</p>"), "<p>no heading</p>")
   assert.equal(liftHeadings('<h4 class="x">A</h4>'), '<h2 class="x">A</h2>', "attributes kept")
 })
+
+test("links in authored HTML get a title from their own words", async () => {
+  const { titleLinks } = await import("../lib/rich-html.js")
+  assert.equal(titleLinks('<p><a href="/coiffure">Les <b>salons</b></a></p>'), '<p><a href="/coiffure" title="Les salons">Les <b>salons</b></a></p>')
+  assert.equal(titleLinks('<a href="/x" title="Mine">y</a>'), '<a href="/x" title="Mine">y</a>', "an author's title is kept")
+  assert.equal(titleLinks('<a href="/x">say "hi"</a>'), '<a href="/x" title="say &quot;hi&quot;">say "hi"</a>', "quotes escaped")
+})
+
+test("site links take their title from their visible words", async () => {
+  const { createElement: h } = await import("react")
+  const { titleOf } = await import("../lib/link-title.js")
+  assert.equal(titleOf(["Voir tout le blog →"]), "Voir tout le blog")
+  assert.equal(titleOf(h("div", null, h("span", { "aria-hidden": true }, "C"), h("span", null, "Coiffure"))), "Coiffure", "hidden glyphs left out")
+  assert.equal(titleOf(h("div", null, h("img", { alt: "Salon Nour" }))), "Salon Nour", "an image speaks through its alt")
+})

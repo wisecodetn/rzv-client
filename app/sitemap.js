@@ -42,11 +42,11 @@ export default async function sitemap() {
     entries.push({ url: url(`/blog/${p.slug}`), lastModified: new Date(p.date), changeFrequency: "monthly", priority: 0.5 })
   }
 
-  // City search pages (/recherche/<ville>) for cities that have salons.
+  // City search pages (/salons/<ville>) for cities that have salons.
   for (const [slug, count] of Object.entries(cities)) {
-    entries.push({ url: url(`/recherche/${slug}`), lastModified: now, changeFrequency: "weekly", priority: 0.7 })
+    entries.push({ url: url(`/salons/${slug}`), lastModified: now, changeFrequency: "weekly", priority: 0.7 })
     for (let n = 2; n <= Math.ceil(count / pageSize); n++) {
-      entries.push({ url: url(`/recherche/${slug}/page-${n}`), lastModified: now, changeFrequency: "weekly", priority: 0.5 })
+      entries.push({ url: url(`/salons/${slug}/page-${n}`), lastModified: now, changeFrequency: "weekly", priority: 0.5 })
     }
   }
 

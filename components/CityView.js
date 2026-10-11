@@ -1,15 +1,16 @@
 "use client"
 import { OPERATOR } from "@/lib/site"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { useRouter } from "next/navigation"
 import Photo from "./Photo"
 import SalonMap from "./SalonMap"
 import FavButton from "./FavButton"
 import { useCatalog } from "./CatalogProvider"
-import Image from 'next/image'
+import Image from "@/components/Image"
 import { de } from "@/lib/fr"
 import { scrollBehavior } from "@/lib/motion"
+import { VerifiedMark } from "./VerifiedBadge"
 
 const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n)
 const SORTS = [
@@ -123,6 +124,7 @@ const SalonRow = memo(function SalonRow({ s, catSlugs, active, onHover, first = 
             {/* H3: each salon is a section under the page's H2 (H1 → H2 → H3). */}
             <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, lineHeight: 1.3 }}>
               <Link href={`/salon/${s.slug}`} style={{ color: "var(--ink)" }}>{s.name}</Link>
+              {s.verified && <VerifiedMark size={15} style={{ marginLeft: 6 }} />}
             </h3>
             <span style={{ whiteSpace: "nowrap" }}><span style={{ fontSize: 12.5, fontWeight: 800, color: "var(--ink)" }}>★ {s.rate}</span> <span style={{ fontSize: 12, color: "var(--faint)" }}>({s.rev})</span></span>
           </div>
@@ -607,7 +609,7 @@ export default function CityView({ salons, mapSalons, cat, city, page = 1, total
       {/* <div style={{ textAlign: "center", padding: "60px 24px 68px" }}>
         <div className="serif" style={{ fontSize: 26 }}>Encore des questions ?</div>
         <div style={{ fontSize: 14.5, color: "var(--muted)", marginTop: 12, lineHeight: 1.65, maxWidth: 540, marginLeft: "auto", marginRight: "auto" }}>Décrivez votre situation pour recevoir des conseils adaptés de la part de l'équipe Rezervy.</div>
-        <a href={`mailto:${OPERATOR.email}`} className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "var(--gold)", color: "var(--on-gold)", borderRadius: 999, padding: "14px 28px", fontSize: 14.5, fontWeight: 700, marginTop: 26, whiteSpace: "nowrap" }}>
+        <a href={`mailto:${OPERATOR.email}`} title={`Écrire à ${OPERATOR.email}`} className="btn-gold" style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "var(--gold)", color: "var(--on-gold)", borderRadius: 999, padding: "14px 28px", fontSize: 14.5, fontWeight: 700, marginTop: 26, whiteSpace: "nowrap" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z M22 6l-10 7L2 6" /></svg>
           Contactez-nous
         </a>

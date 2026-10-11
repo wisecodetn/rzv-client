@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useAuth } from "../AuthProvider"
 import { AuthLayout, Field, PasswordField, SubmitBtn, Divider, GoogleButton, GoogleConsent, ErrorMsg, linkStyle, useGuestOnly } from "./AuthUI"

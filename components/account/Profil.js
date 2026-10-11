@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { useAuth } from "../AuthProvider"
 import { errorText } from "@/lib/errors"
 import { Card, H } from "./shared"

@@ -1,6 +1,6 @@
-import { notFound } from "next/navigation"
+import { notFound, permanentRedirect } from "next/navigation"
 import BookingFlow from "@/components/BookingFlow"
-import { getSalon } from "@/lib/data"
+import { getSalon, getSalonRedirect } from "@/lib/data"
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -12,7 +12,15 @@ export default async function ReserverPage({ params, searchParams }) {
   const { slug } = await params
   const sp = (await searchParams) || {}
   const s = await getSalon(slug)
-  if (!s) notFound()
+  if (!s) {
+    // A former address: same booking page under the current one, query kept (?svc=…).
+    const to = await getSalonRedirect(slug)
+    if (to) {
+      const q = new URLSearchParams(Object.entries(sp).flatMap(([k, v]) => (Array.isArray(v) ? v.map((x) => [k, x]) : v == null ? [] : [[k, v]]))).toString()
+      permanentRedirect(`/salon/${to}/reserver${q ? `?${q}` : ""}`)
+    }
+    notFound()
+  }
   // The salon page links `?svc=<service id>`. This used to read it as a
   // Number — an index into the flattened service list — so a real id parsed to
   // NaN and nothing was ever preselected.

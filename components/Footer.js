@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import { SITE, OPERATOR } from "@/lib/site"
 import { getSiteContent } from "@/lib/site-content"
 import { getCategories, getCities, getCoverage } from "@/lib/data"
@@ -6,7 +6,7 @@ import Logo from "./brand/Logo"
 import NewsletterForm from "./newsletter/NewsletterForm"
 
 const Social = ({ href, d, label }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${label} (nouvel onglet)`} className="pill" style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--muted-2)" }}>
+  <a href={href} target="_blank" rel="noopener noreferrer" aria-label={`${label} (nouvel onglet)`} title={`Rezervy sur ${label}`} className="pill" style={{ width: 34, height: 34, borderRadius: "50%", border: "1px solid var(--line-2)", display: "inline-flex", alignItems: "center", justifyContent: "center", color: "var(--muted-2)" }}>
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">{d}</svg>
   </a>
 )
@@ -73,7 +73,7 @@ export default async function Footer() {
           </Col>
           {footCities.length > 0 && (
             <Col title="Villes populaires">
-              {footCities.map((c) => <F key={c.slug} href={`/recherche/${c.slug}`}>Salons à {c.name}</F>)}
+              {footCities.map((c) => <F key={c.slug} href={`/salons/${c.slug}`}>Salons à {c.name}</F>)}
             </Col>
           )}
           <Col title="Rezervy">
@@ -97,10 +97,10 @@ export default async function Footer() {
           <span>© 2026 Rezervy — la beauté, sur rendez-vous</span>
           <div style={{ flex: 1 }} />
           <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>Tunisie · Français</span>
-          <a href={SITE.proUrl} target="_blank" rel="noopener noreferrer" className="link-soft" style={{ color: "var(--muted)" }}>Espace professionnel</a>
+          <a href={SITE.proUrl} title="Espace professionnel — Rezervy Pro (nouvel onglet)" target="_blank" rel="noopener noreferrer" className="link-soft" style={{ color: "var(--muted)" }}>Espace professionnel</a>
           <span>
             Rezervy est édité par{" "}
-            <a href="https://wisecode.tn" target="_blank" rel="noopener" className="link-soft" style={{ color: "var(--ink)", fontWeight: 700 }}>{OPERATOR.name}</a>
+            <a href="https://wisecode.tn" title="Wise Code, éditeur de Rezervy (nouvel onglet)" target="_blank" rel="noopener" className="link-soft" style={{ color: "var(--ink)", fontWeight: 700 }}>{OPERATOR.name}</a>
             {" "}· {OPERATOR.city}
           </span>
         </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import Image from "next/image"
+import Image from "@/components/Image"
 import MediaLightbox from "./MediaLightbox"
 
 /**

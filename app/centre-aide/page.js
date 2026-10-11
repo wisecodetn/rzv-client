@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import PageShell from "@/components/PageShell"
 import FaqAccordion from "@/components/FaqAccordion"
 import { getSiteContent } from "@/lib/site-content"

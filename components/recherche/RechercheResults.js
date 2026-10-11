@@ -1,4 +1,4 @@
-import Link from "next/link"
+import Link from "@/components/Link"
 import SalonCard from "@/components/SalonCard"
 import SearchForm from "./SearchForm"
 import { getCategories, getCategory, getCity, searchSalons } from "@/lib/data"
@@ -40,13 +40,13 @@ export default async function RechercheResults({ params, page }) {
   ])
   const qs = buildQs(params)
   // The free search is one dynamic page; its pages are a query parameter. A
-  // /recherche/page-N path shares a route with the pre-rendered city pages,
+  // /salons/page-N path shares a route with the pre-rendered city pages,
   // where reading the query is not allowed — page 2 used to crash there.
   const href = (n) => {
     const s = new URLSearchParams(qs)
     if (n > 1) s.set("page", String(n))
     const out = s.toString()
-    return `/recherche${out ? `?${out}` : ""}`
+    return `/salons${out ? `?${out}` : ""}`
   }
 
   const catName = catNode?.name || null
@@ -65,7 +65,7 @@ export default async function RechercheResults({ params, page }) {
       <nav aria-label="Fil d’Ariane" style={{ fontSize: 12, color: "var(--muted)", display: "flex", gap: 6, alignItems: "center" }}>
         <Link href="/" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Accueil</Link>
         <span>/</span>
-        <span style={{ fontWeight: 700, color: "var(--ink)" }}>Recherche</span>
+        <span style={{ fontWeight: 700, color: "var(--ink)" }}>Salons</span>
       </nav>
       <h1 className="serif" style={{ fontSize: 30, marginTop: 12, marginBottom: 0, fontWeight: 400 }}>
         {label ? "Résultats de recherche" : "Tous les salons"}

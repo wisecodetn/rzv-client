@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useMemo, useRef, useState } from "react"
-import Link from "next/link"
+import Link from "@/components/Link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "./AuthProvider"
 import { flatServices } from "@/lib/salon-utils"
@@ -568,7 +568,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           <br />{CANCEL_RULE}
           {salon.phone && (
             <>
-              <br />Une question ? <a href={`tel:${salon.phone.replace(/\s/g, "")}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Appeler le salon ({salon.phone})</a>
+              <br />Une question ? <a href={`tel:${salon.phone.replace(/\s/g, "")}`} title={`Appeler ${salon.name}`} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>Appeler le salon ({salon.phone})</a>
             </>
           )}
         </div>
@@ -856,7 +856,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                     {salon.name} n'a pas encore d'agenda en ligne pour « {svc.n} ».{" "}
                     {salon.phone ? (
                       <>Contactez le salon pour prendre rendez-vous :{" "}
-                        <a href={`tel:${String(salon.phone).replace(/\s/g, "")}`} style={{ color: "var(--ink)", fontWeight: 800 }}>{salon.phone}</a>
+                        <a href={`tel:${String(salon.phone).replace(/\s/g, "")}`} title={`Appeler ${salon.name}`} style={{ color: "var(--ink)", fontWeight: 800 }}>{salon.phone}</a>
                       </>
                     ) : (
                       "Contactez directement le salon pour prendre rendez-vous."

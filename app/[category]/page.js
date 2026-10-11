@@ -1,5 +1,5 @@
-import Link from "next/link"
-import Image from "next/image"
+import Link from "@/components/Link"
+import Image from "@/components/Image"
 import { notFound } from "next/navigation"
 import Photo from "@/components/Photo"
 import JsonLd from "@/components/JsonLd"

@@ -25,9 +25,13 @@ const RECHECK_MS = 10_000
 export const STATIC_ROOTS = new Set([
   "api", "assistant", "blog", "carte-cadeau", "centre-aide", "compte", "compte-supprime", "conditions-generales",
   "confidentialite", "connexion", "contact", "devenir-partenaire", "gerer-rendez-vous", "inscription",
-  "liste-attente", "mot-de-passe-oublie", "parrainage", "qui-sommes-nous", "rdv", "recherche", "reinitialiser-mot-de-passe",
-  "salon", "telephone", "verifier-email",
+  "liste-attente", "mot-de-passe-oublie", "parrainage", "qui-sommes-nous", "rdv", "reinitialiser-mot-de-passe",
+  "salon", "salons", "telephone", "verifier-email",
 ])
+
+/** Routes made by FILES at the root of app/ (metadata routes), with or without
+ *  the hash suffix Next may add. Checked by tests/proxy.test.mjs against app/. */
+export const ROOT_FILE_ROUTES = /^(opengraph-image|twitter-image|icon|apple-icon|sitemap|robots|manifest)(-[\w-]+)?(\.\w+)?$/
 
 let table = null
 let loadedAt = 0
@@ -39,12 +43,15 @@ async function load() {
       if (!r.ok) throw new Error(`${r.status} ${p}`)
       return r.json()
     })
-  const [cats, villes, salons, coverage, posts] = await Promise.all([
+  const [cats, villes, salons, coverage, posts, moved] = await Promise.all([
     get("/public/categories"),
     get("/public/villes"),
     get("/public/salons/slugs"),
     get("/public/salons/coverage"),
     get("/public/blog/slugs"),
+    // Former salon addresses: the page answers them with a permanent redirect.
+    // Optional, so an API without the route does not take the table down.
+    get("/public/salons/redirects").catch(() => []),
   ])
   const categories = new Set()
   const walk = (n) => {
@@ -58,6 +65,7 @@ async function load() {
     categories,
     cities: new Set(villes.map((v) => v.slug)),
     salons: new Set(salons),
+    moved: new Set(Array.isArray(moved) ? moved : []),
     posts: new Set(posts),
     pairPages: new Map((coverage.pairs || []).map((p) => [`${p.category}|${p.city}`, pages(p.count)])),
     cityPages: new Map((coverage.cities || []).map((c) => [c.city, pages(c.count)])),
@@ -96,9 +104,14 @@ const isOgImage = (seg) => (seg || "").startsWith("opengraph-image")
 /** True when the path names something that does not exist. */
 export function isUnknown(t, segs) {
   const [first, second, third] = segs
-  if (first === "salon") return !!second && !t.salons.has(second)
+  // Route FILES at the root of app/ (opengraph-image.js → /opengraph-image,
+  // robots, sitemap, icons). Not directories, so not in STATIC_ROOTS — and
+  // without this line /opengraph-image was refused as an unknown category:
+  // every page sharing the default image had a broken preview.
+  if (segs.length === 1 && ROOT_FILE_ROUTES.test(first)) return false
+  if (first === "salon") return !!second && !t.salons.has(second) && !t.moved?.has(second)
   if (first === "blog") return !!second && !t.posts.has(second)
-  if (first === "recherche") {
+  if (first === "salons") {
     if (!second) return false
     if (!t.cities.has(second)) return true
     if (third === undefined || isOgImage(third)) return false
@@ -118,10 +131,10 @@ export function isUnknown(t, segs) {
 export async function proxy(req) {
   const segs = req.nextUrl.pathname.split("/").filter(Boolean).map(decode)
   if (!segs.length) return NextResponse.next()
-  // Old free-search pagination links (/recherche/page-N?q=…) → /recherche?…&page=N.
-  if (segs[0] === "recherche" && segs.length === 2 && pageNumber(segs[1])) {
+  // Old free-search pagination links (/salons/page-N?q=…) → /salons?…&page=N.
+  if (segs[0] === "salons" && segs.length === 2 && pageNumber(segs[1])) {
     const url = req.nextUrl.clone()
-    url.pathname = "/recherche"
+    url.pathname = "/salons"
     if (pageNumber(segs[1]) > 1) url.searchParams.set("page", String(pageNumber(segs[1])))
     return NextResponse.redirect(url, 308)
   }
