@@ -6,8 +6,8 @@ import PostCover from "@/components/blog/PostCover"
 import { pageMeta } from "@/lib/meta"
 
 export const metadata = pageMeta({
-  title: "Le blog beauté",
-  description: "Conseils coiffure, barbier, onglerie et spa : guides pratiques, tendances et astuces de nos expert·e·s partenaires en Tunisie.",
+  absoluteTitle: "Le Blog Rezervy : Conseils Beauté, Coiffure et Bien-être en Tunisie",
+  description: "Découvrez les meilleurs conseils beauté, guides coiffure et tendances bien-être sur le blog Rezervy. Votre source d'inspiration en Tunisie.",
   path: "/blog",
 })
 

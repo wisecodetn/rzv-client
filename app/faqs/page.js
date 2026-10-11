@@ -3,11 +3,13 @@ import PageShell from "@/components/PageShell"
 import FaqAccordion from "@/components/FaqAccordion"
 import { getSiteContent } from "@/lib/site-content"
 import { pageMeta } from "@/lib/meta"
+import JsonLd from "@/components/JsonLd"
+import { faqLd, breadcrumbLd } from "@/lib/jsonld"
 
 export const metadata = pageMeta({
-  title: "Centre d'aide",
-  description: "Besoin d'aide ? Retrouvez les réponses aux questions les plus fréquentes sur la réservation, le paiement, l'annulation et la fidélité Rezervy.",
-  path: "/centre-aide",
+  absoluteTitle: "FAQ - Réservation Salon Beauté en Ligne | Rezervy",
+  description: "Questions fréquemment posées sur Rezervy : comment réserver, annuler, payer, laisser un avis, trouver toutes les réponses.",
+  path: "/faqs",
 })
 
 const TOPICS = [
@@ -20,8 +22,10 @@ const TOPICS = [
 export default async function CentreAide() {
   const { faqs: FAQS } = await getSiteContent()
   return (
+    <>
+    <JsonLd data={[breadcrumbLd([{ name: "Accueil", url: "/" }, { name: "FAQ", url: "/faqs" }]), ...(FAQS.length ? [faqLd(FAQS)] : [])]} />
     <PageShell
-      title="Centre d'aide"
+      title="Questions fréquentes"
       subtitle="Trouvez rapidement une réponse. Si vous ne trouvez pas, notre équipe est là pour vous."
     >
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
@@ -47,5 +51,6 @@ export default async function CentreAide() {
         <Link href="/contact" className="btn-gold" style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 11, padding: "11px 20px", fontWeight: 800, fontSize: 13, whiteSpace: "nowrap" }}>Nous contacter</Link>
       </div>
     </PageShell>
+    </>
   )
 }

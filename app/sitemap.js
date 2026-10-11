@@ -15,10 +15,31 @@ export default async function sitemap() {
   const [cats, { pairs, cities, pageSize }, slugs, posts] = await Promise.all([getIndexedCategories(), getCoverage(), salonSlugs(), getPosts()])
 
   const entries = [{ url: url("/"), lastModified: now, changeFrequency: "daily", priority: 1 }]
-  // The indexable static pages (the noindex ones — sign-in, account, coming
-  // soon — stay out).
-  for (const p of ["/liste-attente", "/devenir-partenaire", "/qui-sommes-nous", "/centre-aide", "/assistant", "/contact", "/conditions-generales", "/confidentialite"]) {
-    entries.push({ url: url(p), lastModified: now, changeFrequency: "monthly", priority: p === "/devenir-partenaire" || p === "/liste-attente" ? 0.6 : 0.3 })
+  // The indexable static pages (the noindex ones — sign-in, account — stay
+  // out). Their addresses are the ones rezervy.io has always used.
+  const STATIC = {
+    "/salons": 0.7,
+    "/devenir-partenaire": 0.6,
+    "/liste-attente": 0.6,
+    "/zones-activites": 0.5,
+    "/a-propos": 0.5,
+    "/faqs": 0.5,
+    "/contact": 0.5,
+    "/carte-cadeau": 0.5,
+    "/cagnotte": 0.5,
+    "/fidelite": 0.5,
+    "/parrainage": 0.5,
+    "/referentiel-candidature": 0.5,
+    "/solutions-entreprises": 0.5,
+    "/collaboration-marques": 0.5,
+    "/glossaire": 0.5,
+    "/assistant": 0.3,
+    "/mentions-legales": 0.3,
+    "/cgv": 0.3,
+    "/confidentialite": 0.3,
+  }
+  for (const [p, priority] of Object.entries(STATIC)) {
+    entries.push({ url: url(p), lastModified: now, changeFrequency: "monthly", priority })
   }
 
   for (const c of cats) {

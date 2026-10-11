@@ -4,8 +4,8 @@ import { pageMeta } from "@/lib/meta"
 import { OPERATOR, OPERATOR_ADDRESS, telHref } from "@/lib/site"
 
 export const metadata = pageMeta({
-  title: "Nous contacter",
-  description: "Une question ? Contactez l'équipe Rezervy par e-mail, par téléphone (tous les jours de 8h à 22h) ou via le formulaire de contact.",
+  absoluteTitle: "Contactez Rezervy | Support Clients et Salons en Tunisie",
+  description: "Une question ? Un besoin d'assistance pour votre réservation ? Contactez l'équipe Rezervy. Support client disponible 7j/7, de 8h à 22h.",
   path: "/contact",
 })
 

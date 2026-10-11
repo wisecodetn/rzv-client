@@ -60,6 +60,11 @@ module.exports = {
   redirects() {
     return [
       { source: '/recherche', destination: '/salons', permanent: true },
+      // The pages live at the addresses rezervy.io has always used (and Google
+      // ranks); the names the new site briefly had redirect to them.
+      { source: '/qui-sommes-nous', destination: '/a-propos', permanent: true },
+      { source: '/centre-aide', destination: '/faqs', permanent: true },
+      { source: '/conditions-generales', destination: '/cgv', permanent: true },
       { source: '/recherche/:path*', destination: '/salons/:path*', permanent: true },
     ]
   },

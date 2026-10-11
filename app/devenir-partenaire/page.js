@@ -3,6 +3,9 @@ import { getPlans, fromLabel, formatPrice } from "@/lib/plans"
 import Image from "@/components/Image"
 import Photo from "@/components/Photo"
 import { pageMeta } from "@/lib/meta"
+import JsonLd from "@/components/JsonLd"
+import { breadcrumbLd } from "@/lib/jsonld"
+import { abs } from "@/lib/site"
 import { getCoverage } from "@/lib/data"
 
 // Today rzv-pro.wisecode.tn, pro.rezervy.io at launch (NEXT_PUBLIC_PRO_URL).
@@ -16,8 +19,8 @@ export async function generateMetadata() {
   const pl = await getPlans()
   const tail = offer(pl)
   return pageMeta({
-    title: "Devenir partenaire — Rezervy Pro pour les salons",
-    description: `Développez votre salon, barbershop ou spa avec Rezervy Pro : agenda intelligent, rappels par e-mail, suivi des encaissements, fiches clients et statistiques.${tail ? ` ${tail}.` : ""}`,
+    absoluteTitle: "Logiciel de gestion pour salon de beauté en Tunisie | Rezervy Pro",
+    description: `Rezervy Pro gère réservations, horaires, personnel, prestations, fichier clients, codes promo et avis de votre salon.${tail ? ` ${tail}.` : ""}`,
     path: "/devenir-partenaire",
   })
 }
@@ -48,6 +51,31 @@ export default async function PartnerPage() {
   ]
   return (
     <>
+      <JsonLd
+        data={[
+          {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "Rezervy Pro",
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web, Android",
+            url: abs("/devenir-partenaire"),
+            description: "Logiciel de gestion pour salon de beauté en Tunisie : réservations en ligne, agenda, équipe, prestations, fichier clients, codes promo et avis.",
+            publisher: { "@id": abs("/#organization") },
+            ...(pl?.plans?.length
+              ? {
+                  offers: pl.plans.map((p) => ({
+                    "@type": "Offer",
+                    name: p.name,
+                    price: p.price,
+                    priceCurrency: p.currency || "TND",
+                  })),
+                }
+              : {}),
+          },
+          breadcrumbLd([{ name: "Accueil", url: "/" }, { name: "Devenir partenaire", url: "/devenir-partenaire" }]),
+        ]}
+      />
       {/* Hero */}
       <section style={{ position: "relative", background: "linear-gradient(120deg,#1a1a1a,#000000 58%,#333333)", color: "#FFFFFF" }}>
         <div style={{ position: "absolute", inset: 0 }}>

@@ -23,10 +23,11 @@ const RECHECK_MS = 10_000
 
 /** First path segments owned by a static route — everything else is /[category]. */
 export const STATIC_ROOTS = new Set([
-  "api", "assistant", "blog", "carte-cadeau", "centre-aide", "compte", "compte-supprime", "conditions-generales",
-  "confidentialite", "connexion", "contact", "devenir-partenaire", "gerer-rendez-vous", "inscription",
-  "liste-attente", "mot-de-passe-oublie", "parrainage", "qui-sommes-nous", "rdv", "reinitialiser-mot-de-passe",
-  "salon", "salons", "telephone", "verifier-email",
+  "a-propos", "api", "assistant", "blog", "cagnotte", "carte-cadeau", "cgv", "collaboration-marques", "compte",
+  "compte-supprime", "confidentialite", "connexion", "contact", "devenir-partenaire", "faqs", "fidelite",
+  "gerer-rendez-vous", "glossaire", "inscription", "liste-attente", "mentions-legales", "mot-de-passe-oublie",
+  "parrainage", "rdv", "referentiel-candidature", "reinitialiser-mot-de-passe", "salon", "salons",
+  "solutions-entreprises", "telephone", "verifier-email", "zones-activites",
 ])
 
 /** Routes made by FILES at the root of app/ (metadata routes), with or without

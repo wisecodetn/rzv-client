@@ -295,7 +295,7 @@ export function Support() {
             Notre équipe répond généralement sous 24 h ouvrées.
             <br />
             Beaucoup de réponses se trouvent déjà au{" "}
-            <Link href="/centre-aide" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>centre d’aide</Link>.
+            <Link href="/faqs" style={{ color: "var(--gold-dark)", fontWeight: 700 }}>centre d’aide</Link>.
           </div>
         </div>
       )}

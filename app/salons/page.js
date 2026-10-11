@@ -1,9 +1,19 @@
 import { redirect } from "next/navigation"
+import { pageMeta } from "@/lib/meta"
 import RechercheResults, { parsePageParam, parseSearch } from "@/components/recherche/RechercheResults"
 
-export const metadata = {
-  title: "Trouver un salon",
-  robots: { index: false, follow: true },
+export async function generateMetadata({ searchParams }) {
+  const sp = (await searchParams) || {}
+  const filtered = Object.keys(sp).length > 0
+  return {
+    ...pageMeta({
+      absoluteTitle: "Tous les Salons de Beauté en Tunisie | Réservez en Ligne | Rezervy",
+      description:
+        "Découvrez tous nos salons de beauté en Tunisie. Coiffure, manucure, massage, barbier et plus. Réservez votre rendez-vous en quelques clics 24h/24.",
+      path: "/salons",
+    }),
+    ...(filtered ? { robots: { index: false, follow: true } } : {}),
+  }
 }
 
 export default async function RecherchePage({ searchParams }) {

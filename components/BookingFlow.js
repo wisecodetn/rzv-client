@@ -688,7 +688,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           </button>
           {submitErr && <div role="alert" style={{ fontSize: 12.5, color: "var(--red)", fontWeight: 700, textAlign: "center", marginTop: 10 }}>{submitErr}</div>}
           <div style={{ fontSize: 11, color: "var(--muted)", textAlign: "center", marginTop: 10 }}>
-            En envoyant la demande, vous acceptez les <Link href="/conditions-generales" prefetch={false} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>conditions générales</Link>.
+            En envoyant la demande, vous acceptez les <Link href="/cgv" prefetch={false} style={{ color: "var(--gold-dark)", fontWeight: 700 }}>conditions générales</Link>.
           </div>
         </div>
       </div>

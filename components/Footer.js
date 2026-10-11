@@ -50,7 +50,7 @@ export default async function Footer() {
           </div>
         </section>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr 1fr", gap: 30 }} className="footer-grid">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: "30px 24px" }} className="footer-grid">
           {/* Brand */}
           <div>
             <Logo size={28} wordSize={24} />
@@ -77,18 +77,32 @@ export default async function Footer() {
             </Col>
           )}
           <Col title="Rezervy">
-            <F href="/devenir-partenaire">Devenir partenaire</F>
-            <F href="/qui-sommes-nous">Qui sommes-nous</F>
-            <F href="/liste-attente">Liste d’attente</F>
+            <F href="/a-propos">À propos</F>
+            <F href="/zones-activites">Zones d'activités</F>
             <F href="/blog">Blog</F>
+            <F href="/liste-attente">Liste d’attente</F>
             <F href="/contact">Nous contacter</F>
           </Col>
+          <Col title="Partenaires">
+            <F href="/devenir-partenaire">Devenir partenaire</F>
+            <F href="/referentiel-candidature">Référentiel de candidature</F>
+            <F href="/solutions-entreprises">Solutions entreprises</F>
+            <F href="/collaboration-marques">Collaboration marques</F>
+          </Col>
+          <Col title="Offrir & fidélité">
+            <F href="/carte-cadeau">Carte cadeau</F>
+            <F href="/cagnotte">Cagnotte</F>
+            <F href="/fidelite">Fidélité</F>
+            <F href="/parrainage">Parrainage</F>
+          </Col>
           <Col title="Aide">
-            <F href="/centre-aide">Centre d'aide</F>
+            <F href="/faqs">Questions fréquentes</F>
+            <F href="/glossaire">Glossaire</F>
             <F href="/assistant">Assistant Rezervy</F>
             <F href="/gerer-rendez-vous">Gérer un rendez-vous</F>
-            <F href="/conditions-generales">Conditions générales</F>
+            <F href="/cgv">Conditions générales</F>
             <F href="/confidentialite">Confidentialité</F>
+            <F href="/mentions-legales">Mentions légales</F>
           </Col>
         </div>
 

@@ -163,7 +163,7 @@ export default async function AssistantPage() {
             {enabled ? (
               <AskAssistant className="btn-on-dark ai-btn">Discuter avec l’assistant</AskAssistant>
             ) : (
-              <Link href="/centre-aide" className="btn-on-dark ai-btn">
+              <Link href="/faqs" className="btn-on-dark ai-btn">
                 Voir le centre d’aide
               </Link>
             )}

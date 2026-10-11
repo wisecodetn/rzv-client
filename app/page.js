@@ -18,7 +18,12 @@ import { pageMeta } from "@/lib/meta"
 import { SITE } from "@/lib/site"
 
 export const metadata = {
-  ...pageMeta({ absoluteTitle: `${SITE.name} — ${SITE.tagline}`, description: SITE.description, path: "/" }),
+  ...pageMeta({
+    absoluteTitle: "Rezervy - Réservation Salon Coiffure & Beauté en Ligne | Tunisie",
+    description:
+      "Réservez votre rendez-vous coiffure, manucure, massage ou barbier en ligne en Tunisie. Trouvez les meilleurs salons beauté près de chez vous, 24h/24.",
+    path: "/",
+  }),
   keywords: ["réservation coiffeur Tunisie", "salon beauté Tunis", "barbier", "onglerie", "spa", "rendez-vous en ligne"],
 }
 

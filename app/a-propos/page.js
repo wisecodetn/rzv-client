@@ -3,12 +3,15 @@ import PageShell from "@/components/PageShell"
 import { SITE } from "@/lib/site"
 import { getPlans, fromLabel } from "@/lib/plans"
 import { pageMeta } from "@/lib/meta"
+import JsonLd from "@/components/JsonLd"
+import { breadcrumbLd } from "@/lib/jsonld"
+import { abs } from "@/lib/site"
 import { getSiteContent } from "@/lib/site-content"
 
 export const metadata = pageMeta({
-  title: "Qui sommes-nous",
-  description: "Rezervy, la marketplace beauté de Tunisie : notre mission, nos valeurs et l'équipe derrière la réservation en ligne de coiffure, barbier, onglerie et spa.",
-  path: "/qui-sommes-nous",
+  absoluteTitle: "À propos de Rezervy | Réservation de soins de beauté en Tunisie",
+  description: "Rezervy met en relation les Tunisiens et les meilleurs salons de coiffure, d'esthétique, d'onglerie et de spa. Disponibilités en temps réel, avis vérifiés.",
+  path: "/a-propos",
 })
 
 const VALUES = [
@@ -23,8 +26,21 @@ export default async function QuiSommesNous() {
   // constants: "480+ salons", "65 000 rendez-vous / mois", "4,8/5".
   const [plans, { stats: STATS }] = await Promise.all([getPlans(), getSiteContent()])
   return (
+    <>
+    <JsonLd
+      data={[
+        {
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          name: "À propos de Rezervy",
+          url: abs("/a-propos"),
+          about: { "@id": abs("/#organization") },
+        },
+        breadcrumbLd([{ name: "Accueil", url: "/" }, { name: "À propos", url: "/a-propos" }]),
+      ]}
+    />
     <PageShell
-      title="Qui sommes-nous"
+      title="À propos de Rezervy"
       subtitle="Rezervy est né d'une idée simple : réserver un rendez-vous beauté devrait être aussi facile que commander un taxi."
     >
       <div style={{ background: "var(--card)", border: "1px solid var(--line)", borderRadius: 18, padding: "24px 26px" }}>
@@ -62,5 +78,6 @@ export default async function QuiSommesNous() {
         <Link href="/devenir-partenaire" className="btn-on-dark" style={{ display: "inline-block", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 13.5, marginTop: 18 }}>Devenir partenaire</Link>
       </div>
     </PageShell>
+    </>
   )
 }

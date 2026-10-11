@@ -1,15 +1,19 @@
 import PageShell, { Section } from "@/components/PageShell"
 import { pageMeta } from "@/lib/meta"
+import JsonLd from "@/components/JsonLd"
+import { breadcrumbLd } from "@/lib/jsonld"
 import { OPERATOR, OPERATOR_ADDRESS } from "@/lib/site"
 
 export const metadata = pageMeta({
-  title: "Conditions générales d'utilisation",
-  description: "Conditions générales d'utilisation de Rezervy : compte, réservations, paiement au salon, annulation, avis et responsabilités.",
-  path: "/conditions-generales",
+  absoluteTitle: "Conditions Générales (CGU / CGV) | Rezervy",
+  description: "Consultez les conditions générales de Rezervy : réservation de soins beauté en Tunisie, paiement au salon, annulation, responsabilités et droit applicable.",
+  path: "/cgv",
 })
 
 export default function CGU() {
   return (
+    <>
+    <JsonLd data={breadcrumbLd([{ name: "Accueil", url: "/" }, { name: "Conditions générales", url: "/cgv" }])} />
     <PageShell title="Conditions générales d'utilisation" crumb="Conditions générales" maxWidth={800} subtitle="Dernière mise à jour : octobre 2026.">
       <Section h="1. Objet">
         La plateforme Rezervy est éditée par {OPERATOR.name}, {OPERATOR_ADDRESS} — téléphone {OPERATOR.phone},
@@ -75,5 +79,6 @@ export default function CGU() {
         ({OPERATOR.hours.toLowerCase()}).
       </Section>
     </PageShell>
+    </>
   )
 }

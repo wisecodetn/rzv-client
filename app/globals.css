@@ -1377,3 +1377,9 @@ a:focus-visible .rzv-mark-dot {
 .partners-arrow:disabled { opacity: 0.4; cursor: default; }
 @media (min-width: 820px) and (hover: hover) { .partners-arrow { display: inline-flex; } }
 @media (prefers-reduced-motion: reduce) { .partners-track { scroll-behavior: auto; } }
+
+/* Footer: the brand block on its own row, then up to six link columns. */
+.footer-grid > :first-child { grid-column: 1 / -1; }
+@media (max-width: 1000px) and (min-width: 861px) {
+  .footer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
