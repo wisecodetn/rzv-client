@@ -17,17 +17,26 @@ export async function generateMetadata({ params }) {
   const { slug } = await params
   const p = await getPost(slug)
   if (!p) return {}
-  const title = p.metaTitle || p.title
-  return pageMeta({
-    // A long article title would pass 60 characters once " · Rezervy" is
-    // added, and be cut in the results: it is then used as it is.
-    ...(title.length > 50 ? { absoluteTitle: title } : { title }),
-    description: p.metaDescription || p.excerpt,
-    path: `/blog/${p.slug}`,
-    type: "article",
-    // The article's own cover when it has one (the site card otherwise).
-    og: { publishedTime: p.date, ...(p.cover ? { images: [{ url: p.cover, alt: p.title }] } : {}) },
-  })
+  const author = p.author?.name || "Equipe Rezervy"
+  return {
+    ...pageMeta({
+      // "<titre> | Blog Rezervy" — the form rezervy.io's articles have always had.
+      absoluteTitle: `${p.metaTitle || p.title} | Blog Rezervy`,
+      description: p.metaDescription || p.excerpt,
+      clamp: false,
+      path: `/blog/${p.slug}`,
+      type: "article",
+      ...(p.keywords?.length ? { keywords: p.keywords } : {}),
+      // The article's own cover when it has one (the site card otherwise).
+      og: {
+        publishedTime: p.date,
+        authors: [author],
+        ...(p.keywords?.length ? { tags: p.keywords } : {}),
+        ...(p.cover ? { images: [{ url: p.cover, alt: p.title }] } : {}),
+      },
+    }),
+    authors: [{ name: author }],
+  }
 }
 
 const chip = { fontSize: 11, fontWeight: 800, color: "var(--gold-dark)", background: "var(--accent-soft)", borderRadius: 999, padding: "4px 10px", letterSpacing: "0.03em", textTransform: "uppercase" }
@@ -58,8 +67,12 @@ export default async function BlogPost({ params }) {
             headline: p.title,
             description: p.excerpt,
             datePublished: p.date,
-            dateModified: p.date,
-            author: { "@type": "Person", name: p.author.name },
+            dateModified: p.updatedAt ? p.updatedAt.slice(0, 10) : p.date,
+            // A team byline ("Equipe Rezervy") is the organisation, not a person.
+            author: /rezervy/i.test(p.author.name)
+              ? { "@type": "Organization", name: p.author.name, url: abs("/") }
+              : { "@type": "Person", name: p.author.name },
+            ...(p.keywords?.length ? { keywords: p.keywords.join(", ") } : {}),
             publisher: { "@id": abs("/#organization") },
             mainEntityOfPage: abs(`/blog/${p.slug}`),
             // Required for article rich results; only a real cover is used.

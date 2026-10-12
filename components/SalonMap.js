@@ -31,7 +31,7 @@ function popupHtml(s, withListButton) {
       ${s.address ? `<div class="rzv-pop-addr">${esc(s.address)}</div>` : ""}
       <div class="rzv-pop-row">
         ${s.slotLabel ? `<span class="rzv-pop-badge ${s.open ? "is-open" : ""}">${esc(s.slotLabel)}</span>` : ""}
-        <span class="rzv-pop-price">dès <b>${esc(s.from)} TND</b></span>
+        ${s.from > 0 ? `<span class="rzv-pop-price">dès <b>${esc(s.from)} TND</b></span>` : `<span class="rzv-pop-price">Prix sur devis</span>`}
       </div>
       <div class="rzv-pop-actions">
         <a class="rzv-pop-btn is-primary" href="/salon/${esc(s.slug)}/reserver" title="Réserver chez ${esc(s.name)}">Réserver</a>

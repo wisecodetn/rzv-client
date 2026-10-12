@@ -1,5 +1,6 @@
 "use client"
 import { OPERATOR } from "@/lib/site"
+import { priceText } from "@/lib/price"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import Link from "@/components/Link"
 import { useRouter } from "next/navigation"
@@ -135,7 +136,11 @@ const SalonRow = memo(function SalonRow({ s, catSlugs, active, onHover, first = 
             ))}
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 9, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12, color: "var(--muted)" }}>dès <span style={{ fontWeight: 800, color: "var(--ink)" }}>{from} TND</span></span>
+            {from > 0 ? (
+              <span style={{ fontSize: 12, color: "var(--muted)" }}>dès <span style={{ fontWeight: 800, color: "var(--ink)" }}>{from} TND</span></span>
+            ) : (
+              <span style={{ fontSize: 12, color: "var(--muted)" }}>Prix sur devis</span>
+            )}
             {/* Green only when the doors are actually open now. */}
             <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 9px", background: s.open ? "var(--green-soft)" : "var(--accent-soft)", color: s.open ? "var(--green)" : "var(--muted-2)" }}>{s.slotLabel}</span>
             <span style={{ flex: 1 }} />
@@ -155,7 +160,7 @@ const SalonRow = memo(function SalonRow({ s, catSlugs, active, onHover, first = 
             <div key={ts.n} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid var(--line-soft)", fontSize: 12.5 }}>
               <div style={{ minWidth: 0, flex: 1, fontWeight: 600 }}>{ts.n}</div>
               <div style={{ color: "var(--muted)", fontSize: 11.5, whiteSpace: "nowrap" }}>{ts.d}</div>
-              <div style={{ fontWeight: 800, whiteSpace: "nowrap" }}>{ts.p} TND</div>
+              <div style={{ fontWeight: 800, whiteSpace: "nowrap" }}>{priceText(ts.p)}</div>
               <Link href={`/salon/${s.slug}/reserver?svc=${encodeURIComponent(ts.id)}`} prefetch={false} style={{ fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 700, whiteSpace: "nowrap" }}>Réserver</Link>
             </div>
           ))}

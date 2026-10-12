@@ -10,6 +10,10 @@ import WaitlistJoin from "./salon/WaitlistJoin"
 import AboChooser from "./salon/AboChooser"
 import { errorText } from "@/lib/errors"
 import { scrollBehavior } from "@/lib/motion"
+import { isOnQuote, priceText } from "@/lib/price"
+
+/** A "sur devis" prestation (price 0): what the visitor is told instead of a total. */
+const QUOTE_NOTE = "Prix sur devis — le salon vous l’annonce et il se règle sur place."
 
 const fmtD = (m) => (m >= 60 ? Math.floor(m / 60) + "h" + (m % 60 ? String(m % 60).padStart(2, "0") : "") : m + " min")
 const T = (m) => String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0")
@@ -305,6 +309,8 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
   // The discount is whatever the SERVER said this code is worth for this basket.
   const discount = covered ? 0 : promo ? Math.min(promo.discountTnd, subtotal) : 0
   const total = covered ? 0 : Math.max(0, subtotal - discount)
+  // Price 0 = "sur devis": the salon gives the price at the visit.
+  const onQuote = !!svc && !covered && isOnQuote(svc.p)
   const totalM = svc ? svc.m : 0
   const durB = Math.max(totalM, 30)
   const elig = svc ? staff.filter((p) => svc.who.includes(p.id)) : staff
@@ -564,7 +570,9 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           s’affiche dans « Mes rendez-vous ».<br />
           {booked.payment === "deposit"
             ? <span style={{ color: "var(--green)", fontWeight: 700 }}>✓ Acompte payé par carte — {booked.rescheduled ? "il reste valable pour le nouveau créneau" : "solde à régler au salon"}</span>
-            : <span>Paiement sur place — total de {booked.amountTnd} TND à régler au salon</span>}
+            : booked.amountTnd > 0
+              ? <span>Paiement sur place — total de {booked.amountTnd} TND à régler au salon</span>
+              : <span>{QUOTE_NOTE}</span>}
           <br />{CANCEL_RULE}
           {salon.phone && (
             <>
@@ -616,7 +624,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
             </div>
           </div>
 
-          <div style={row}><span style={k}>Prestation</span><span style={{ fontWeight: 800, flex: 1 }}>{svc.n}</span><span style={{ color: "var(--muted)", fontSize: 12.5 }}>{svc.d}</span><span style={{ fontWeight: 800 }}>{svc.p} TND</span></div>
+          <div style={row}><span style={k}>Prestation</span><span style={{ fontWeight: 800, flex: 1 }}>{svc.n}</span><span style={{ color: "var(--muted)", fontSize: 12.5 }}>{svc.d}</span><span style={{ fontWeight: 800 }}>{priceText(svc.p)}</span></div>
           <div style={row}><span style={k}>Avec</span><span style={{ fontWeight: 700 }}>{staffLabel}</span></div>
           <div style={row}><span style={k}>Date & heure</span><span style={{ fontWeight: 700, textTransform: "capitalize" }}>{longDate} à {T(time)}</span></div>
           {covered && (
@@ -638,13 +646,13 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
             <span style={{ flex: 1 }} />
             <span className="serif" style={{ fontSize: 24 }}>
               {(discount > 0 || covered) && <span style={{ fontSize: 14, color: "var(--faint)", textDecoration: "line-through", marginRight: 8 }}>{subtotal}</span>}
-              {total} <span style={{ fontSize: 13 }}>TND</span>
+              {onQuote ? "Sur devis" : <>{total} <span style={{ fontSize: 13 }}>TND</span></>}
             </span>
           </div>
 
           {/* Promo code — the discount is computed and re-checked server-side.
               Not with a subscription credit: the visit is already covered. */}
-          {!covered && <>
+          {!covered && !onQuote && <>
           <label htmlFor="promo-code" style={{ ...lbl, display: "block", marginTop: 16 }}>Code promo</label>
           {promo ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, background: "var(--green-soft)", border: "1px solid var(--green-soft)", borderRadius: 10, padding: "9px 12px" }}>
@@ -678,7 +686,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           {/* The terms come BEFORE the button — read, then commit — and the
               button says what it does: it sends a request the salon confirms. */}
           <div style={{ fontSize: 12, color: "var(--muted-2)", lineHeight: 1.6, marginTop: 16, borderTop: "1px solid var(--line-soft)", paddingTop: 12 }}>
-            {covered ? "Couvert par votre carnet — rien à régler au salon." : `Total de ${total} TND, à régler au salon — rien n’est payé en ligne.`}
+            {covered ? "Couvert par votre carnet — rien à régler au salon." : onQuote ? `${QUOTE_NOTE} Rien n’est payé en ligne.` : `Total de ${total} TND, à régler au salon — rien n’est payé en ligne.`}
             <br />{CANCEL_RULE}
             <br />Le salon confirme votre rendez-vous : vous recevez un e-mail{user ? <> à <b style={{ color: "var(--ink)" }}>{user.email}</b></> : null}, puis un rappel avant le rendez-vous.
           </div>
@@ -792,7 +800,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                 n={1}
                 title={svc ? svc.n : "Choisissez une prestation"}
                 done={!!svc}
-                sub={svc ? `${svc.d} · ${svc.p} TND${svc.isPack ? ` · ${svc.contents.join(" + ")}` : ""}` : null}
+                sub={svc ? `${svc.d} · ${priceText(svc.p)}${svc.isPack ? ` · ${svc.contents.join(" + ")}` : ""}` : null}
                 action={svc && !reschedId ? (
                   <button onClick={() => { setSvcI(null); setTime(null) }} style={{ background: "none", border: "1px solid var(--line-2)", borderRadius: 999, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: "var(--ink)", cursor: "pointer", flex: "none" }}>Modifier</button>
                 ) : null}
@@ -803,7 +811,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                     <button key={i} onClick={() => pickSvc(i)} style={{ border: "1px solid var(--line-2)", background: "var(--card)", borderRadius: 12, padding: "12px 14px", textAlign: "left", cursor: "pointer", color: "var(--ink)" }}>
                       <div style={{ display: "flex", fontSize: 13, fontWeight: 700, gap: 7 }}>
                         <span style={{ flex: 1, minWidth: 0 }}>{x.n}</span>
-                        <span style={{ whiteSpace: "nowrap" }}>{x.p} TND</span>
+                        <span style={{ whiteSpace: "nowrap" }}>{priceText(x.p)}</span>
                       </div>
                       <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 3 }}>{x.cat} · {x.d}</div>
                     </button>
@@ -948,7 +956,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8, fontSize: 12.5 }}>
                   <span style={{ fontWeight: 700, flex: 1, minWidth: 0 }}>{svc.n}</span>
                   <span style={{ color: "var(--muted)", fontSize: 11 }}>{staffLabel}</span>
-                  <span style={{ fontWeight: 800, whiteSpace: "nowrap" }}>{svc.p} TND</span>
+                  <span style={{ fontWeight: 800, whiteSpace: "nowrap" }}>{priceText(svc.p)}</span>
                 </div>
               )}
               <div style={{ display: "flex", marginTop: 10, fontSize: 12.5 }}>
@@ -974,7 +982,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
               <span style={{ flex: 1 }} />
               <span className="serif" style={{ fontSize: 22 }}>
                 {(discount > 0 || covered) && <span style={{ fontSize: 13, color: "var(--faint)", textDecoration: "line-through", marginRight: 7 }}>{subtotal}</span>}
-                {total} <span style={{ fontSize: 13 }}>TND</span>
+                {!svc ? "—" : onQuote ? "Sur devis" : <>{total} <span style={{ fontSize: 13 }}>TND</span></>}
               </span>
             </div>
 
@@ -994,7 +1002,11 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
                   : "Le paiement ne change pas — réglez sur place comme prévu."
                 : covered
                   ? "Couvert par votre carnet — rien à régler au salon."
-                  : `Total de ${total} TND, à régler au salon.`}
+                  : !svc
+                    ? "Rien n’est payé en ligne : vous réglez au salon."
+                    : onQuote
+                      ? QUOTE_NOTE
+                      : `Total de ${total} TND, à régler au salon.`}
               <br />✓ Confirmation & rappel par e-mail
             </div>
           </div>
@@ -1017,7 +1029,7 @@ export default function BookingFlow({ salon, preselect = null, confirmOnArrival 
           </div>
           <div style={{ textAlign: "right", flex: "none" }}>
             {(discount > 0 || covered) && <div style={{ fontSize: 11, color: "var(--faint)", textDecoration: "line-through" }}>{subtotal} TND</div>}
-            <div className="serif" style={{ fontSize: 19, lineHeight: 1 }}>{total} <span style={{ fontSize: 11 }}>TND</span></div>
+            <div className="serif" style={{ fontSize: 19, lineHeight: 1 }}>{!svc ? "—" : onQuote ? "Sur devis" : <>{total} <span style={{ fontSize: 11 }}>TND</span></>}</div>
           </div>
           <button
             onClick={goConfirm}

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "@/components/Link"
 import { useDialogFocus } from "@/lib/use-dialog-focus"
 import { errorText } from "@/lib/errors"
-import { Card, H, STATUS, dMo, dDd, dTime, dFull, dLong, durLabel, payInfo, useAccountFetch, LoadError, accountAction, Empty } from "./shared"
+import { Card, H, STATUS, dMo, dDd, dTime, dFull, dLong, durLabel, payInfo, onQuoteBooking, useAccountFetch, LoadError, accountAction, Empty } from "./shared"
 
 /* ── Liste d'attente ─────────────────────────────────────────────────
    Requests the customer made instead of booking a créneau. Shown only when
@@ -171,7 +171,7 @@ export function Rendezvous() {
                   <div style={{ fontWeight: 700, flex: 1, minWidth: 140 }}>{b.service}</div>
                   <span style={{ fontSize: 10.5, fontWeight: 800, borderRadius: 999, padding: "3px 10px", background: st.bg, color: st.c }}>{st.l}</span>
                   <div style={{ color: "var(--muted)", fontSize: 12.5 }}>
-                    {b.amountTnd} TND
+                    {onQuoteBooking(b) ? "Sur devis" : `${b.amountTnd} TND`}
                     {b.payment === "refund" && <span style={{ color: "var(--faint)", fontSize: 11.5 }}> · remboursement indiqué par le salon</span>}
                     {b.payment === "deposit" && <span style={{ color: "var(--faint)", fontSize: 11.5 }}> · acompte {b.depositTnd} TND payé</span>}
                   </div>

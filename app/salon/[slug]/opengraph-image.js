@@ -25,7 +25,7 @@ export default async function OpengraphImage({ params }) {
         <div style={{ fontSize: 62, fontWeight: 700, marginTop: 24, maxWidth: 960, lineHeight: 1.08 }}>{name}</div>
         {s && (
           <div style={{ display: "flex", marginTop: 26, fontSize: 30, color: "#e0e0e0" }}>
-            Note {s.rate}/5 · {s.rev} avis · {s.city} · dès {s.from} TND
+            Note {s.rate}/5 · {s.rev} avis · {s.city}{s.from > 0 ? ` · dès ${s.from} TND` : ""}
           </div>
         )}
         <div style={{ display: "flex", marginTop: 40, fontSize: 24, color: "#E5E5E5" }}>Réservez en ligne — confirmation par e-mail</div>

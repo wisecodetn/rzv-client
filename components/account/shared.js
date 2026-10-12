@@ -31,8 +31,12 @@ export const payInfo = (b) => {
   if (b.payment === "deposit") return { c: "var(--gold-dark)", t: `✓ Avance réglée : ${b.depositTnd} TND — reste ${b.amountTnd - b.depositTnd} TND à régler au salon` }
   if (b.payment === "paid") return { c: "var(--gold-dark)", t: `✓ Réglé : ${b.amountTnd} TND` }
   if (b.payment === "refund") return { c: "var(--muted)", t: `Avance de ${b.depositTnd} TND — à voir avec le salon` }
+  if (onQuoteBooking(b)) return { c: "var(--muted)", t: "Prix sur devis — annoncé et réglé au salon" }
   return { c: "var(--muted)", t: `Paiement sur place — total de ${b.amountTnd} TND` }
 }
+
+/** Booked at price 0, with no discount nor carnet: a "sur devis" prestation. */
+export const onQuoteBooking = (b) => !b.coveredBy && !(b.amountTnd > 0) && !(b.discountTnd > 0)
 
 /**
  * One account API read. A failure is reported as `error` ("session" when the

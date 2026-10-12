@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "@/components/Link"
+import { isOnQuote } from "@/lib/price"
 
 /** A long menu is unreadable — show a category's first few, then unfold. */
 const VISIBLE = 6
@@ -76,8 +77,12 @@ function Group({ slug, group }) {
             )}
           </div>
           <div style={{ fontWeight: 800, fontSize: 13.5, textAlign: "right", whiteSpace: "nowrap" }}>
-            {sv.p} <span style={{ fontSize: 10.5, color: "var(--gold)" }}>TND</span>
-            {sv.was != null && sv.was > sv.p && (
+            {isOnQuote(sv.p) ? (
+              <span style={{ fontSize: 12.5, color: "var(--muted-2)" }}>Sur devis</span>
+            ) : (
+              <>{sv.p} <span style={{ fontSize: 10.5, color: "var(--gold)" }}>TND</span></>
+            )}
+            {sv.was != null && !isOnQuote(sv.p) && sv.was > sv.p && (
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--faint)", textDecoration: "line-through" }}>{sv.was} TND</div>
             )}
           </div>
