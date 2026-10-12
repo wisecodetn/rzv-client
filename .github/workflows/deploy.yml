@@ -1,15 +1,25 @@
 name: Build and Deploy
 
-# Use this version in rzv-client and rzv-api repos, at .github/workflows/deploy.yml
-# Only line to change per repo: APP_NAME
+# Same workflow in rzv-api, rzv-client, rzv-pro and rzv-admin — only APP_NAME and the
+# build-args differ. Web addresses are baked in at build time, so each environment
+# gets its own image.
 
 on:
   push:
-    branches: [main]
+    branches: [main, production]
 
 env:
   REGISTRY: ghcr.io
-  APP_NAME: rzv-client   # <-- change to rzv-client for that repo
+  APP_NAME: rzv-client
+  # Two environments from one workflow (2026-10-13):
+  #   main       → the team preview  rzv.wisecode.tn  (~/apps/rezervy,      image :latest)
+  #   production → rezervy.io                          (~/apps/rezervy-prod, image :prod)
+  # Promote to production = merge main into the production branch and push it.
+  IMAGE_TAG: ${{ github.ref_name == 'production' && 'prod' || 'latest' }}
+  DEPLOY_DIR: ${{ github.ref_name == 'production' && 'rezervy-prod' || 'rezervy' }}
+  API_ORIGIN: ${{ github.ref_name == 'production' && 'https://api.rezervy.io' || 'https://rzv-api.wisecode.tn' }}
+  SITE_ORIGIN: ${{ github.ref_name == 'production' && 'https://rezervy.io' || 'https://rzv.wisecode.tn' }}
+  PRO_ORIGIN: ${{ github.ref_name == 'production' && 'https://pro.rezervy.io' || 'https://rzv-pro.wisecode.tn' }}
 
 jobs:
   # Lint + tests first: a failing check stops the image from being built and
@@ -47,15 +57,15 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:latest
-            ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+            ${{ env.REGISTRY }}/wisecodetn/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}-${{ github.sha }}
           build-args: |
-            NEXT_PUBLIC_API_URL=https://rzv-api.wisecode.tn
-            NEXT_PUBLIC_SITE_URL=https://rzv.wisecode.tn
-            NEXT_PUBLIC_MEDIA_URL=https://rzv-api.wisecode.tn
-            NEXT_PUBLIC_PRO_URL=https://rzv-pro.wisecode.tn
+            NEXT_PUBLIC_API_URL=${{ env.API_ORIGIN }}
+            NEXT_PUBLIC_SITE_URL=${{ env.SITE_ORIGIN }}
+            NEXT_PUBLIC_MEDIA_URL=${{ env.API_ORIGIN }}
+            NEXT_PUBLIC_PRO_URL=${{ env.PRO_ORIGIN }}
             NEXT_PUBLIC_GOOGLE_CLIENT_ID=476575411657-acpd5uo0qmmir900im1ua81a18nsk90o.apps.googleusercontent.com
-            API_URL=https://rzv-api.wisecode.tn
+            API_URL=${{ env.API_ORIGIN }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -69,7 +79,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/apps/rezervy
+            cd ~/apps/${{ env.DEPLOY_DIR }}
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u wisecodetn --password-stdin
             docker compose pull ${{ env.APP_NAME }}
             docker compose up -d ${{ env.APP_NAME }}
