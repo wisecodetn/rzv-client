@@ -15,17 +15,18 @@ const VISIBLE = 6
  * look and behave the same: a row may bring its own `href`, a struck-through
  * `was` price, and a `featured` flag. A group with no `cat` has no header row.
  */
-export default function ServiceGroups({ slug, groups }) {
+export default function ServiceGroups({ slug, groups, bookable = true }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       {groups.map((g, i) => (
-        <Group key={g.cat ?? `g${i}`} slug={slug} group={g} />
+        <Group key={g.cat ?? `g${i}`} slug={slug} group={g} bookable={bookable} />
       ))}
     </div>
   )
 }
 
-function Group({ slug, group }) {
+/** `bookable` false (a vitrine salon): the price list without the "Réserver" buttons. */
+function Group({ slug, group, bookable }) {
   const [open, setOpen] = useState(false)
   const hidden = group.rows.length - VISIBLE
   // Every service is in the HTML; past the first few they are only hidden
@@ -86,7 +87,7 @@ function Group({ slug, group }) {
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--faint)", textDecoration: "line-through" }}>{sv.was} TND</div>
             )}
           </div>
-          <Link
+          {bookable && <Link
             href={sv.href ?? `/salon/${slug}/reserver?svc=${encodeURIComponent(sv.id ?? "")}`}
             className="btn-outline"
             style={{
@@ -102,7 +103,7 @@ function Group({ slug, group }) {
             }}
           >
             Réserver
-          </Link>
+          </Link>}
         </div>
       ))}
 

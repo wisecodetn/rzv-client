@@ -146,7 +146,12 @@ const SalonRow = memo(function SalonRow({ s, catSlugs, active, onHover, first = 
             <span style={{ flex: 1 }} />
             {/* Each card links to the same 2 routes several times; only the
                 salon-name link prefetches, so 20 cards don't fire ~100 requests. */}
-            <Link href={`/salon/${s.slug}/reserver`} prefetch={false} style={{ background: "var(--gold)", border: "none", color: "var(--on-gold)", borderRadius: 10, padding: "9px 17px", fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }} className="btn-gold">Réserver</Link>
+            {/* A vitrine salon (not on Rezervy yet) is shown, not booked. */}
+            {s.preview ? (
+              <Link href={`/salon/${s.slug}`} prefetch={false} style={{ border: "1px solid var(--line-2)", color: "var(--ink)", borderRadius: 10, padding: "9px 17px", fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }}>Voir le salon</Link>
+            ) : (
+              <Link href={`/salon/${s.slug}/reserver`} prefetch={false} style={{ background: "var(--gold)", border: "none", color: "var(--on-gold)", borderRadius: 10, padding: "9px 17px", fontWeight: 700, fontSize: 12.5, whiteSpace: "nowrap", flex: "none" }} className="btn-gold">Réserver</Link>
+            )}
           </div>
         </div>
       </div>
@@ -161,7 +166,7 @@ const SalonRow = memo(function SalonRow({ s, catSlugs, active, onHover, first = 
               <div style={{ minWidth: 0, flex: 1, fontWeight: 600 }}>{ts.n}</div>
               <div style={{ color: "var(--muted)", fontSize: 11.5, whiteSpace: "nowrap" }}>{ts.d}</div>
               <div style={{ fontWeight: 800, whiteSpace: "nowrap" }}>{priceText(ts.p)}</div>
-              <Link href={`/salon/${s.slug}/reserver?svc=${encodeURIComponent(ts.id)}`} prefetch={false} style={{ fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 700, whiteSpace: "nowrap" }}>Réserver</Link>
+              {!s.preview && <Link href={`/salon/${s.slug}/reserver?svc=${encodeURIComponent(ts.id)}`} prefetch={false} style={{ fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 700, whiteSpace: "nowrap" }}>Réserver</Link>}
             </div>
           ))}
           <Link href={`/salon/${s.slug}`} prefetch={false} style={{ display: "block", fontSize: 11.5, color: "var(--gold-dark)", fontWeight: 600, padding: "8px 0" }}>Voir tous les services →</Link>

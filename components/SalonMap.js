@@ -34,7 +34,7 @@ function popupHtml(s, withListButton) {
         ${s.from > 0 ? `<span class="rzv-pop-price">dès <b>${esc(s.from)} TND</b></span>` : `<span class="rzv-pop-price">Prix sur devis</span>`}
       </div>
       <div class="rzv-pop-actions">
-        <a class="rzv-pop-btn is-primary" href="/salon/${esc(s.slug)}/reserver" title="Réserver chez ${esc(s.name)}">Réserver</a>
+        ${s.preview ? "" : `<a class="rzv-pop-btn is-primary" href="/salon/${esc(s.slug)}/reserver" title="Réserver chez ${esc(s.name)}">Réserver</a>`}
         <a class="rzv-pop-btn" href="/salon/${esc(s.slug)}" title="Voir ${esc(s.name)}">Voir le salon</a>
       </div>
       ${withListButton ? `<button type="button" class="rzv-pop-list" data-list="${esc(s.slug)}">Voir dans la liste ↓</button>` : ""}

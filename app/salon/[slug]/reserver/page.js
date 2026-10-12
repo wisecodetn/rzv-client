@@ -1,4 +1,4 @@
-import { notFound, permanentRedirect } from "next/navigation"
+import { notFound, permanentRedirect, redirect } from "next/navigation"
 import BookingFlow from "@/components/BookingFlow"
 import { getSalon, getSalonRedirect } from "@/lib/data"
 
@@ -21,6 +21,8 @@ export default async function ReserverPage({ params, searchParams }) {
     }
     notFound()
   }
+  // A vitrine salon takes no booking: its page says why.
+  if (s.preview) redirect(`/salon/${s.slug}`)
   // The salon page links `?svc=<service id>`. This used to read it as a
   // Number — an index into the flattened service list — so a real id parsed to
   // NaN and nothing was ever preselected.

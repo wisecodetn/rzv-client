@@ -15,6 +15,7 @@ import { salonSlugs, getSalon, getCategory, pairOf, getSalonRedirect } from "@/l
 import { SITE, PAY_RULE, CANCEL_RULE } from "@/lib/site"
 import { pageMeta } from "@/lib/meta"
 import { VerifiedMark, VerifiedPill } from "@/components/VerifiedBadge"
+import PreviewNotice from "@/components/salon/PreviewNotice"
 
 export async function generateStaticParams() {
   return (await salonSlugs()).map((slug) => ({ slug }))
@@ -170,20 +171,29 @@ export default async function SalonPage({ params }) {
 
           <div className="salon-head-actions" style={{ display: "flex", gap: 10, flex: "none", flexWrap: "wrap", alignItems: "center" }}>
             <FavButton slug={s.slug} variant="button" />
-            <Link
-              href={`/salon/${s.slug}/reserver`}
-              className="btn-gold"
-              style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", flex: "none" }}
-            >
-              Réserver
-            </Link>
+            {s.preview ? (
+              <PreviewNotice name={s.name} compact />
+            ) : (
+              <Link
+                href={`/salon/${s.slug}/reserver`}
+                className="btn-gold"
+                style={{ background: "var(--gold)", color: "var(--on-gold)", border: "none", borderRadius: 12, padding: "13px 26px", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", flex: "none" }}
+              >
+                Réserver
+              </Link>
+            )}
           </div>
         </div>
 
-        {/* How booking works here, before the "Réserver" click. */}
-        <p style={{ fontSize: 12.5, color: "var(--muted)", margin: "10px 4px 0", lineHeight: 1.6 }}>
-          {PAY_RULE} {CANCEL_RULE}
-        </p>
+        {/* How booking works here, before the "Réserver" click — or, for a vitrine
+            salon, why there is no booking and how the salon gets its page. */}
+        {s.preview ? (
+          <PreviewNotice name={s.name} style={{ marginTop: 14 }} />
+        ) : (
+          <p style={{ fontSize: 12.5, color: "var(--muted)", margin: "10px 4px 0", lineHeight: 1.6 }}>
+            {PAY_RULE} {CANCEL_RULE}
+          </p>
+        )}
 
         {s.desc && (
           <div
@@ -222,7 +232,7 @@ export default async function SalonPage({ params }) {
           <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 22 }}>
             <div>
               <h2 className="serif" style={{ fontSize: 20, margin: "0 0 12px", fontWeight: 400 }}>Choix de prestations</h2>
-              <ServiceGroups slug={s.slug} groups={s.serviceGroups} />
+              <ServiceGroups slug={s.slug} groups={s.serviceGroups} bookable={!s.preview} />
             </div>
 
             {/* The salon's packages, presented exactly like its services and
@@ -232,6 +242,7 @@ export default async function SalonPage({ params }) {
                 <h2 className="serif" style={{ fontSize: 20, margin: "0 0 12px", fontWeight: 400 }}>Forfaits</h2>
                 <ServiceGroups
                   slug={s.slug}
+                  bookable={!s.preview}
                   groups={[
                     {
                       cat: null,
@@ -285,7 +296,8 @@ export default async function SalonPage({ params }) {
               ))}
             </SideCard>
 
-            <SideCard>
+            {/* A vitrine salon has no contact to show (the API sends none). */}
+            {!s.preview && (s.phone || s.email || social.length > 0) && <SideCard>
               <h2 style={{ fontWeight: 800, fontSize: 13.5, margin: "0 0 12px" }}>Contact</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {s.phone && (
@@ -338,7 +350,7 @@ export default async function SalonPage({ params }) {
                   </div>
                 )}
               </div>
-            </SideCard>
+            </SideCard>}
 
             {s.geo && (
               <SideCard>
@@ -370,13 +382,17 @@ export default async function SalonPage({ params }) {
               <div style={{ fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>
               {s.from != null && <div style={{ fontSize: 12.5, color: "var(--muted)" }}>dès <b style={{ color: "var(--ink)" }}>{s.from} TND</b></div>}
             </div>
-            <Link
-              href={`/salon/${s.slug}/reserver`}
-              className="btn-gold"
-              style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "13px 28px", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", flex: "none" }}
-            >
-              Réserver
-            </Link>
+            {s.preview ? (
+              <PreviewNotice name={s.name} compact style={{ flex: "none" }} />
+            ) : (
+              <Link
+                href={`/salon/${s.slug}/reserver`}
+                className="btn-gold"
+                style={{ background: "var(--gold)", color: "var(--on-gold)", borderRadius: 12, padding: "13px 28px", fontWeight: 800, fontSize: 14, whiteSpace: "nowrap", flex: "none" }}
+              >
+                Réserver
+              </Link>
+            )}
           </div>
         </div>
       </div>
