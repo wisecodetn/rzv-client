@@ -27,7 +27,7 @@ export const STATIC_ROOTS = new Set([
   "compte-supprime", "confidentialite", "connexion", "contact", "devenir-partenaire", "faqs", "fidelite",
   "gerer-rendez-vous", "glossaire", "inscription", "liste-attente", "mentions-legales", "mot-de-passe-oublie",
   "parrainage", "rdv", "referentiel-candidature", "reinitialiser-mot-de-passe", "salon", "salons",
-  "solutions-entreprises", "telephone", "verifier-email", "zones-activites",
+  "solutions-entreprises", "tarifs", "telephone", "verifier-email", "zones-activites",
 ])
 
 /** Routes made by FILES at the root of app/ (metadata routes), with or without

@@ -23,6 +23,7 @@ export default async function sitemap() {
     "/liste-attente": 0.6,
     "/zones-activites": 0.5,
     "/a-propos": 0.5,
+    "/tarifs": 0.6,
     "/faqs": 0.5,
     "/contact": 0.5,
     "/carte-cadeau": 0.5,

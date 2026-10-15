@@ -54,7 +54,7 @@ export default async function Home() {
   // Cities that actually have a salon offering each category (max 10 each).
   const catCities = await Promise.all(topCats.map((c) => categoryCities(c.slug)))
   const latestPosts = posts.slice(0, 3)
-  const { hero, stats: STATS, faqs: FAQS } = content
+  const { hero, stats: STATS, faqs: ALL_FAQS, homeFaqs: FAQS } = content
   // Popular prestations: real sub-categories (2 per top category) that some
   // salon actually offers — never a link to an empty page.
   const offered = new Set(coverage.pairs.map((p) => p.category))
@@ -64,7 +64,7 @@ export default async function Home() {
     .slice(0, 8)
   return (
     <>
-      <JsonLd data={faqLd(FAQS)} />
+      {FAQS.length > 0 && <JsonLd data={faqLd(FAQS)} />}
 
       {/* HERO */}
       <section style={{ position: "relative", borderBottom: "1px solid var(--line-soft)" }}>
@@ -243,7 +243,14 @@ export default async function Home() {
       <section className="wrap" style={{ padding: "40px 24px" }}>
         <H2 className="serif" style={{ fontSize: 22 }}>Questions fréquentes</H2>
         <div className="faq-grid" style={{ display: "grid", gridTemplateColumns: "minmax(0,1.55fr) minmax(0,1fr)", gap: 28, marginTop: 16, alignItems: "start" }}>
-          <FaqAccordion faqs={FAQS} />
+          <div>
+            <FaqAccordion faqs={FAQS} />
+            {ALL_FAQS.length > FAQS.length && (
+              <Link href="/faqs" style={{ display: "inline-block", marginTop: 14, fontSize: 13.5, fontWeight: 800, color: "var(--gold-dark)" }}>
+                Toutes les questions →
+              </Link>
+            )}
+          </div>
           <ContactCard />
         </div>
       </section>

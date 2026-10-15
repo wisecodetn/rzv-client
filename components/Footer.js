@@ -78,6 +78,7 @@ export default async function Footer() {
           )}
           <Col title="Rezervy">
             <F href="/a-propos">À propos</F>
+            <F href="/tarifs">Tarifs</F>
             <F href="/zones-activites">Zones d'activités</F>
             <F href="/blog">Blog</F>
             <F href="/liste-attente">Liste d’attente</F>
