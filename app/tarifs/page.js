@@ -5,11 +5,18 @@ import { breadcrumbLd } from "@/lib/jsonld"
 import { pageMeta } from "@/lib/meta"
 import { getSiteContent } from "@/lib/site-content"
 
-export const metadata = pageMeta({
-  absoluteTitle: "Tarifs | Rezervy",
-  description: "Les tarifs de Rezervy : réservation gratuite pour les clientes, abonnements Rezervy Pro pour les salons de beauté en Tunisie.",
-  path: "/tarifs",
-})
+const DEFAULT_TITLE = "Tarifs | Rezervy"
+const DEFAULT_DESC = "Les tarifs de Rezervy : réservation gratuite pour les clientes, abonnements Rezervy Pro pour les salons de beauté en Tunisie."
+
+// Meta title and description are edited in admin → Site client → Page Tarifs.
+export async function generateMetadata() {
+  const { tarifs } = await getSiteContent()
+  return pageMeta({
+    absoluteTitle: tarifs?.metaTitle || DEFAULT_TITLE,
+    description: tarifs?.metaDescription || DEFAULT_DESC,
+    path: "/tarifs",
+  })
+}
 
 export default async function TarifsPage() {
   // Managed in admin → Site client → Tarifs; plan prices are the live ones.
